@@ -19,16 +19,17 @@ body {
   padding: 20px;
 }
 
-/* النص اللي بينطط */
 .welcome-text {
   text-align: center;
   margin-bottom: 30px;
-  font-size: 28px;
+  font-size: 32px;
   font-weight: bold;
+  line-height: 1.5;
 }
 
 .welcome-text span {
   display: inline-block;
+  margin: 0 8px;
   background: linear-gradient(45deg, #ff006e, #8338ec, #3a86ff, #06ffa5);
   background-size: 300% 300%;
   -webkit-background-clip: text;
@@ -36,20 +37,14 @@ body {
   animation: wave 2s ease-in-out infinite, gradient 3s ease infinite;
 }
 
-.welcome-text span:nth-child(2) { animation-delay: 0.1s; }
-.welcome-text span:nth-child(3) { animation-delay: 0.2s; }
-.welcome-text span:nth-child(4) { animation-delay: 0.3s; }
-.welcome-text span:nth-child(5) { animation-delay: 0.4s; }
-.welcome-text span:nth-child(7) { animation-delay: 0.5s; }
-.welcome-text span:nth-child(8) { animation-delay: 0.6s; }
-.welcome-text span:nth-child(9) { animation-delay: 0.7s; }
-.welcome-text span:nth-child(10) { animation-delay: 0.8s; }
-.welcome-text span:nth-child(11) { animation-delay: 0.9s; }
-.welcome-text span:nth-child(12) { animation-delay: 1s; }
+.welcome-text span:nth-child(1) { animation-delay: 0s; }
+.welcome-text span:nth-child(2) { animation-delay: 0.2s; }
+.welcome-text span:nth-child(3) { animation-delay: 0.4s; }
+.welcome-text span:nth-child(4) { animation-delay: 0.6s; }
 
 @keyframes wave {
   0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-10px); }
+  50% { transform: translateY(-15px); }
 }
 
 @keyframes gradient {
@@ -153,7 +148,6 @@ select.input-field option {
   animation: gradient 3s ease infinite;
 }
 
-/* الانيميشن اللي بينبض */
 .pulse {
   animation: pulse 2s infinite;
 }
@@ -180,10 +174,5 @@ select.input-field option {
   color: white;
 }
 
-.gmail-btn {
-  background: #db4437;
-}
-
-.phone-btn {
-  background: #25d366;
-}
+.gmail-btn { background: #db4437; }
+.phone-btn { background: #25d366; }
