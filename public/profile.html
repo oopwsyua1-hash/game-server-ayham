@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>الملف الشخصي - السبع الحلبي</title>
+  <link rel="stylesheet" href="profile.css">
+</head>
+<body>
+  <div class="profile-container">
+
+    <div class="profile-header">
+      <div class="cover-box">
+        <img id="userCover" src="" alt="الغلاف">
+        <button id="changeCover" class="change-cover pulse">تغيير الغلاف</button>
+        <input type="file" id="coverInput" accept="image/*" style="display:none">
+      </div>
+
+      <div class="avatar-wrapper">
+        <div class="avatar-glow"></div>
+        <div class="avatar-box">
+          <img id="userAvatar" src="icon-512.png" alt="الصورة الشخصية">
+          <button id="changeAvatar" class="change-avatar pulse">📷</button>
+          <input type="file" id="avatarInput" accept="image/*" style="display:none">
+        </div>
+      </div>
+
+      <h1 id="fullName" class="gradient-text">جاري التحميل...</h1>
+      <p id="userUsername" class="username gradient-text">@username</p>
+      <p id="userId" class="user-id">ID: #000000</p>
+    </div>
+
+    <div class="profile-card">
+      <h2 class="card-title pulse">معلومات الحساب</h2>
+
+      <div class="info-row">
+        <span class="label">الاسم الكامل:</span>
+        <span id="infoName" class="value gradient-text">-</span>
+      </div>
+
+      <div class="info-row">
+        <span class="label">العمر:</span>
+        <span id="infoAge" class="value">-</span>
+      </div>
+
+      <div class="info-row">
+        <span class="label">تاريخ الميلاد:</span>
+        <span id="infoBirth" class="value">-</span>
+      </div>
+
+      <div class="info-row">
+        <span class="label">الجنس:</span>
+        <span id="infoGender" class="value">-</span>
+      </div>
+
+      <div class="info-row">
+        <span class="label">البلد:</span>
+        <span id="infoCountry" class="value">-</span>
+      </div>
+
+      <div class="info-row">
+        <span class="label">الايميل:</span>
+        <span id="infoEmail" class="value">-</span>
+      </div>
+
+      <div class="info-row">
+        <span class="label">رقم الهاتف:</span>
+        <span id="infoPhone" class="value">-</span>
+      </div>
+
+      <div class="info-row bio-row">
+        <span class="label">السيرة الذاتية:</span>
+        <p id="infoBio" class="value bio">-</p>
+      </div>
+
+      <div class="balance-box pulse">
+        <span>رصيدك:</span>
+        <span id="infoBalance">0</span>
+        <span>نقطة</span>
+      </div>
+    </div>
+
+    <div class="profile-card">
+      <h2 class="card-title pulse">إحصائيات اللعب</h2>
+
+      <div class="info-row">
+        <span class="label">عدد الالعاب:</span>
+        <span id="gamesCount" class="value">0</span>
+      </div>
+
+      <div class="info-row">
+        <span class="label">مرات الفوز:</span>
+        <span id="winsCount" class="value">0</span>
+      </div>
+
+      <div class="info-row">
+        <span class="label">مرات الخسارة:</span>
+        <span id="lossCount" class="value">0</span>
+      </div>
+
+      <div class="info-row">
+        <span class="label">نسبة الفوز:</span>
+        <span id="winRate" class="value">0%</span>
+      </div>
+    </div>
+
+    <div class="profile-card">
+      <h2 class="card-title pulse">كل اللاعبين</h2>
+      <div id="allUsers" class="users-list">
+        <p class="loading">جاري تحميل اللاعبين...</p>
+      </div>
+    </div>
+
+    <div class="profile-buttons">
+      <button id="editBtn" class="action-btn pulse">تعديل الملف</button>
+      <button id="chatBtn" class="action-btn pulse">الدردشة العامة</button>
+      <button id="lobbyBtn" class="action-btn pulse">الذهاب للغرف</button>
+      <button id="logoutBtn" class="action-btn logout">تسجيل خروج</button>
+    </div>
+
+  </div>
+
+  <script src="profile.js"></script>
+</body>
+</html>
