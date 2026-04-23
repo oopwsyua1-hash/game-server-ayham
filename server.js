@@ -12,8 +12,8 @@ app.use(cors());
 app.use(express.json());
 app.use(express.static('public'));
 
-// MongoDB Connection - الرابط تبعك محطوط هون
-mongoose.connect('mongodb+srv://ayham:ZcgeeHmqNncajhGk@cluster0.oad1i3x.mongodb.net/sab3?retryWrites=true&w=majority&appName=Cluster0')
+// MongoDB Connection - حطيت الباسوورد الجديد Nmr1234567890
+mongoose.connect('mongodb+srv://ayham:Nmr1234567890@cluster0.oad1i3x.mongodb.net/sab3?retryWrites=true&w=majority&appName=Cluster0')
   .then(() => console.log('Connected to MongoDB ✅'))
   .catch(err => {
     console.error('MongoDB connection error:', err.message);
