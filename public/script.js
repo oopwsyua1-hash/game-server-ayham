@@ -13,6 +13,8 @@ registerBtn.onclick = () => {
   formTitle.textContent = 'انشاء حساب جديد';
   formContainer.style.display = 'block';
   errorMessage.textContent = '';
+  registerBtn.classList.add('active');
+  loginBtn.classList.remove('active');
 };
 
 loginBtn.onclick = () => {
@@ -21,6 +23,8 @@ loginBtn.onclick = () => {
   formTitle.textContent = 'تسجيل الدخول';
   formContainer.style.display = 'block';
   errorMessage.textContent = '';
+  loginBtn.classList.add('active');
+  registerBtn.classList.remove('active');
 };
 
 // تسجيل حساب جديد
@@ -42,6 +46,11 @@ document.getElementById('registerForm').addEventListener('submit', async (e) => 
 
   if (password !== confirmPassword) {
     errorMessage.textContent = 'كلمة المرور غير متطابقة';
+    return;
+  }
+
+  if (age < 10 || age > 100) {
+    errorMessage.textContent = 'العمر لازم يكون بين 10 و 100';
     return;
   }
 
@@ -76,6 +85,8 @@ document.getElementById('registerForm').addEventListener('submit', async (e) => 
     registerForm.style.display = 'none';
     formTitle.textContent = 'تسجيل الدخول';
     errorMessage.textContent = '';
+    loginBtn.classList.add('active');
+    registerBtn.classList.remove('active');
     document.getElementById('registerForm').reset();
   } catch (err) {
     errorMessage.textContent = 'خطأ بالاتصال بالسيرفر';
@@ -111,7 +122,7 @@ document.getElementById('loginForm').addEventListener('submit', async (e) => {
   }
 });
 
-// حساب العمر تلقائي من تاريخ الميلاد
+// حساب العمر تلقائي بس بتقدر تعدله يدوي
 document.getElementById('birthdate').addEventListener('change', (e) => {
   const birthDate = new Date(e.target.value);
   const today = new Date();
@@ -122,5 +133,22 @@ document.getElementById('birthdate').addEventListener('change', (e) => {
     age--;
   }
   
-  document.getElementById('age').value = age;
+  if (age >= 10 && age <= 100) {
+    document.getElementById('age').value = age;
+  }
+});
+
+// اخفاء واظهار كلمة السر
+document.querySelectorAll('.toggle-password').forEach(icon => {
+  icon.onclick = () => {
+    const targetId = icon.getAttribute('data-target');
+    const input = document.getElementById(targetId);
+    if (input.type === 'password') {
+      input.type = 'text';
+      icon.textContent = '🙈';
+    } else {
+      input.type = 'password';
+      icon.textContent = '👁️';
+    }
+  };
 });
