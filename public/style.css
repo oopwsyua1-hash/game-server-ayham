@@ -1,0 +1,189 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: 'Cairo', sans-serif;
+}
+
+body {
+  background: linear-gradient(135deg, #1a1a2e, #16213e, #0f3460);
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.container {
+  width: 100%;
+  max-width: 400px;
+  padding: 20px;
+}
+
+/* النص اللي بينطط */
+.welcome-text {
+  text-align: center;
+  margin-bottom: 30px;
+  font-size: 28px;
+  font-weight: bold;
+}
+
+.welcome-text span {
+  display: inline-block;
+  background: linear-gradient(45deg, #ff006e, #8338ec, #3a86ff, #06ffa5);
+  background-size: 300% 300%;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: wave 2s ease-in-out infinite, gradient 3s ease infinite;
+}
+
+.welcome-text span:nth-child(2) { animation-delay: 0.1s; }
+.welcome-text span:nth-child(3) { animation-delay: 0.2s; }
+.welcome-text span:nth-child(4) { animation-delay: 0.3s; }
+.welcome-text span:nth-child(5) { animation-delay: 0.4s; }
+.welcome-text span:nth-child(7) { animation-delay: 0.5s; }
+.welcome-text span:nth-child(8) { animation-delay: 0.6s; }
+.welcome-text span:nth-child(9) { animation-delay: 0.7s; }
+.welcome-text span:nth-child(10) { animation-delay: 0.8s; }
+.welcome-text span:nth-child(11) { animation-delay: 0.9s; }
+.welcome-text span:nth-child(12) { animation-delay: 1s; }
+
+@keyframes wave {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-10px); }
+}
+
+@keyframes gradient {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+.form-box {
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+  border-radius: 20px;
+  padding: 30px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.button-box {
+  width: 100%;
+  margin-bottom: 30px;
+  position: relative;
+  display: flex;
+  background: rgba(0, 0, 0, 0.3);
+  border-radius: 30px;
+}
+
+.toggle-btn {
+  padding: 10px 0;
+  cursor: pointer;
+  background: transparent;
+  border: 0;
+  outline: none;
+  position: relative;
+  color: white;
+  font-size: 16px;
+  font-weight: bold;
+  flex: 1;
+  z-index: 1;
+}
+
+#btn {
+  top: 0;
+  right: 0;
+  position: absolute;
+  width: 50%;
+  height: 100%;
+  background: linear-gradient(45deg, #ff006e, #8338ec);
+  border-radius: 30px;
+  transition: 0.5s;
+}
+
+.input-group {
+  width: 100%;
+  transition: 0.5s;
+}
+
+#register {
+  display: none;
+}
+
+.input-field {
+  width: 100%;
+  padding: 12px;
+  margin: 8px 0;
+  border: none;
+  border-bottom: 2px solid rgba(255, 255, 255, 0.3);
+  outline: none;
+  background: rgba(255, 255, 255, 0.1);
+  color: white;
+  border-radius: 10px;
+  font-size: 15px;
+}
+
+.input-field::placeholder {
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.input-field:focus {
+  border-bottom: 2px solid #ff006e;
+  background: rgba(255, 255, 255, 0.15);
+}
+
+select.input-field option {
+  background: #1a1a2e;
+  color: white;
+}
+
+.submit-btn {
+  width: 100%;
+  padding: 12px;
+  cursor: pointer;
+  display: block;
+  margin: 20px 0 10px 0;
+  background: linear-gradient(45deg, #ff006e, #8338ec, #3a86ff);
+  background-size: 200% 200%;
+  border: 0;
+  outline: none;
+  border-radius: 30px;
+  color: white;
+  font-size: 16px;
+  font-weight: bold;
+  animation: gradient 3s ease infinite;
+}
+
+/* الانيميشن اللي بينبض */
+.pulse {
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(255, 0, 110, 0.7); }
+  50% { transform: scale(1.02); box-shadow: 0 0 0 10px rgba(255, 0, 110, 0); }
+  100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(255, 0, 110, 0); }
+}
+
+.social-login {
+  margin-top: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.gmail-btn, .phone-btn {
+  padding: 10px;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  font-weight: bold;
+  color: white;
+}
+
+.gmail-btn {
+  background: #db4437;
+}
+
+.phone-btn {
+  background: #25d366;
+}
