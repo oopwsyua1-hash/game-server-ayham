@@ -63,8 +63,6 @@ app.post('/login', async (req, res) => {
   } catch (err) {
     res.status(500).json({ message: 'خطأ بالسيرفر', error: err.message });
   }
-});
-
 app.get('/users', async (req, res) => {
   try {
     const users = await User.find().select('-password -email -phone').sort({ createdAt: -1 });
