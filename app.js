@@ -1,144 +1,121 @@
 const express = require('express');
 const http = require('http');
 const { Server } = require('socket.io');
-const mongoose = require('mongoose');
-const cors = require('cors');
-require('dotenv').config();
+const { createClient } = require('@supabase/supabase-js');
+const bcrypt = require('bcrypt');
+const session = require('express-session');
+const path = require('path');
 
 const app = express();
 const server = http.createServer(app);
-const io = new Server(server, { cors: { origin: "*" } });
-const PORT = process.env.PORT || 10000;
+const io = new Server(server);
 
-app.use(cors());
+const SUPABASE_URL = 'https://wqrnxlhhwoebmqtfirdr.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Indxcm54bGhod29lYm1xdGZpcmRyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY2MTgyNTcsImV4cCI6MjA5MjE5NDI1N30.9kZ-7fStYAKrYG5cFUyXUxLTncH8cJjmwP3OnDW8PJE';
+const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
 app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+app.use(session({
+  secret: 'bigo-secret-ayham-2026',
+  resave: false,
+  saveUninitialized: false,
+  cookie: {
+    maxAge: 30 * 24 * 60 * 60 * 1000,
+    secure: false,
+    httpOnly: true
+  }
+}));
+
 app.use(express.static('public'));
 
-mongoose.connect(process.env.MONGO_URI).then(() => console.log('MongoDB شغال 👑'));
-
-const UserSchema = new mongoose.Schema({
-  username: String,
-  coins: { type: Number, default: 0 },
-  vip: { type: Number, default: 0 }, // 0=عادي 1=فضي 2=ذهبي
-  diamonds: { type: Number, default: 0 }
-});
-const User = mongoose.model('User', UserSchema);
-
-const RoomSchema = new mongoose.Schema({
-  name: String,
-  createdBy: String,
-  owner: String,
-  admins: [String],
-  mods: [String],
-  mics: [{ userId: String, username: String, seat: Number, muted: Boolean }],
-  banned: [String],
-  muted: [String],
-  users: [String],
-  lock: Boolean,
-  entryFee: { type: Number, default: 0 },
-  totalGifts: { type: Number, default: 0 }
-});
-const Room = mongoose.model('Room', RoomSchema);
-
-const MessageSchema = new mongoose.Schema({
-  room: String,
-  username: String,
-  text: String,
-  type: String, // message, join, leave, mic, kick, ban, gift
-  time: { type: Date, default: Date.now }
-});
-const Message = mongoose.model('Message', MessageSchema);
-
-const GiftSchema = new mongoose.Schema({
-  room: String,
-  from: String,
-  to: String,
-  giftName: String,
-  giftValue: Number,
-  time: { type: Date, default: Date.now }
-});
-const Gift = mongoose.model('Gift', GiftSchema);
-
-let onlineUsers = {}; // {socketId: {username, room, userId, role}}
-
-function getUserRole(username, room) {
-  if (room.owner === username) return 'owner';
-  if (room.admins.includes(username)) return 'admin';
-  if (room.mods.includes(username)) return 'mod';
-  return 'user';
+function checkAuth(req, res, next) {
+  if (req.session.userId) return next();
+  res.redirect('/login.html');
 }
 
-app.get('/api/rooms', async (req, res) => {
-  const rooms = await Room.find().sort({ totalGifts: -1 });
-  res.json(rooms);
+app.get('/', checkAuth, (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
-app.post('/api/rooms', async (req, res) => {
-  const room = new Room({
-    name: req.body.name,
-    createdBy: req.body.createdBy,
-    owner: req.body.createdBy,
-    admins: [req.body.createdBy]
-  });
-  await room.save();
-  res.json(room);
+app.get('/room', checkAuth, (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'room.html'));
 });
 
-// API الشحن - لازم تربطها بـ PayPal/Stripe بعدين
-app.post('/api/recharge', async (req, res) => {
-  // هون بتحط كود PayPal/Stripe
-  // حاليا رح نزيد رصيد وهمي للتجربة
-  await User.findOneAndUpdate(
-    { username: req.body.username },
-    { $inc: { coins: req.body.amount } },
-    { upsert: true }
-  );
-  res.json({ success: true, msg: 'تم الشحن' });
+app.post('/register', async (req, res) => {
+  const { email, username, password } = req.body;
+  if (!email ||!username ||!password) {
+    return res.json({ success: false, message: 'عبي كل الحقول' });
+  }
+  if (password.length < 6) {
+    return res.json({ success: false, message: 'كلمة السر لازم 6 احرف على الاقل' });
+  }
+
+  try {
+    const hashedPassword = await bcrypt.hash(password, 10);
+    const { data, error } = await supabase
+  .from('users')
+  .insert([{ email, username, password: hashedPassword }])
+  .select();
+
+    if (error) {
+      return res.json({ success: false, message: 'الايميل مستخدم مسبقاً' });
+    }
+
+    req.session.userId = data[0].id;
+    req.session.username = data[0].username;
+    res.json({ success: true });
+  } catch (err) {
+    res.json({ success: false, message: 'خطأ بالسيرفر' });
+  }
+});
+
+app.post('/login', async (req, res) => {
+  const { email, password } = req.body;
+
+  try {
+    const { data, error } = await supabase
+  .from('users')
+  .select('*')
+  .eq('email', email)
+  .single();
+
+    if (error ||!data) {
+      return res.json({ success: false, message: 'الايميل غير موجود' });
+    }
+
+    const match = await bcrypt.compare(password, data.password);
+    if (!match) {
+      return res.json({ success: false, message: 'كلمة السر غلط' });
+    }
+
+    req.session.userId = data.id;
+    req.session.username = data.username;
+    res.json({ success: true });
+  } catch (err) {
+    res.json({ success: false, message: 'خطأ بالسيرفر' });
+  }
+});
+
+app.get('/logout', (req, res) => {
+  req.session.destroy();
+  res.redirect('/login.html');
+});
+
+app.get('/me', checkAuth, (req, res) => {
+  res.json({ username: req.session.username, userId: req.session.userId });
 });
 
 io.on('connection', (socket) => {
+  socket.on('join-room', (roomId, userId) => {
+    socket.join(roomId);
+    socket.to(roomId).emit('user-connected', userId);
 
-  socket.on('joinRoom', async ({ username, room }) => {
-    const roomData = await Room.findById(room);
-    if (!roomData) return;
-    if (roomData.banned.includes(username)) return socket.emit('errorMsg', 'محظور');
-    if (roomData.lock && getUserRole(username, roomData) === 'user') return socket.emit('errorMsg', 'الغرفة مقفولة');
-
-    socket.join(room);
-    const role = getUserRole(username, roomData);
-    onlineUsers[socket.id] = { username, room, userId: socket.id, role };
-
-    await Room.findByIdAndUpdate(room, { $addToSet: { users: username } });
-
-    const joinMsg = new Message({ room, username: 'النظام', text: `${username} انضم للغرفة`, type: 'join' });
-    await joinMsg.save();
-    io.to(room).emit('systemMsg', { text: `🟢 ${username} انضم للغرفة`, type: 'join' });
-
-    socket.emit('roomData', roomData);
-    socket.emit('yourRole', role);
-    io.to(room).emit('updateMics', roomData.mics);
-    io.to(room).emit('updateUsers', Object.values(onlineUsers).filter(u => u.room === room));
+    socket.on('disconnect', () => {
+      socket.to(roomId).emit('user-disconnected', userId);
+    });
   });
-
-  // ارسال هدية
-  socket.on('sendGift', async ({ room, toUsername, giftName, giftValue }) => {
-    const fromUser = onlineUsers[socket.id];
-    const user = await User.findOne({ username: fromUser.username });
-    if (!user || user.coins < giftValue) return socket.emit('errorMsg', 'رصيدك ما بكفي');
-
-    await User.findOneAndUpdate({ username: fromUser.username }, { $inc: { coins: -giftValue } });
-    await Room.findByIdAndUpdate(room, { $inc: { totalGifts: giftValue } });
-
-    const gift = new Gift({ room, from: fromUser.username, to: toUsername, giftName, giftValue });
-    await gift.save();
-
-    const msg = new Message({ room, username: 'النظام', text: `🎁 ${fromUser.username} اهدى ${giftName} لـ ${toUsername}`, type: 'gift' });
-    await msg.save();
-    io.to(room).emit('giftAnimation', { from: fromUser.username, to: toUsername, giftName, giftValue });
-    io.to(room).emit('systemMsg', { text: `🎁 ${fromUser.username} اهدى ${giftName} لـ ${toUsername}`, type: 'gift' });
-  });
-
-  // باقي اكواد الطرد والحظر والمايك نفس اللي فوق بس كاملين
 });
 
-server.listen(PORT, () => console.log(`السيرفر الاداري شغال ${PORT} 👑`));
+const PORT = process.env.PORT || 3000;
+server.listen(PORT, () => console.log(`Server running on ${PORT}`));
