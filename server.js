@@ -1,17 +1,18 @@
-app.post('/login', async (req, res) => {
-  const { username, password } = req.body;
+app.post('/register', async (req, res) => {
+  const { firstName, lastName, age, birthdate, gender, country, bio, username, email, phone, password } = req.body;
   
-  const user = await User.findOne({ username });
-  
-  if (!user) {
-    return res.status(404).json({ message: 'الحساب غير موجود' });
+  const exists = await User.findOne({ $or: [{ username }, { email }, { phone }] });
+  if (exists) {
+    return res.status(400).json({ message: 'اسم المستخدم او الايميل او الرقم موجود مسبقاً' });
   }
   
-  const isMatch = await bcrypt.compare(password, user.password);
+  const hashedPass = await bcrypt.hash(password, 10);
   
-  if (!isMatch) {
-    return res.status(400).json({ message: 'كلمة السر غلط' });
-  }
+  const newUser = new User({
+    firstName, lastName, age, birthdate, gender, country, bio,
+    username, email, phone, password: hashedPass
+  });
   
-  res.json({ message: 'تم تسجيل الدخول', user });
+  await newUser.save();
+  res.json({ message: 'تم انشاء الحساب بنجاح' });
 });
