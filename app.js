@@ -52,7 +52,7 @@ io.on('connection', (socket) => {
   })
 })
 
-// ملف manifest.json للتطبيق - كامل للـ APK
+// ملف manifest.json - مصلح الأيقونة + كل شي للـ APK
 app.get('/manifest.json', (req, res) => {
   res.json({
     "name": "وكالة السبع السوري",
@@ -66,13 +66,13 @@ app.get('/manifest.json', (req, res) => {
     "categories": ["social", "entertainment"],
     "icons": [
       {
-        "src": "https://i.imgur.com/8QfQZ8z.png",
+        "src": "https://cdn-icons-png.flaticon.com/512/5968/5968756.png",
         "sizes": "192x192",
         "type": "image/png",
         "purpose": "any"
       },
       {
-        "src": "https://i.imgur.com/8QfQZ8z.png",
+        "src": "https://cdn-icons-png.flaticon.com/512/5968/5968756.png",
         "sizes": "512x512",
         "type": "image/png",
         "purpose": "any maskable"
