@@ -1,31 +1,66 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>حكي جرايد</title>
+    <style>
+        body { font-family: Arial; background: #1a1a1a; color: white; margin: 0; padding: 20px; }
+        .header { text-align: center; margin-bottom: 20px; }
+        .create-room { background: #4CAF50; color: white; padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer; font-size: 16px; }
+        .room-list { display: grid; gap: 10px; margin-top: 20px; }
+        .room-card { background: #2d2d2d; padding: 15px; border-radius: 8px; cursor: pointer; }
+        .room-card:hover { background: #3d3d3d; }
+        .room-name { font-size: 18px; font-weight: bold; }
+        .room-owner { color: #aaa; font-size: 14px; }
+        .room-users { color: #4CAF50; margin-top: 5px; }
+        .vip-tag { background: gold; color: black; padding: 2px 6px; border-radius: 3px; font-size: 12px; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>حكي جرايد 👑</h1>
+        <button class="create-room">+ انشاء غرفة جديدة</button>
+    </div>
+
+    <div class="room-list">
+        <p>جاري تحميل الغرف...</p>
+    </div>
+
 <script>
 async function loadRooms() {
-    const res = await fetch('/api/rooms');
-    const rooms = await res.json();
-    const roomList = document.querySelector('.room-list');
-    roomList.innerHTML = '';
+    try {
+        const res = await fetch('/api/rooms');
+        const rooms = await res.json();
+        const roomList = document.querySelector('.room-list');
+        
+        if (rooms.length === 0) {
+            roomList.innerHTML = '<p>لا يوجد غرف. انشئ اول غرفة</p>';
+            return;
+        }
 
-    rooms.forEach((room, index) => {
-        const topClass = index === 0? 'top1' : index === 1? 'top2' : index === 2? 'top3' : '';
-        roomList.innerHTML += `
-        <div class="room-card ${topClass}" onclick="enterRoom('${room._id}')">
-            <div class="room-content">
+        roomList.innerHTML = '';
+        rooms.forEach((room, index) => {
+            const topClass = index === 0 ? 'top1' : index === 1 ? 'top2' : index === 2 ? 'top3' : '';
+            roomList.innerHTML += `
+            <div class="room-card ${topClass}" onclick="enterRoom('${room._id}')">
                 <div class="room-info">
                     <div class="room-name">${room.name} 🎉</div>
                     <div class="room-owner">
-                        <span class="crown">👑</span> ${room.ownerName}
-                        ${room.isVip? '<span class="vip-tag">VIP</span>' : ''}
+                        <span class="crown">👑</span> ${room.createdBy || 'مجهول'}
+                        ${room.isVip ? '<span class="vip-tag">VIP</span>' : ''}
                     </div>
-                    <div class="room-users"><i class="fas fa-user"></i> ${room.users.length}</div>
+                    <div class="room-users">👤 ${room.users ? room.users.length : 0} متصل</div>
                 </div>
-                <img src="${room.cover}" class="room-cover">
-            </div>
-        </div>`;
-    });
+            </div>`;
+        });
+    } catch (err) {
+        document.querySelector('.room-list').innerHTML = '<p>فشل تحميل الغرف</p>';
+    }
 }
 
 function enterRoom(roomId) {
-    window.location.href = `/room/${roomId}`;
+    window.location.href = `/room.html?id=${roomId}`;
 }
 
 // شغلها لما تفتح الصفحة
@@ -35,20 +70,24 @@ loadRooms();
 document.querySelector('.create-room').onclick = async () => {
     const name = prompt('اسم الغرفة:');
     if (!name) return;
+    const username = prompt('اسمك:') || 'زائر';
+    
     const res = await fetch('/api/rooms', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-            name,
-            ownerId: '123456', // هلق مؤقت. بعدين منجيبه من تسجيل الدخول
-            ownerName: 'السبع الحلبي'
+            name: name,
+            createdBy: username
         })
     });
+    
     const data = await res.json();
-    if (data.success) {
-        enterRoom(data.roomId);
+    if (data._id) {
+        enterRoom(data._id);
     } else {
         alert('ما قدرنا نعمل الغرفة');
     }
 };
 </script>
+</body>
+</html>
