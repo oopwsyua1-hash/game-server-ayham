@@ -1,169 +1,88 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Bigo Ayham - Live</title>
-    <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
-        body { background: #0f0f0f; color: #fff; }
-       .header {
-            background: linear-gradient(135deg, #ff006e, #8338ec);
-            padding: 15px; display: flex; justify-content: space-between; align-items: center;
-            position: sticky; top: 0; z-index: 100;
-        }
-       .profile { display: flex; align-items: center; gap: 10px; }
-       .profile img {
-            width: 45px; height: 45px; border-radius: 50%; border: 2px solid #fff;
-            object-fit: cover;
-        }
-       .categories {
-            display: flex; gap: 10px; padding: 15px; overflow-x: auto;
-            background: #1a1a1a;
-        }
-       .cat-btn {
-            background: #2a2a2a; border: none; color: #fff; padding: 8px 16px;
-            border-radius: 20px; white-space: nowrap; cursor: pointer;
-        }
-       .cat-btn.active { background: #ff006e; }
-       .section-title { padding: 15px; font-size: 18px; font-weight: bold; }
-       .rooms-grid {
-            display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; padding: 0 15px;
-        }
-       .room-card {
-            background: #1a1a1a; border-radius: 12px; overflow: hidden; cursor: pointer;
-            position: relative;
-        }
-       .room-card img {
-            width: 100%; height: 180px; object-fit: cover;
-        }
-       .live-badge {
-            position: absolute; top: 8px; right: 8px; background: #ff006e;
-            padding: 2px 8px; border-radius: 4px; font-size: 12px; font-weight: bold;
-        }
-       .room-info { padding: 10px; }
-       .room-title { font-size: 14px; margin-bottom: 5px; }
-       .room-meta { font-size: 12px; color: #aaa; display: flex; justify-content: space-between; }
-       .fab {
-            position: fixed; bottom: 20px; left: 20px; width: 60px; height: 60px;
-            background: linear-gradient(135deg, #ff006e, #8338ec); border-radius: 50%;
-            border: none; font-size: 30px; color: #fff; cursor: pointer; box-shadow: 0 4px 15px #ff006e50;
-        }
-       .logout { background: #2a2a2a; border: none; color: #fff; padding: 8px 12px; border-radius: 8px; }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>السبع الحلبي</title>
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <div class="header">
-        <div class="profile">
-            <img src="https://i.ibb.co/7jXqZtZ/lion.jpg" alt="السبع الحلبي">
-            <div>
-                <div id="username">اهلا...</div>
-                <div style="font-size: 12px; opacity: 0.8;">ID: <span id="userId">...</span></div>
-            </div>
+  <div class="container">
+    
+    <!-- النص المتحرك فوق -->
+    <h1 class="welcome-text">
+      <span>ا</span><span>ل</span><span>س</span><span>ب</span><span>ع</span>
+      <span> </span>
+      <span>ا</span><span>ل</span><span>ح</span><span>ل</span><span>ب</span><span>ي</span>
+      <span> </span>
+      <span>ي</span><span>ر</span><span>ح</span><span>ب</span>
+      <span> </span>
+      <span>ب</span><span>ك</span><span>م</span>
+    </h1>
+
+    <div class="form-box">
+      <!-- ازرار التبديل -->
+      <div class="button-box">
+        <div id="btn"></div>
+        <button type="button" class="toggle-btn pulse" onclick="login()">تسجيل دخول</button>
+        <button type="button" class="toggle-btn pulse" onclick="register()">انشاء حساب</button>
+      </div>
+
+      <!-- فورم تسجيل الدخول -->
+      <form id="login" class="input-group">
+        <input type="text" id="loginUser" class="input-field" placeholder="اسم المستخدم او الايميل او الرقم" required>
+        <input type="password" id="loginPass" class="input-field" placeholder="كلمة السر" required>
+        <button type="submit" class="submit-btn pulse">دخول</button>
+        
+        <div class="social-login">
+          <button type="button" class="gmail-btn">الدخول عبر Gmail</button>
+          <button type="button" class="phone-btn">الدخول عبر رقم الهاتف</button>
         </div>
-        <button class="logout" onclick="logout()">تسجيل خروج</button>
+      </form>
+
+      <!-- فورم انشاء حساب -->
+      <form id="register" class="input-group">
+        <input type="text" id="firstName" class="input-field" placeholder="الاسم" required>
+        <input type="text" id="lastName" class="input-field" placeholder="الكنية" required>
+        <input type="number" id="age" class="input-field" placeholder="العمر" min="13" max="100" required>
+        <input type="date" id="birthdate" class="input-field" required>
+        
+        <select id="gender" class="input-field" required>
+          <option value="" disabled selected>اختر الجنس</option>
+          <option value="ذكر">ذكر</option>
+          <option value="انثى">انثى</option>
+        </select>
+
+        <select id="country" class="input-field" required>
+          <option value="" disabled selected>اختر البلد</option>
+          <option value="سوريا">سوريا</option>
+          <option value="تركيا">تركيا</option>
+          <option value="السعودية">السعودية</option>
+          <option value="الامارات">الامارات</option>
+          <option value="مصر">مصر</option>
+          <option value="الاردن">الاردن</option>
+          <option value="لبنان">لبنان</option>
+          <option value="العراق">العراق</option>
+          <option value="فلسطين">فلسطين</option>
+          <option value="الكويت">الكويت</option>
+          <option value="قطر">قطر</option>
+          <option value="البحرين">البحرين</option>
+          <option value="عمان">عمان</option>
+          <option value="اليمن">اليمن</option>
+        </select>
+
+        <textarea id="bio" class="input-field" placeholder="السيرة الذاتية" rows="3"></textarea>
+        
+        <input type="text" id="regUser" class="input-field" placeholder="اسم المستخدم" required>
+        <input type="email" id="regEmail" class="input-field" placeholder="الايميل" required>
+        <input type="tel" id="regPhone" class="input-field" placeholder="رقم الهاتف" required>
+        <input type="password" id="regPass" class="input-field" placeholder="كلمة السر" required>
+        
+        <button type="submit" class="submit-btn pulse">انشاء حساب</button>
+      </form>
     </div>
+  </div>
 
-    <div class="categories">
-        <button class="cat-btn active" onclick="filterCat('all')">الكل</button>
-        <button class="cat-btn" onclick="filterCat('music')">موسيقى</button>
-        <button class="cat-btn" onclick="filterCat('games')">العاب</button>
-        <button class="cat-btn" onclick="filterCat('chat')">دردشة</button>
-        <button class="cat-btn" onclick="filterCat('hot')">ترند 🔥</button>
-    </div>
-
-    <div class="section-title">غرف مباشرة الآن 🔴</div>
-    <div class="rooms-grid" id="roomsGrid">
-        <div style="grid-column: span 2; text-align: center; padding: 40px; color: #666;">
-            جاري تحميل الغرف...
-        </div>
-    </div>
-
-    <button class="fab" onclick="createRoom()">+</button>
-
-    <script>
-        const token = localStorage.getItem('token');
-        const user = JSON.parse(localStorage.getItem('user') || '{}');
-
-        if (!token) window.location.href = '/login.html';
-
-        document.getElementById('username').innerText = user.username || 'مستخدم';
-        document.getElementById('userId').innerText = user.id?.slice(0, 6) || '000000';
-
-        let currentCat = 'all';
-        let allRooms = [];
-
-        async function loadRooms() {
-            try {
-                const res = await fetch('/api/rooms');
-                allRooms = await res.json();
-                renderRooms();
-            } catch (e) {
-                console.log('خطأ تحميل الغرف');
-            }
-        }
-
-        function renderRooms() {
-            const grid = document.getElementById('roomsGrid');
-            const filtered = currentCat === 'all'? allRooms : allRooms.filter(r => r.category === currentCat);
-
-            if (filtered.length === 0) {
-                grid.innerHTML = `<div style="grid-column: span 2; text-align: center; padding: 40px; color: #666;">
-                    لا يوجد غرف حالياً. كن اول من ينشئ غرفة!
-                </div>`;
-                return;
-            }
-
-            grid.innerHTML = filtered.map(r => `
-                <div class="room-card" onclick="joinRoom('${r.id}')">
-                    <div class="live-badge">LIVE</div>
-                    <img src="${r.cover || 'https://i.ibb.co/3k6vQzG/party.jpg'}" alt="">
-                    <div class="room-info">
-                        <div class="room-title">${r.name}</div>
-                        <div class="room-meta">
-                            <span>${r.host}</span>
-                            <span>👥 ${r.count}</span>
-                        </div>
-                    </div>
-                </div>
-            `).join('');
-        }
-
-        function filterCat(cat) {
-            currentCat = cat;
-            document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('active'));
-            event.target.classList.add('active');
-            renderRooms();
-        }
-
-        async function createRoom() {
-            const name = prompt('اسم الغرفة:');
-            if (!name) return;
-            const category = prompt('القسم: music, games, chat', 'chat');
-
-            const res = await fetch('/api/rooms', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': 'Bearer ' + token
-                },
-                body: JSON.stringify({ name, category, cover: 'https://i.ibb.co/3k6vQzG/party.jpg' })
-            });
-            const data = await res.json();
-            window.location.href = `/room.html?id=${data.roomId}`;
-        }
-
-        function joinRoom(id) {
-            window.location.href = `/room.html?id=${id}`;
-        }
-
-        function logout() {
-            localStorage.clear();
-            window.location.href = '/login.html';
-        }
-
-        loadRooms();
-        setInterval(loadRooms, 3000);
-    </script>
+  <script src="script.js"></script>
 </body>
 </html>
