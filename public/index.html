@@ -8,71 +8,47 @@
 </head>
 <body>
   <div class="container">
-    
-    <h1 class="welcome-text">
-      <span>السبع</span>
-      <span>الحلبي</span>
-      <span>يرحب</span>
-      <span>بكم</span>
-    </h1>
+    <h1 class="main-title pulse">السبع الحلبي يرحب بكم</h1>
 
-    <div class="form-box">
-      <div class="button-box">
-        <div id="btn"></div>
-        <button type="button" class="toggle-btn pulse" onclick="login()">تسجيل دخول</button>
-        <button type="button" class="toggle-btn pulse" onclick="register()">انشاء حساب</button>
+    <div class="form-container">
+      <div class="form-header">
+        <button id="registerBtn" class="tab-btn">انشاء حساب</button>
+        <button id="loginBtn" class="tab-btn active">تسجيل دخول</button>
       </div>
 
-      <form id="login" class="input-group">
-        <input type="text" id="loginUser" class="input-field" placeholder="اسم المستخدم او الايميل او الرقم" required>
-        <input type="password" id="loginPass" class="input-field" placeholder="كلمة السر" required>
+      <h2 id="formTitle" class="form-title pulse">تسجيل الدخول</h2>
+      <p id="errorMessage" class="error-message"></p>
+
+      <!-- فورم تسجيل الدخول -->
+      <form id="loginForm">
+        <input type="text" id="loginEmail" placeholder="اسم المستخدم او الايميل او الرقم" required>
+        <input type="password" id="loginPassword" placeholder="كلمة السر" required>
         <button type="submit" class="submit-btn pulse">دخول</button>
-        
-        <div class="social-login">
-          <button type="button" class="gmail-btn">الدخول عبر Gmail</button>
-          <button type="button" class="phone-btn">الدخول عبر رقم الهاتف</button>
-        </div>
+        <button type="button" class="gmail-btn">الدخول عبر Gmail</button>
+        <button type="button" class="phone-btn">الدخول عبر رقم الهاتف</button>
       </form>
 
-      <form id="register" class="input-group">
-        <input type="text" id="firstName" class="input-field" placeholder="الاسم" required>
-        <input type="text" id="lastName" class="input-field" placeholder="الكنية" required>
-        <input type="number" id="age" class="input-field" placeholder="العمر" min="13" max="100" required>
-        <input type="date" id="birthdate" class="input-field" required>
-        
-        <select id="gender" class="input-field" required>
-          <option value="" disabled selected>اختر الجنس</option>
+      <!-- فورم انشاء حساب -->
+      <form id="registerForm" style="display:none;">
+        <input type="text" id="firstName" placeholder="الاسم الاول" required>
+        <input type="text" id="lastName" placeholder="الاسم الاخير" required>
+        <input type="date" id="birthdate" required>
+        <input type="number" id="age" placeholder="العمر" readonly>
+        <select id="gender" required>
+          <option value="">اختر الجنس</option>
           <option value="ذكر">ذكر</option>
           <option value="انثى">انثى</option>
         </select>
-
-        <select id="country" class="input-field" required>
-          <option value="" disabled selected>اختر البلد</option>
-          <option value="سوريا">سوريا</option>
-          <option value="تركيا">تركيا</option>
-          <option value="السعودية">السعودية</option>
-          <option value="الامارات">الامارات</option>
-          <option value="مصر">مصر</option>
-          <option value="الاردن">الاردن</option>
-          <option value="لبنان">لبنان</option>
-          <option value="العراق">العراق</option>
-          <option value="فلسطين">فلسطين</option>
-          <option value="الكويت">الكويت</option>
-          <option value="قطر">قطر</option>
-          <option value="البحرين">البحرين</option>
-          <option value="عمان">عمان</option>
-          <option value="اليمن">اليمن</option>
-        </select>
-
-        <textarea id="bio" class="input-field" placeholder="السيرة الذاتية" rows="3"></textarea>
-        
-        <input type="text" id="regUser" class="input-field" placeholder="اسم المستخدم" required>
-        <input type="email" id="regEmail" class="input-field" placeholder="الايميل" required>
-        <input type="tel" id="regPhone" class="input-field" placeholder="رقم الهاتف" required>
-        <input type="password" id="regPass" class="input-field" placeholder="كلمة السر" required>
-        
+        <input type="text" id="country" placeholder="البلد" required>
+        <textarea id="bio" placeholder="السيرة الذاتية - اختياري"></textarea>
+        <input type="text" id="username" placeholder="اسم المستخدم" required>
+        <input type="email" id="email" placeholder="الايميل" required>
+        <input type="tel" id="phone" placeholder="رقم الهاتف" required>
+        <input type="password" id="password" placeholder="كلمة السر" required>
+        <input type="password" id="confirmPassword" placeholder="تأكيد كلمة السر" required>
         <button type="submit" class="submit-btn pulse">انشاء حساب</button>
       </form>
+
     </div>
   </div>
 
