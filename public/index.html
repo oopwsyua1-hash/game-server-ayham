@@ -1,285 +1,54 @@
-<!DOCTYPE html>
-<html lang="ar" dir="rtl">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>السبعة الحلبي 👑 - الغرف</title>
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap');
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Cairo', sans-serif; }
-        body { background: #05030a; color: #fff; overflow-x: hidden; }
-        
-        /* ========== 1. الهيدر الفخم ينبض ========== */
-        .header {
-            background: linear-gradient(180deg, #1a0b2e 0%, #0a0612 100%);
-            padding: 15px; display: flex; justify-content: space-between; align-items: center;
-            border-bottom: 2px solid #ffd700; position: sticky; top: 0; z-index: 100;
-            box-shadow: 0 5px 30px rgba(255,215,0,0.3);
-            animation: headerPulse 3s infinite;
-        }
-        @keyframes headerPulse {
-            0%, 100% { box-shadow: 0 5px 30px rgba(255,215,0,0.3); }
-            50% { box-shadow: 0 5px 50px rgba(255,215,0,0.6); }
-        }
-        .logo { 
-            font-size: 24px; font-weight: 900; color: #ffd700; 
-            text-shadow: 0 0 15px #ffd700, 0 0 30px #ff8c00;
-            animation: logoGlow 2s infinite alternate;
-        }
-        @keyframes logoGlow {
-            from { text-shadow: 0 0 15px #ffd700, 0 0 30px #ff8c00; }
-            to { text-shadow: 0 0 25px #ffd700, 0 0 50px #ff8c00, 0 0 70px #ff8c00; }
-        }
-        .user-info { display: flex; align-items: center; gap: 12px; }
-        .user-pic { 
-            width: 45px; height: 45px; border-radius: 50%; border: 3px solid #ffd700;
-            animation: avatarPulse 2s infinite;
-        }
-        @keyframes avatarPulse {
-            0%, 100% { box-shadow: 0 0 10px #ffd700; }
-            50% { box-shadow: 0 0 20px #ffd700, 0 0 30px #ff8c00; }
-        }
-        .claws { 
-            background: linear-gradient(45deg, rgba(255,215,0,0.3), rgba(255,140,0,0.3));
-            padding: 8px 15px; border-radius: 25px; font-size: 15px; font-weight: 700;
-            border: 1px solid #ffd700; animation: clawsPulse 1.5s infinite;
-        }
-        @keyframes clawsPulse {
-            0%, 100% { transform: scale(1); }
-            50% { transform: scale(1.05); }
-        }
-        
-        /* ========== 2. التبويبات المزينة تنبض ========== */
-        .tabs {
-            display: flex; background: #0d0718; padding: 0 10px;
-            border-bottom: 1px solid rgba(255,215,0,0.2);
-        }
-        .tab {
-            flex: 1; text-align: center; padding: 18px 5px; color: #666;
-            border-bottom: 4px solid transparent; font-weight: 900; cursor: pointer;
-            font-size: 15px; transition: all 0.3s;
-        }
-        .tab.active { 
-            color: #ffd700; border-bottom: 4px solid #ffd700;
-            background: linear-gradient(180deg, transparent, rgba(255,215,0,0.1));
-            text-shadow: 0 0 10px #ffd700;
-            animation: tabGlow 2s infinite;
-        }
-        @keyframes tabGlow {
-            0%, 100% { border-bottom-color: #ffd700; }
-            50% { border-bottom-color: #ff8c00; }
-        }
-        
-        /* ========== 3. عنوان القسم ينبض ========== */
-        .section-title {
-            padding: 20px 15px 10px; font-size: 18px; font-weight: 900; color: #ffd700;
-            display: flex; align-items: center; gap: 10px;
-            animation: titlePulse 2s infinite;
-        }
-        @keyframes titlePulse {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.7; text-shadow: 0 0 15px #ffd700; }
-        }
-        
-        /* ========== 4. كرت الغرفة فخامة تنبض ========== */
-        .rooms { padding: 0 15px 100px; }
-        .room-card {
-            background: linear-gradient(135deg, #1a0b2e, #2d1b4e); 
-            border: 2px solid rgba(255,215,0,0.4); border-radius: 18px; 
-            margin-bottom: 20px; overflow: hidden;
-            box-shadow: 0 8px 25px rgba(0,0,0,0.5);
-            animation: cardFloat 4s infinite ease-in-out;
-            position: relative;
-        }
-        .room-card.vip {
-            border: 2px solid #ffd700;
-            box-shadow: 0 8px 35px rgba(255,215,0,0.4);
-            animation: vipCardPulse 2s infinite;
-        }
-        @keyframes cardFloat {
-            0%, 100% { transform: translateY(0px); }
-            50% { transform: translateY(-5px); }
-        }
-        @keyframes vipCardPulse {
-            0%, 100% { box-shadow: 0 8px 35px rgba(255,215,0,0.4); }
-            50% { box-shadow: 0 8px 50px rgba(255,215,0,0.7), 0 0 30px rgba(255,140,0,0.5); }
-        }
-        .room-card::before {
-            content: ''; position: absolute; top: -2px; left: -2px; right: -2px; bottom: -2px;
-            background: linear-gradient(45deg, #ffd700, #ff8c00, #ffd700);
-            border-radius: 18px; z-index: -1; opacity: 0;
-            animation: borderGlow 3s infinite;
-        }
-        .room-card.vip::before { opacity: 0.6; }
-        @keyframes borderGlow {
-            0%, 100% { opacity: 0; }
-            50% { opacity: 0.6; }
-        }
-        
-        .room-header { display: flex; padding: 15px; gap: 15px; }
-        .room-cover {
-            width: 80px; height: 80px; border-radius: 15px;
-            background: url('https://i.imgur.com/party-cover.jpg') center/cover;
-            border: 2px solid rgba(255,215,0,0.5);
-            box-shadow: 0 0 15px rgba(255,215,0,0.3);
-        }
-        .room-info { flex: 1; }
-        .room-name { font-size: 17px; font-weight: 900; margin-bottom: 6px; }
-        .room-owner { font-size: 13px; color: #bbb; display: flex; align-items: center; gap: 6px; }
-        .crown { color: #ffd700; filter: drop-shadow(0 0 5px #ffd700); }
-        .room-stats { display: flex; gap: 18px; margin-top: 10px; font-size: 13px; }
-        .stat-fire { color: #ff4500; font-weight: 700; animation: firePulse 1s infinite; }
-        @keyframes firePulse {
-            0%, 100% { transform: scale(1); }
-            50% { transform: scale(1.1); }
-        }
-        .vip-tag {
-            background: linear-gradient(45deg, #ffd700, #ff8c00); color: #000;
-            padding: 3px 10px; border-radius: 6px; font-size: 11px; font-weight: 900;
-            box-shadow: 0 0 10px rgba(255,215,0,0.6);
-        }
-        
-        /* ========== 5. المايكات تنبض ========== */
-        .mics {
-            display: flex; padding: 0 15px 15px; gap: 10px; overflow-x: auto;
-        }
-        .mic-user { text-align: center; }
-        .mic-pic {
-            width: 50px; height: 50px; border-radius: 50%; border: 3px solid #333;
-            background: url('https://i.imgur.com/default-avatar.png') center/cover;
-            transition: all 0.3s;
-        }
-        .mic-pic.speaking { 
-            border: 3px solid #00ff88; 
-            box-shadow: 0 0 15px #00ff88, 0 0 25px #00ff88;
-            animation: speakingPulse 0.8s infinite;
-        }
-        @keyframes speakingPulse {
-            0%, 100% { transform: scale(1); }
-            50% { transform: scale(1.1); }
-        }
-        .mic-pic.owner { 
-            border: 3px solid #ffd700;
-            box-shadow: 0 0 15px #ffd700;
-        }
-        .mic-name { font-size: 11px; margin-top: 4px; color: #999; font-weight: 700; }
-        
-        /* ========== 6. زر انشاء غرفة ينبض بقوة ========== */
-        .create-room {
-            position: fixed; bottom: 25px; left: 50%; transform: translateX(-50%);
-            background: linear-gradient(45deg, #ffd700, #ff8c00, #ffd700); color: #000;
-            padding: 18px 40px; border-radius: 35px; font-weight: 900; font-size: 18px;
-            box-shadow: 0 8px 30px rgba(255,215,0,0.6); border: none; cursor: pointer;
-            animation: createBtnPulse 1.5s infinite;
-            z-index: 99;
-        }
-        @keyframes createBtnPulse {
-            0%, 100% { 
-                transform: translateX(-50%) scale(1);
-                box-shadow: 0 8px 30px rgba(255,215,0,0.6);
-            }
-            50% { 
-                transform: translateX(-50%) scale(1.05);
-                box-shadow: 0 8px 40px rgba(255,215,0,0.9), 0 0 40px rgba(255,140,0,0.7);
-            }
-        }
-    </style>
-</head>
-<body>
-    <!-- الهيدر -->
-    <div class="header">
-        <div class="logo">السبعة الحلبي 👑</div>
-        <div class="user-info">
-            <div class="claws">10 💎</div>
-            <img src="https://i.imgur.com/default-avatar.png" class="user-pic">
-        </div>
-    </div>
+<script>
+async function loadRooms() {
+    const res = await fetch('/api/rooms');
+    const rooms = await res.json();
+    const roomList = document.querySelector('.room-list');
+    roomList.innerHTML = '';
 
-    <!-- التبويبات -->
-    <div class="tabs">
-        <div class="tab active">🔥 المميزة</div>
-        <div class="tab">👥 الأصدقاء</div>
-        <div class="tab">✨ الجديدة</div>
-        <div class="tab">👑 VIP</div>
-    </div>
-
-    <!-- قسم الغرف المميزة -->
-    <div class="section-title">🔥 غرف مميزة</div>
-    <div class="rooms">
-        <!-- غرفة VIP تنبض -->
-        <div class="room-card vip">
-            <div class="room-header">
-                <div class="room-cover"></div>
+    rooms.forEach((room, index) => {
+        const topClass = index === 0? 'top1' : index === 1? 'top2' : index === 2? 'top3' : '';
+        roomList.innerHTML += `
+        <div class="room-card ${topClass}" onclick="enterRoom('${room._id}')">
+            <div class="room-content">
                 <div class="room-info">
-                    <div class="room-name">حفلة طرب السبع الحلبي 🎤</div>
+                    <div class="room-name">${room.name} 🎉</div>
                     <div class="room-owner">
-                        <span class="crown">👑</span> السبع الحلبي <span class="vip-tag">VIP</span>
+                        <span class="crown">👑</span> ${room.ownerName}
+                        ${room.isVip? '<span class="vip-tag">VIP</span>' : ''}
                     </div>
-                    <div class="room-stats">
-                        <span class="stat-fire">🔥 1.2K</span>
-                        <span>🎤 8/8</span>
-                        <span>💎 50K</span>
-                    </div>
+                    <div class="room-users"><i class="fas fa-user"></i> ${room.users.length}</div>
                 </div>
-            <div class="mics">
-                <div class="mic-user">
-                    <div class="mic-pic owner speaking"></div>
-                    <div class="mic-name">السبع</div>
-                </div>
-                <div class="mic-user">
-                    <div class="mic-pic speaking"></div>
-                    <div class="mic-name">ابو علي</div>
-                </div>
-                <div class="mic-user">
-                    <div class="mic-pic"></div>
-                    <div class="mic-name">ام خالد</div>
-                </div>
-                <div class="mic-user">
-                    <div class="mic-pic speaking"></div>
-                    <div class="mic-name">فهد</div>
-                </div>
-                <div class="mic-user">
-                    <div class="mic-pic"></div>
-                    <div class="mic-name">نور</div>
-                </div>
+                <img src="${room.cover}" class="room-cover">
             </div>
-        </div>
+        </div>`;
+    });
+}
 
-        <!-- غرفة عادية -->
-        <div class="room-card">
-            <div class="room-header">
-                <div class="room-cover"></div>
-                <div class="room-info">
-                    <div class="room-name">سهرة شباب وبنات 💃</div>
-                    <div class="room-owner">
-                        <span class="crown">👑</span> ملكة الليل
-                    </div>
-                    <div class="room-stats">
-                        <span class="stat-fire">🔥 850</span>
-                        <span>🎤 6/8</span>
-                        <span>💎 12K</span>
-                    </div>
-                </div>
-            </div>
-            <div class="mics">
-                <div class="mic-user">
-                    <div class="mic-pic owner"></div>
-                    <div class="mic-name">الملكة</div>
-                </div>
-                <div class="mic-user">
-                    <div class="mic-pic speaking"></div>
-                    <div class="mic-name">زياد</div>
-                </div>
-                <div class="mic-user">
-                    <div class="mic-pic"></div>
-                    <div class="mic-name">سارة</div>
-                </div>
-            </div>
-        </div>
-    </div>
+function enterRoom(roomId) {
+    window.location.href = `/room/${roomId}`;
+}
 
-    <!-- زر انشاء غرفة -->
-    <button class="create-room">+ إنشاء غرفة 👑</button>
+// شغلها لما تفتح الصفحة
+loadRooms();
 
-</body>
-</html>
+// زر انشاء غرفة
+document.querySelector('.create-room').onclick = async () => {
+    const name = prompt('اسم الغرفة:');
+    if (!name) return;
+    const res = await fetch('/api/rooms', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+            name,
+            ownerId: '123456', // هلق مؤقت. بعدين منجيبه من تسجيل الدخول
+            ownerName: 'السبع الحلبي'
+        })
+    });
+    const data = await res.json();
+    if (data.success) {
+        enterRoom(data.roomId);
+    } else {
+        alert('ما قدرنا نعمل الغرفة');
+    }
+};
+</script>
