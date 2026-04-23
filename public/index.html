@@ -110,7 +110,7 @@
             document.querySelectorAll('.gender-btn').forEach(b => b.classList.remove('active'));
             btn.classList.add('active');
         }
-        function register() {
+        async function register() {
             const data = {
                 اسم: document.getElementById('firstName').value,
                 كنية: document.getElementById('lastName').value,
@@ -121,8 +121,21 @@
                 alert('عبي كل الحقول يا سبع 👑');
                 return;
             }
-            alert('الواجهة جاهزة! الخطوة الجاية منربطها مع السيرفر 💎');
-            console.log('بيانات التسجيل:', data);
+            try {
+                const res = await fetch('/api/register', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+                const result = await res.json();
+                if (res.ok) {
+                    alert(`مبروك ${result.user.اسم} 👑\nID تبعك: ${result.user.userId}\nهديتك: ${result.user.المخالب} مخالب 💎`);
+                } else {
+                    alert(result.error);
+                }
+            } catch (err) {
+                alert('صار خطأ بالاتصال. تأكد من النت 💎');
+            }
         }
     </script>
 </body>
