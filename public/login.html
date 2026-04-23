@@ -1,47 +1,45 @@
-<!DOCTYPE html>
-<html lang="ar" dir="rtl">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>تسجيل دخول</title>
-  <style>
-    body { font-family: sans-serif; background: #111; color: #fff; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
-    .box { background: #1e1e1e; padding: 30px; border-radius: 12px; width: 320px; text-align: center; }
-    input { width: 100%; padding: 12px; margin: 8px 0; border: none; border-radius: 8px; background: #2a2a2a; color: #fff; }
-    button { width: 100%; padding: 12px; margin-top: 12px; border: none; border-radius: 8px; background: #7c3aed; color: #fff; font-weight: bold; cursor: pointer; }
-    button:hover { background: #6d28d9; }
-    a { color: #7c3aed; text-decoration: none; }
-    .error { color: #ef4444; margin-top: 10px; }
-  </style>
-</head>
-<body>
-  <div class="box">
-    <h2>تسجيل الدخول</h2>
-    <input id="email" type="email" placeholder="الايميل">
-    <input id="password" type="password" placeholder="كلمة السر">
-    <button onclick="login()">دخول</button>
-    <p class="error" id="error"></p>
-    <p>ما عندك حساب؟ <a href="/register.html">سجل حساب جديد</a></p>
-  </div>
-
-  <script>
-    async function login() {
-      const email = document.getElementById('email').value;
-      const password = document.getElementById('password').value;
-      
-      const res = await fetch('/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password })
-      });
-      const data = await res.json();
-      
-      if (data.success) {
-        window.location.href = '/';
-      } else {
-        document.getElementById('error').innerText = data.message;
-      }
-    }
-  </script>
-</body>
-</html>
+<!DOCTYPE html><html lang="ar" dir="rtl"><head><meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>السبع الحلبي - دخول</title>
+<style>
+body{background:#0f0f0f;color:#fff;font-family:sans-serif;display:flex;align-items:center;justify-content:center;height:100vh;margin:0}
+.box{background:#1a1a1a;padding:30px;border-radius:15px;width:320px;text-align:center}
+input{width:100%;padding:12px;margin:8px 0;background:#2a2a2a;border:none;border-radius:8px;color:#fff}
+button{width:100%;padding:12px;background:linear-gradient(135deg,#ff006e,#8338ec);border:none;border-radius:8px;color:#fff;font-size:16px;margin-top:10px}
+.tab{color:#ff006e;cursor:pointer}
+</style></head><body>
+<div class="box">
+    <img src="https://i.ibb.co/7jXqZtZ/lion.jpg" width="80" style="border-radius:50%;margin-bottom:20px">
+    <h2>السبع الحلبي لايف</h2>
+    <div id="loginForm">
+        <input id="email" placeholder="الايميل">
+        <input id="password" type="password" placeholder="كلمة السر">
+        <button onclick="login()">دخول</button>
+        <p>ما عندك حساب؟ <span class="tab" onclick="showReg()">سجل</span></p>
+    </div>
+    <div id="regForm" style="display:none">
+        <input id="regUser" placeholder="اسم المستخدم">
+        <input id="regEmail" placeholder="الايميل">
+        <input id="regPass" type="password" placeholder="كلمة السر">
+        <button onclick="register()">تسجيل</button>
+        <p>عندك حساب؟ <span class="tab" onclick="showLogin()">دخول</span></p>
+    </div>
+</div>
+<script>
+if(localStorage.getItem('token')) location='/';
+function showReg(){loginForm.style.display='none';regForm.style.display='block'}
+function showLogin(){regForm.style.display='none';loginForm.style.display='block'}
+async function login(){
+    const res=await fetch('/api/login',{method:'POST',headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({email:email.value,password:password.value})});
+    const data=await res.json();
+    if(data.token){localStorage.setItem('token',data.token);localStorage.setItem('user',JSON.stringify(data.user));location='/'}
+    else alert(data.error);
+}
+async function register(){
+    const res=await fetch('/api/register',{method:'POST',headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({username:regUser.value,email:regEmail.value,password:regPass.value})});
+    const data=await res.json();
+    if(data.msg){alert('تم التسجيل');showLogin()}else alert(data.error);
+}
+</script></body></html>
