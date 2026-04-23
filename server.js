@@ -19,7 +19,7 @@ const storage = multer.diskStorage({
 const upload = multer({ storage });
 app.use('/uploads', express.static('public/uploads'));
 
-mongoose.connect('mongodb+srv://ayham:nfMuSWdCbzn4Zk7A@cluster0.oad1i3x.mongodb.net/sab3?retryWrites=true&w=majority&appName=Cluster0')
+mongoose.connect('mongodb+srv://ayham:ZcgeeHmqNncajhGk@cluster0.oad1i3x.mongodb.net/sab3?retryWrites=true&w=majority&appName=Cluster0')
   .then(() => console.log('Connected to MongoDB'))
   .catch(err => console.error('MongoDB connection error:', err));
 
