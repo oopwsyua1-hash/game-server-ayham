@@ -10,7 +10,6 @@ const app = express();
 app.use(express.json());
 app.use(express.static('public'));
 
-// اعداد رفع الصور
 const storage = multer.diskStorage({
   destination: './public/uploads/',
   filename: (req, file, cb) => {
@@ -20,12 +19,10 @@ const storage = multer.diskStorage({
 const upload = multer({ storage });
 app.use('/uploads', express.static('public/uploads'));
 
-// الاتصال بقاعدة البيانات - حطيتلك رابطك
-mongoose.connect('mongodb+srv://sabonggaming1_db_user:nfMuSWdCbzn4Zk7A@cluster0.iwqejsw.mongodb.net/sab3?retryWrites=true&w=majority&appName=Cluster0')
+mongoose.connect('mongodb+srv://ayham:nfMuSWdCbzn4Zk7A@cluster0.oad1i3x.mongodb.net/sab3?retryWrites=true&w=majority&appName=Cluster0')
   .then(() => console.log('Connected to MongoDB'))
   .catch(err => console.error('MongoDB connection error:', err));
 
-// تسجيل حساب جديد
 app.post('/register', async (req, res) => {
   try {
     const { firstName, lastName, age, birthdate, gender, country, bio, username, email, phone, password } = req.body;
@@ -44,7 +41,6 @@ app.post('/register', async (req, res) => {
   }
 });
 
-// تسجيل الدخول
 app.post('/login', async (req, res) => {
   try {
     const { emailOrPhone, password } = req.body;
