@@ -8,16 +8,11 @@ require('dotenv').config();
 
 const app = express();
 const server = http.createServer(app);
-const io = new Server(server, {
-  cors: { origin: "*", methods: ["GET", "POST"] }
-});
-
+const io = new Server(server, { cors: { origin: "*" } });
 const PORT = process.env.PORT || 10000;
 
 app.use(cors());
 app.use(express.json());
-
-// مهم جداً: هذا السطر بشغل مجلد public والواجهة تبعك
 app.use(express.static('public'));
 
 mongoose.connect(process.env.MONGO_URI)
@@ -35,13 +30,24 @@ const Message = mongoose.model('Message', MessageSchema);
 const RoomSchema = new mongoose.Schema({
   name: { type: String, unique: true },
   createdBy: String,
-  users: [String]
+  users: [String],
+  isVip: { type: Boolean, default: false }
 });
 const Room = mongoose.model('Room', RoomSchema);
 
 app.get('/api/rooms', async (req, res) => {
-  const rooms = await Room.find();
+  const rooms = await Room.find().sort({ isVip: -1 });
   res.json(rooms);
+});
+
+app.post('/api/rooms', async (req, res) => {
+  const room = new Room({
+    name: req.body.name,
+    createdBy: req.body.createdBy,
+    users: []
+  });
+  await room.save();
+  res.json(room);
 });
 
 app.get('/api/messages/:room', async (req, res) => {
@@ -52,17 +58,11 @@ app.get('/api/messages/:room', async (req, res) => {
 let onlineUsers = {};
 
 io.on('connection', (socket) => {
-  console.log('مستخدم جديد:', socket.id);
-
   socket.on('joinRoom', async ({ username, room }) => {
     socket.join(room);
     onlineUsers[socket.id] = { username, room };
 
-    await Room.findOneAndUpdate(
-      { name: room },
-      { $addToSet: { users: username } },
-      { upsert: true }
-    );
+    await Room.findByIdAndUpdate(room, { $addToSet: { users: username } });
 
     const oldMessages = await Message.find({ room }).sort({ time: 1 }).limit(50);
     socket.emit('oldMessages', oldMessages);
@@ -76,12 +76,7 @@ io.on('connection', (socket) => {
   socket.on('chatMessage', async ({ username, room, text }) => {
     const message = new Message({ username, room, text });
     await message.save();
-
-    io.to(room).emit('message', {
-      username,
-      text,
-      time: message.time
-    });
+    io.to(room).emit('message', { username, text, time: message.time });
   });
 
   socket.on('disconnect', () => {
@@ -89,14 +84,12 @@ io.on('connection', (socket) => {
     if (user) {
       socket.to(user.room).emit('userLeft', { username: user.username, text: `${user.username} طلع من الغرفة` });
       delete onlineUsers[socket.id];
-
       const roomUsers = Object.values(onlineUsers).filter(u => u.room === user.room);
       io.to(user.room).emit('roomUsers', roomUsers);
     }
   });
 });
 
-// اي رابط مو موجود روح على index.html
 app.get('*', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
