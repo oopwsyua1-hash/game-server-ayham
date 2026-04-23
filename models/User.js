@@ -14,6 +14,7 @@ const userSchema = new mongoose.Schema({
   password: { type: String, required: true },
   balance: { type: Number, default: 1000 },
   avatar: { type: String, default: '' },
+  cover: { type: String, default: '' },
   createdAt: { type: Date, default: Date.now }
 });
 
