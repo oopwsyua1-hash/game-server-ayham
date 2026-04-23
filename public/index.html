@@ -1,93 +1,51 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>حكي جرايد</title>
-    <style>
-        body { font-family: Arial; background: #1a1a1a; color: white; margin: 0; padding: 20px; }
-        .header { text-align: center; margin-bottom: 20px; }
-        .create-room { background: #4CAF50; color: white; padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer; font-size: 16px; }
-        .room-list { display: grid; gap: 10px; margin-top: 20px; }
-        .room-card { background: #2d2d2d; padding: 15px; border-radius: 8px; cursor: pointer; }
-        .room-card:hover { background: #3d3d3d; }
-        .room-name { font-size: 18px; font-weight: bold; }
-        .room-owner { color: #aaa; font-size: 14px; }
-        .room-users { color: #4CAF50; margin-top: 5px; }
-        .vip-tag { background: gold; color: black; padding: 2px 6px; border-radius: 3px; font-size: 12px; }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>الغرف الصوتية</title>
+  <link rel="manifest" href="/manifest.json">
+  <meta name="theme-color" content="#7c3aed">
+  <style>
+    body { font-family: sans-serif; background: #111; color: #fff; margin: 0; padding: 20px; }
+    .header { display: flex; justify-content: space-between; align-items: center; }
+    .room { background: #1e1e1e; padding: 20px; border-radius: 12px; margin: 10px 0; cursor: pointer; }
+    .room:hover { background: #2a2a2a; }
+    button { padding: 10px 20px; border: none; border-radius: 8px; background: #7c3aed; color: #fff; cursor: pointer; }
+  </style>
 </head>
 <body>
-    <div class="header">
-        <h1>حكي جرايد 👑</h1>
-        <button class="create-room">+ انشاء غرفة جديدة</button>
-    </div>
+  <div class="header">
+    <h2>اهلا <span id="username">...</span></h2>
+    <button onclick="logout()">تسجيل خروج</button>
+  </div>
+  
+  <h3>الغرف المتاحة:</h3>
+  <div class="room" onclick="joinRoom('room1')">غرفة 1</div>
+  <div class="room" onclick="joinRoom('room2')">غرفة 2</div>
+  <div class="room" onclick="joinRoom('room3')">غرفة 3</div>
 
-    <div class="room-list">
-        <p>جاري تحميل الغرف...</p>
-    </div>
-
-<script>
-async function loadRooms() {
-    try {
-        const res = await fetch('/api/rooms');
-        const rooms = await res.json();
-        const roomList = document.querySelector('.room-list');
-        
-        if (rooms.length === 0) {
-            roomList.innerHTML = '<p>لا يوجد غرف. انشئ اول غرفة</p>';
-            return;
-        }
-
-        roomList.innerHTML = '';
-        rooms.forEach((room, index) => {
-            const topClass = index === 0 ? 'top1' : index === 1 ? 'top2' : index === 2 ? 'top3' : '';
-            roomList.innerHTML += `
-            <div class="room-card ${topClass}" onclick="enterRoom('${room._id}')">
-                <div class="room-info">
-                    <div class="room-name">${room.name} 🎉</div>
-                    <div class="room-owner">
-                        <span class="crown">👑</span> ${room.createdBy || 'مجهول'}
-                        ${room.isVip ? '<span class="vip-tag">VIP</span>' : ''}
-                    </div>
-                    <div class="room-users">👤 ${room.users ? room.users.length : 0} متصل</div>
-                </div>
-            </div>`;
-        });
-    } catch (err) {
-        document.querySelector('.room-list').innerHTML = '<p>فشل تحميل الغرف</p>';
+  <script>
+    async function getMe() {
+      const res = await fetch('/me');
+      const data = await res.json();
+      document.getElementById('username').innerText = data.username;
     }
-}
-
-function enterRoom(roomId) {
-    window.location.href = `/room.html?id=${roomId}`;
-}
-
-// شغلها لما تفتح الصفحة
-loadRooms();
-
-// زر انشاء غرفة
-document.querySelector('.create-room').onclick = async () => {
-    const name = prompt('اسم الغرفة:');
-    if (!name) return;
-    const username = prompt('اسمك:') || 'زائر';
     
-    const res = await fetch('/api/rooms', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-            name: name,
-            createdBy: username
-        })
-    });
-    
-    const data = await res.json();
-    if (data._id) {
-        enterRoom(data._id);
-    } else {
-        alert('ما قدرنا نعمل الغرفة');
+    function joinRoom(id) {
+      window.location.href = `/room?id=${id}`;
     }
-};
-</script>
+    
+    function logout() {
+      window.location.href = '/logout';
+    }
+    
+    getMe();
+    
+    // PWA Install
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('/sw.js');
+    }
+  </script>
 </body>
 </html>
