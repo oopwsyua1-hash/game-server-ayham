@@ -1,168 +1,68 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>الغرفة - حكي جرايد</title>
-    <script src="/socket.io/socket.io.js"></script>
-    <style>
-        body { font-family: Arial; background: #0f0f1a; color: white; margin: 0; height: 100vh; display: flex; flex-direction: column; }
-      .header { background: #1a1a2e; padding: 10px; text-align: center; display: flex; justify-content: space-between; align-items: center; }
-      .back-btn { background: #e94560; border: none; padding: 8px 15px; border-radius: 5px; color: white; cursor: pointer; }
-      .mics { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; padding: 15px; background: #16213e; }
-      .mic { background: #0f3460; border: 2px solid #533483; border-radius: 10px; padding: 10px; text-align: center; cursor: pointer; min-height: 60px; }
-      .mic.taken { background: #e94560; border-color: gold; }
-      .mic.speaking { animation: pulse 1s infinite; }
-       @keyframes pulse { 0% { box-shadow: 0 0 rgba(233,69,96,0.7); } 70% { box-shadow: 0 0 0 10px rgba(233,69,96,0); } 100% { box-shadow: 0 0 rgba(233,69,96,0); } }
-      .mic-username { font-size: 12px; margin-top: 5px; }
-      .messages { flex: 1; padding: 10px; overflow-y: auto; background: #1a1a2e; }
-      .message { margin-bottom: 8px; padding: 6px 10px; background: #16213e; border-radius: 8px; }
-      .username { color: #e94560; font-weight: bold; }
-      .system { color: #aaa; text-align: center; font-size: 12px; }
-      .input-area { display: flex; padding: 10px; background: #1a1a2e; gap: 8px; }
-      .input-area input { flex: 1; padding: 10px; border: none; border-radius: 8px; background: #0f3460; color: white; }
-      .input-area button { padding: 10px 15px; border: none; border-radius: 8px; background: #e94560; color: white; }
-      .mic-controls { display: flex; gap: 8px; padding: 10px; background: #1a1a2e; justify-content: center; }
-      .mic-btn { padding: 10px 20px; border: none; border-radius: 8px; cursor: pointer; }
-      .take-mic { background: #4CAF50; color: white; }
-      .leave-mic { background: #f44336; color: white; display: none; }
-      .users { padding: 8px; background: #16213e; font-size: 12px; color: #aaa; }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>الغرفة الصوتية</title>
+  <style>
+    body { font-family: sans-serif; background: #111; color: #fff; margin: 0; padding: 20px; text-align: center; }
+    button { padding: 12px 24px; margin: 10px; border: none; border-radius: 8px; background: #7c3aed; color: #fff; cursor: pointer; font-size: 16px; }
+    .users { margin-top: 20px; }
+  </style>
 </head>
 <body>
-    <div class="header">
-        <h3 id="roomName">...</h3>
-        <button class="back-btn" onclick="window.location.href='/'">رجوع</button>
-    </div>
+  <h2 id="room-name">غرفة صوتية</h2>
+  <button onclick="goBack()">رجوع</button>
+  <button onclick="toggleMic()" id="mic-btn">تشغيل المايك</button>
+  
+  <div class="users">
+    <h3>المتواجدين:</h3>
+    <div id="users-list"></div>
+  </div>
 
-    <div class="mics" id="mics"></div>
-
-    <div class="mic-controls">
-        <button class="mic-btn take-mic" onclick="takeMic()">🎤 اطلع مايك</button>
-        <button class="mic-btn leave-mic" onclick="leaveMic()">انزل من المايك</button>
-    </div>
-
-    <div class="users" id="users">متصل: 0</div>
-    <div class="messages" id="messages"></div>
-
-    <div class="input-area">
-        <input type="text" id="msgInput" placeholder="اكتب رسالتك...">
-        <button onclick="sendMessage()">ارسال</button>
-    </div>
-
-<script>
-const socket = io();
-const urlParams = new URLSearchParams(window.location.search);
-const roomId = urlParams.get('id');
-let username = localStorage.getItem('username') || prompt('ادخل اسمك:');
-localStorage.setItem('username', username);
-let myUserId = '';
-let onMic = false;
-let localStream = null;
-let peerConnections = {};
-
-socket.on('connect', () => { myUserId = socket.id; });
-
-// رسم 8 مايكات
-const micsDiv = document.getElementById('mics');
-for (let i = 1; i <= 8; i++) {
-    micsDiv.innerHTML += `<div class="mic" id="mic-${i}" onclick="clickMic(${i})">
-        <div>🎤 ${i}</div>
-        <div class="mic-username" id="mic-user-${i}">فارغ</div>
-    </div>`;
-}
-
-socket.emit('joinRoom', { username, room: roomId });
-
-socket.on('roomData', (room) => {
-    document.getElementById('roomName').textContent = room.name;
-});
-
-socket.on('updateMics', (mics) => {
-    for (let i = 1; i <= 8; i++) {
-        document.getElementById(`mic-${i}`).className = 'mic';
-        document.getElementById(`mic-user-${i}`).textContent = 'فارغ';
-    }
-    mics.forEach(mic => {
-        const micDiv = document.getElementById(`mic-${mic.seat}`);
-        micDiv.className = 'mic taken';
-        document.getElementById(`mic-user-${mic.seat}`).textContent = mic.username;
-        if (mic.userId === myUserId) {
-            onMic = true;
-            document.querySelector('.take-mic').style.display = 'none';
-            document.querySelector('.leave-mic').style.display = 'block';
-        }
+  <script src="/socket.io/socket.io.js"></script>
+  <script>
+    const socket = io();
+    const roomId = new URLSearchParams(window.location.search).get('id');
+    let myId = null;
+    let micOn = false;
+    
+    document.getElementById('room-name').innerText = `غرفة: ${roomId}`;
+    
+    fetch('/me').then(r => r.json()).then(data => {
+      myId = data.userId;
+      socket.emit('join-room', roomId, data.username);
     });
-});
-
-socket.on('updateUsers', (users) => {
-    document.getElementById('users').textContent = `متصل: ${users.length}`;
-});
-
-socket.on('message', (msg) => addMessage(msg.username, msg.text));
-socket.on('systemMsg', (text) => addSystemMessage(text));
-socket.on('oldMessages', (msgs) => msgs.forEach(m => addMessage(m.username, m.text)));
-
-function takeMic() {
-    const emptySeat = Array.from({length: 8}, (_, i) => i + 1).find(seat =>
-       !document.getElementById(`mic-${seat}`).classList.contains('taken')
-    );
-    if (!emptySeat) return alert('كل المايكات محجوزة');
-    socket.emit('takeMic', { room: roomId, seat: emptySeat });
-    startVoice();
-}
-
-function leaveMic() {
-    socket.emit('leaveMic', { room: roomId });
-    stopVoice();
-    onMic = false;
-    document.querySelector('.take-mic').style.display = 'block';
-    document.querySelector('.leave-mic').style.display = 'none';
-}
-
-async function startVoice() {
-    try {
-        localStream = await navigator.mediaDevices.getUserMedia({ audio: true });
-        // WebRTC للمايكات - باقي الكود طويل بس هاد الاساس
-    } catch (err) {
-        alert('لازم تسمح للمايك');
+    
+    socket.on('user-connected', username => {
+      addUser(username);
+    });
+    
+    socket.on('user-disconnected', username => {
+      removeUser(username);
+    });
+    
+    function addUser(username) {
+      const div = document.createElement('div');
+      div.id = `user-${username}`;
+      div.innerText = username;
+      document.getElementById('users-list').appendChild(div);
     }
-}
-
-function stopVoice() {
-    if (localStream) localStream.getTracks().forEach(track => track.stop());
-}
-
-function clickMic(seat) {
-    // للمدراء: اضغط عشان تنزل حدا
-}
-
-function addMessage(user, text) {
-    const div = document.createElement('div');
-    div.className = 'message';
-    div.innerHTML = `<span class="username">${user}:</span> ${text}`;
-    document.getElementById('messages').appendChild(div);
-    document.getElementById('messages').scrollTop = 999999;
-}
-
-function addSystemMessage(text) {
-    const div = document.createElement('div');
-    div.className = 'system';
-    div.textContent = text;
-    document.getElementById('messages').appendChild(div);
-}
-
-function sendMessage() {
-    const input = document.getElementById('msgInput');
-    const text = input.value.trim();
-    if (!text) return;
-    socket.emit('chatMessage', { username, room: roomId, text });
-    input.value = '';
-}
-
-document.getElementById('msgInput').onkeypress = (e) => {
-    if (e.key === 'Enter') sendMessage();
-};
-</script>
+    
+    function removeUser(username) {
+      const el = document.getElementById(`user-${username}`);
+      if (el) el.remove();
+    }
+    
+    function goBack() {
+      window.location.href = '/';
+    }
+    
+    function toggleMic() {
+      micOn =!micOn;
+      document.getElementById('mic-btn').innerText = micOn? 'ايقاف المايك' : 'تشغيل المايك';
+      // هون بعدين منضيف كود WebRTC للصوت الحقيقي
+    }
+  </script>
 </body>
 </html>
