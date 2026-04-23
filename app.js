@@ -21,8 +21,7 @@ mongoose.connect(process.env.MONGO_URI)
 // القسم 2: جدول المستخدمين Users بكل الحقول الفخمة
 // ==========================================
 const userSchema = new mongoose.Schema({
-  // معلومات التسجيل
-  userId: { type: String, unique: true, required: true }, // ID مميز 6 ارقام
+  userId: { type: String, unique: true, required: true },
   اسم: { type: String, required: true },
   كنية: { type: String, required: true },
   تاريخ_ميلاد: { type: Date, required: true },
@@ -30,22 +29,16 @@ const userSchema = new mongoose.Schema({
   الجنس: { type: String, enum: ['ذكر', 'أنثى'], required: true },
   ايميل: { type: String, unique: true, sparse: true },
   رقم_جوال: { type: String, unique: true, sparse: true },
-
-  // الملف الشخصي
   صورة_البروفايل: { type: String, default: 'https://i.imgur.com/default-avatar.png' },
   صورة_الغلاف: { type: String, default: 'https://i.imgur.com/default-cover.png' },
   السيرة_الذاتية: { type: String, default: 'اهلا فيكم بملفي الشخصي 👑' },
   العنوان: { type: String, default: 'غير محدد' },
   الحالة: { type: String, enum: ['متصل', 'مخفي'], default: 'متصل' },
-
-  // نظام الفخامة
-  المخالب: { type: Number, default: 10 }, // 💎 هدية ترحيبية
-  الهيبة: { type: Number, default: 0 }, // 👑
+  المخالب: { type: Number, default: 10 },
+  الهيبة: { type: Number, default: 0 },
   اللفل: { type: Number, default: 1 },
   اطار_الاسم: { type: String, default: 'عادي' },
   شارة_VIP: { type: Boolean, default: false },
-
-  // الإحصائيات
   تاريخ_التسجيل: { type: Date, default: Date.now },
   اخر_ظهور: { type: Date, default: Date.now },
   عدد_المتابعين: { type: Number, default: 0 },
@@ -64,17 +57,72 @@ const io = new Server(server);
 app.use(express.static(path.join(__dirname, 'public')));
 app.use(express.json());
 
-// الصفحة الرئيسية - مؤقتاً
 app.get('/', (req, res) => {
-  res.send('السيرفر الفخم شغال ✅ جدول Users جاهز بكل الحقول 💎');
+  res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
 // ==========================================
-// القسم 4: Socket للشات بعدين
+// القسم 4: API انشاء الحساب الحقيقي 💎
+// ==========================================
+app.post('/api/register', async (req, res) => {
+  try {
+    const { اسم, كنية, تاريخ_ميلاد, الجنس } = req.body;
+    
+    if (!اسم || !كنية || !تاريخ_ميلاد || !الجنس) {
+      return res.status(400).json({ error: 'عبي كل الحقول يا سبع 👑' });
+    }
+    
+    const birthDate = new Date(تاريخ_ميلاد);
+    const age = new Date().getFullYear() - birthDate.getFullYear();
+    
+    if (age < 13) {
+      return res.status(400).json({ error: 'لازم عمرك فوق 13 سنة 👑' });
+    }
+    
+    let userId;
+    let userExists = true;
+    while (userExists) {
+      userId = Math.floor(100000 + Math.random() * 900000).toString();
+      userExists = await User.findOne({ userId });
+    }
+    
+    const newUser = new User({
+      userId,
+      اسم,
+      كنية,
+      تاريخ_ميلاد: birthDate,
+      العمر: age,
+      الجنس,
+      المخالب: 10,
+      الهيبة: 0,
+    });
+    
+    await newUser.save();
+    
+    console.log(`تم انشاء حساب فخم جديد: ${اسم} ${كنية} | ID: ${userId} | مخالب: 10💎`);
+    
+    res.status(201).json({
+      message: 'مبروك يا سبع! حسابك صار جاهز 👑',
+      user: {
+        userId: newUser.userId,
+        اسم: newUser.اسم,
+        كنية: newUser.كنية,
+        المخالب: newUser.المخالب,
+        الهيبة: newUser.الهيبة
+      }
+    });
+    
+  } catch (err) {
+    console.error('خطأ بالتسجيل:', err);
+    res.status(500).json({ error: 'صار خطأ بالسيرفر. جرب مرة تانية 💎' });
+  }
+});
+
+// ==========================================
+// القسم 5: Socket للشات بعدين
 // ==========================================
 io.on('connection', (socket) => {
   console.log('يوزر جديد شبك, ID:', socket.id);
-  
   socket.on('disconnect', () => {
     console.log('يوزر فصل:', socket.id);
   });
@@ -86,5 +134,5 @@ io.on('connection', (socket) => {
 const PORT = process.env.PORT || 3000;
 server.listen(PORT, () => {
   console.log(`السيرفر طاير على بورت ${PORT} 🚀`);
-  console.log('جدول Users جاهز بكل الحقول: اسم، كنية، صورة، غلاف، مخالب 💎، هيبة 👑');
+  console.log('جدول Users + API التسجيل جاهزين بكل الفخامة 💎👑');
 });
