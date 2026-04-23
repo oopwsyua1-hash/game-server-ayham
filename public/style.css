@@ -170,7 +170,7 @@ textarea {
 @keyframes pulse {
   0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(255, 0, 110, 0.7); }
   50% { transform: scale(1.02); box-shadow: 0 0 0 10px rgba(255, 0, 110, 0); }
-  100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(255, 0, 110, 0); }
+  100% { transform: scale(1); box-shadow: 0 0 rgba(255, 0, 110, 0); }
 }
 
 input[type="date"]::-webkit-calendar-picker-indicator {
@@ -178,7 +178,27 @@ input[type="date"]::-webkit-calendar-picker-indicator {
   cursor: pointer;
 }
 
-input[readonly] {
-  opacity: 0.7;
-  cursor: not-allowed;
+.password-box {
+  position: relative;
+  width: 100%;
+}
+
+.password-box input {
+  padding-left: 45px;
+}
+
+.toggle-password {
+  position: absolute;
+  left: 15px;
+  top: 50%;
+  transform: translateY(-50%);
+  cursor: pointer;
+  font-size: 20px;
+  user-select: none;
+  opacity: 0.6;
+  transition: 0.3s;
+}
+
+.toggle-password:hover {
+  opacity: 1;
 }
