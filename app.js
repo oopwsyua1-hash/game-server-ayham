@@ -1,188 +1,106 @@
 const express = require('express');
+const http = require('http');
+const { Server } = require('socket.io');
 const mongoose = require('mongoose');
+const cors = require('cors');
 const path = require('path');
-const app = express();
+require('dotenv').config();
 
+const app = express();
+const server = http.createServer(app);
+const io = new Server(server, {
+  cors: { origin: "*", methods: ["GET", "POST"] }
+});
+
+const PORT = process.env.PORT || 10000;
+
+app.use(cors());
 app.use(express.json());
+
+// مهم جداً: هذا السطر بشغل مجلد public والواجهة تبعك
 app.use(express.static('public'));
 
-// ===== اتصال قاعدة البيانات =====
-mongoose.connect(process.env.MONGO_URI || 'mongodb://localhost:27017/game', {
-    serverSelectionTimeoutMS: 5000,
-    socketTimeoutMS: 45000
-}).then(() => console.log('MongoDB شغال 👑'))
-  .catch(err => console.log('خطأ MongoDB:', err));
+mongoose.connect(process.env.MONGO_URI)
+.then(() => console.log('MongoDB شغال 👑'))
+.catch(err => console.log('Mongo Error:', err));
 
-mongoose.set('strictQuery', false);
-
-// ===== جدول اليوزر =====
-const userSchema = new mongoose.Schema({
-    username: { type: String, required: true, unique: true },
-    password: { type: String, required: true },
-    userId: { type: String, unique: true },
-    claws: { type: Number, default: 10 },
-    prestige: { type: Number, default: 0 },
-    level: { type: Number, default: 1 },
-    vip: { type: Boolean, default: false },
-    avatar: { type: String, default: 'https://i.imgur.com/default-avatar.png' },
-    cover: { type: String, default: 'https://i.imgur.com/default-cover.png' },
-    bio: { type: String, default: 'اهلا فيكم بملفي الشخصي 👑' },
-    followers: { type: Number, default: 0 },
-    following: { type: Number, default: 0 },
-    createdAt: { type: Date, default: Date.now }
+const MessageSchema = new mongoose.Schema({
+  room: String,
+  username: String,
+  text: String,
+  time: { type: Date, default: Date.now }
 });
-const User = mongoose.model('User', userSchema);
+const Message = mongoose.model('Message', MessageSchema);
 
-// ===== جدول الغرف =====
-const roomSchema = new mongoose.Schema({
-    name: { type: String, required: true },
-    owner: { type: String, required: true },
-    ownerName: { type: String, default: 'السبع الحلبي' },
-    cover: { type: String, default: 'https://i.imgur.com/party-cover.jpg' },
-    isVip: { type: Boolean, default: false },
-    users: [{
-        userId: String,
-        name: String,
-        pic: { type: String, default: 'https://i.imgur.com/default-avatar.png' },
-        onMic: { type: Boolean, default: false },
-        speaking: { type: Boolean, default: false }
-    }],
-    createdAt: { type: Date, default: Date.now }
+const RoomSchema = new mongoose.Schema({
+  name: { type: String, unique: true },
+  createdBy: String,
+  users: [String]
 });
-const Room = mongoose.model('Room', roomSchema);
+const Room = mongoose.model('Room', RoomSchema);
 
-// ===== الصفحة الرئيسية =====
-app.get('/', (req, res) => {
-    res.sendFile(path.join(__dirname, 'public', 'index.html'));
-});
-
-// ===== صفحة الغرفة الصوتية =====
-app.get('/room/:id', (req, res) => {
-    res.sendFile(path.join(__dirname, 'public', 'room.html'));
-});
-
-// ===== صفحة البروفايل =====
-app.get('/profile/:id', (req, res) => {
-    res.sendFile(path.join(__dirname, 'public', 'profile.html'));
-});
-
-// ===== API تسجيل حساب جديد =====
-app.post('/register', async (req, res) => {
-    try {
-        if (mongoose.connection.readyState !== 1) {
-            return res.status(503).json({ error: 'قاعدة البيانات مو شغالة حالياً 💎' });
-        }
-        
-        const { username, password } = req.body;
-        
-        const existingUser = await User.findOne({ username });
-        if (existingUser) {
-            return res.status(400).json({ error: 'اسم المستخدم موجود مسبقاً' });
-        }
-
-        const newUserId = Math.floor(100000 + Math.random() * 900000).toString();
-        
-        const newUser = new User({
-            username,
-            password,
-            userId: newUserId
-        });
-        
-        await newUser.save();
-        res.json({ success: true, userId: newUserId, claws: 10 });
-    } catch (err) {
-        console.log('Register Error:', err);
-        res.status(500).json({ error: 'خطأ بالسيرفر' });
-    }
-});
-
-// ===== API تسجيل دخول =====
-app.post('/login', async (req, res) => {
-    try {
-        if (mongoose.connection.readyState !== 1) {
-            return res.status(503).json({ error: 'قاعدة البيانات مو شغالة حالياً 💎' });
-        }
-        
-        const { username, password } = req.body;
-        const user = await User.findOne({ username, password });
-        
-        if (!user) {
-            return res.status(400).json({ error: 'اسم المستخدم او كلمة المرور غلط' });
-        }
-        
-        res.json({ 
-            success: true, 
-            userId: user.userId,
-            username: user.username,
-            claws: user.claws,
-            avatar: user.avatar
-        });
-    } catch (err) {
-        res.status(500).json({ error: 'خطأ بالسيرفر' });
-    }
-});
-
-// ===== API جلب كل الغرف =====
 app.get('/api/rooms', async (req, res) => {
-    try {
-        if (mongoose.connection.readyState !== 1) {
-            return res.status(503).json({ error: 'قاعدة البيانات مو شغالة حالياً 💎' });
-        }
-        const rooms = await Room.find().sort({ isVip: -1, createdAt: -1 });
-        res.json(rooms);
-    } catch (err) {
-        res.status(500).json({ error: 'خطأ بجلب الغرف' });
-    }
+  const rooms = await Room.find();
+  res.json(rooms);
 });
 
-// ===== API انشاء غرفة جديدة =====
-app.post('/api/rooms', async (req, res) => {
-    try {
-        const { name, ownerId, ownerName, ownerPic } = req.body;
-        
-        const newRoom = new Room({
-            name: name || 'غرفة السبع الحلبي',
-            owner: ownerId || '000000',
-            ownerName: ownerName || 'السبع الحلبي',
-            users: [{ 
-                userId: ownerId || '000000', 
-                name: ownerName || 'السبع الحلبي', 
-                pic: ownerPic || 'https://i.imgur.com/default-avatar.png',
-                onMic: true, 
-                speaking: false 
-            }]
-        });
-        
-        await newRoom.save();
-        res.json({ success: true, roomId: newRoom._id });
-    } catch (err) {
-        console.log('Create Room Error:', err);
-        res.status(500).json({ error: 'ما قدرنا نعمل الغرفة' });
-    }
+app.get('/api/messages/:room', async (req, res) => {
+  const messages = await Message.find({ room: req.params.room }).sort({ time: 1 }).limit(100);
+  res.json(messages);
 });
 
-// ===== API جلب بيانات غرفة وحدة =====
-app.get('/api/room/:id', async (req, res) => {
-    try {
-        const room = await Room.findById(req.params.id);
-        if (!room) return res.status(404).json({ error: 'الغرفة مو موجودة' });
-        res.json(room);
-    } catch (err) {
-        res.status(500).json({ error: 'خطأ بجلب الغرفة' });
+let onlineUsers = {};
+
+io.on('connection', (socket) => {
+  console.log('مستخدم جديد:', socket.id);
+
+  socket.on('joinRoom', async ({ username, room }) => {
+    socket.join(room);
+    onlineUsers[socket.id] = { username, room };
+
+    await Room.findOneAndUpdate(
+      { name: room },
+      { $addToSet: { users: username } },
+      { upsert: true }
+    );
+
+    const oldMessages = await Message.find({ room }).sort({ time: 1 }).limit(50);
+    socket.emit('oldMessages', oldMessages);
+
+    socket.to(room).emit('userJoined', { username, text: `${username} دخل الغرفة` });
+
+    const roomUsers = Object.values(onlineUsers).filter(u => u.room === room);
+    io.to(room).emit('roomUsers', roomUsers);
+  });
+
+  socket.on('chatMessage', async ({ username, room, text }) => {
+    const message = new Message({ username, room, text });
+    await message.save();
+
+    io.to(room).emit('message', {
+      username,
+      text,
+      time: message.time
+    });
+  });
+
+  socket.on('disconnect', () => {
+    const user = onlineUsers[socket.id];
+    if (user) {
+      socket.to(user.room).emit('userLeft', { username: user.username, text: `${user.username} طلع من الغرفة` });
+      delete onlineUsers[socket.id];
+
+      const roomUsers = Object.values(onlineUsers).filter(u => u.room === user.room);
+      io.to(user.room).emit('roomUsers', roomUsers);
     }
+  });
 });
 
-// ===== API جلب بيانات يوزر =====
-app.get('/api/user/:id', async (req, res) => {
-    try {
-        const user = await User.findOne({ userId: req.params.id });
-        if (!user) return res.status(404).json({ error: 'اليوزر مو موجود' });
-        res.json(user);
-    } catch (err) {
-        res.status(500).json({ error: 'خطأ بجلب اليوزر' });
-    }
+// اي رابط مو موجود روح على index.html
+app.get('*', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
-// ===== تشغيل السيرفر =====
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => console.log(`السيرفر شغال على بورت ${PORT} 👑`));
+server.listen(PORT, () => {
+  console.log(`السيرفر شغال على بورت ${PORT} 👑`);
+});
