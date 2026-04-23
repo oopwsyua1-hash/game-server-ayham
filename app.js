@@ -5,8 +5,7 @@ const io = require('socket.io')(http);
 const port = process.env.PORT || 3000;
 
 app.get('/', (req, res) => {
-  res.send(`
-<!DOCTYPE html>
+  res.send(`<!DOCTYPE html>
 <html dir="rtl" lang="ar">
 <head>
   <meta charset="UTF-8">
@@ -25,11 +24,8 @@ app.get('/', (req, res) => {
   </style>
 </head>
 <body>
-
-  <!-- زر البروفايل -->
   <button onclick="showPage('profilePage')" style="position:fixed; top:10px; left:10px; padding:10px; border-radius:50%; background:#2196F3; color:white; border:none; font-size:20px; z-index:999">👤</button>
 
-  <!-- الصفحة الرئيسية -->
   <div id="homePage" class="page">
     <div style="padding:20px; text-align:center">
       <h1>وكالة السبع السوري</h1>
@@ -43,7 +39,6 @@ app.get('/', (req, res) => {
     </div>
   </div>
 
-  <!-- صفحة البروفايل -->
   <div id="profilePage" class="page">
     <div style="padding:20px; max-width:400px; margin:auto">
       <h2>👤 ملف الشخصي</h2>
@@ -68,7 +63,6 @@ app.get('/', (req, res) => {
   <script>
     const socket = io();
     
-    // بيانات اللاعب
     let playerData = JSON.parse(localStorage.getItem('alsabeaPlayer')) || {
       name: 'زائر_' + Math.floor(Math.random() * 1000),
       status: 'لاعب جديد',
@@ -76,14 +70,12 @@ app.get('/', (req, res) => {
       avatar: 'https://cdn-icons-png.flaticon.com/512/3135/3135715.png'
     };
 
-    // عرض صفحة
     function showPage(pageId) {
       document.querySelectorAll('.page').forEach(p => p.style.display = 'none');
       document.getElementById(pageId).style.display = 'block';
       if(pageId === 'profilePage') loadProfile();
     }
 
-    // تحميل البروفايل
     function loadProfile() {
       document.getElementById('playerNameInput').value = playerData.name;
       document.getElementById('playerStatusInput').value = playerData.status;
@@ -93,7 +85,6 @@ app.get('/', (req, res) => {
       document.getElementById('profileAvatar').src = playerData.avatar;
     }
 
-    // حفظ البروفايل
     function saveProfile() {
       playerData.name = document.getElementById('playerNameInput').value || playerData.name;
       playerData.status = document.getElementById('playerStatusInput').value || playerData.status;
@@ -103,7 +94,6 @@ app.get('/', (req, res) => {
       showPage('homePage');
     }
 
-    // رسالة Toast
     function showToast(msg) {
       const toast = document.createElement('div');
       toast.className = 'toast';
@@ -112,36 +102,30 @@ app.get('/', (req, res) => {
       setTimeout(() => toast.remove(), 3000);
     }
 
-    // الجلوس على مقعد
     function sit(seat) {
       socket.emit('sit', { seat: seat, name: playerData.name });
     }
 
-    // لما يتصل السوكيت
     socket.on('connect', () => {
       socket.emit('updatePlayerName', playerData.name);
     });
 
-    // تحديث قائمة اللاعبين
     socket.on('playersUpdate', (players) => {
       const list = document.getElementById('playersList');
       list.innerHTML = '<h3>اللاعبين الحاليين:</h3>';
       players.forEach(p => {
-        list.innerHTML += \`<p>\${p.name} - مقعد \${p.seat}</p>\`;
+        list.innerHTML += '<p>' + p.name + ' - مقعد ' + p.seat + '</p>';
       });
     });
 
-    // رسالة ترحيب
     socket.on('welcome', (msg) => {
       showToast(msg);
     });
   </script>
 </body>
-</html>
-  `);
+</html>`);
 });
 
-// كود السيرفر تبع السوكيت
 let players = [];
 
 io.on('connection', (socket) => {
@@ -152,13 +136,10 @@ io.on('connection', (socket) => {
   });
 
   socket.on('sit', (data) => {
-    // شيل اللاعب من المقعد القديم اذا كان قاعد
     players = players.filter(p => p.id !== socket.id);
-    // ضيفه على المقعد الجديد
     players.push({ id: socket.id, name: data.name, seat: data.seat });
-    // ابعت للكل
     io.emit('playersUpdate', players);
-    socket.emit('welcome', \`طلعت عالمقعد رقم \${data.seat} يا \${data.name}\`);
+    socket.emit('welcome', 'طلعت عالمقعد رقم ' + data.seat + ' يا ' + data.name);
   });
 
   socket.on('disconnect', () => {
@@ -169,5 +150,5 @@ io.on('connection', (socket) => {
 });
 
 http.listen(port, () => {
-  console.log(\`السيرفر شغال على بورت \${port}\`);
+  console.log('السيرفر شغال على بورت ' + port);
 });
