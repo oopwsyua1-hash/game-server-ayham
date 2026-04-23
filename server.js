@@ -12,10 +12,15 @@ app.use(cors());
 app.use(express.json());
 app.use(express.static('public'));
 
-// MongoDB Connection - الرابط محطوط مباشرة هون
+// MongoDB Connection مع error handling
 mongoose.connect('mongodb+srv://ayham:ZcgeeHmqNncajhGk@cluster0.oad1i3x.mongodb.net/sab3?retryWrites=true&w=majority&appName=Cluster0')
-  .then(() => console.log('Connected to MongoDB'))
-  .catch(err => console.error('MongoDB connection error:', err));
+  .then(() => {
+    console.log('Connected to MongoDB ✅');
+  })
+  .catch(err => {
+    console.error('MongoDB connection error:', err.message);
+    process.exit(1); // رح يطفي بس يطبع الخطأ
+  });
 
 // User Schema
 const userSchema = new mongoose.Schema({
@@ -36,11 +41,8 @@ app.get('/', (req, res) => {
 app.post('/api/register', async (req, res) => {
   try {
     const { username, email, password } = req.body;
-    
     const existingUser = await User.findOne({ $or: [{ email }, { username }] });
-    if (existingUser) {
-      return res.status(400).json({ message: 'User already exists' });
-    }
+    if (existingUser) return res.status(400).json({ message: 'User already exists' });
 
     const hashedPassword = await bcrypt.hash(password, 10);
     const user = new User({ username, email, password: hashedPassword });
@@ -57,16 +59,11 @@ app.post('/api/register', async (req, res) => {
 app.post('/api/login', async (req, res) => {
   try {
     const { email, password } = req.body;
-    
     const user = await User.findOne({ email });
-    if (!user) {
-      return res.status(400).json({ message: 'Invalid credentials' });
-    }
+    if (!user) return res.status(400).json({ message: 'Invalid credentials' });
 
     const isMatch = await bcrypt.compare(password, user.password);
-    if (!isMatch) {
-      return res.status(400).json({ message: 'Invalid credentials' });
-    }
+    if (!isMatch) return res.status(400).json({ message: 'Invalid credentials' });
 
     const token = jwt.sign({ userId: user._id }, 'sab3_secret_key_2024');
     res.json({ token, username: user.username });
@@ -75,7 +72,7 @@ app.post('/api/login', async (req, res) => {
   }
 });
 
-// Start server - Render رح يعطي PORT لحاله
+// Start server
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log(`السبع الحلبي شغال على ${PORT}`);
