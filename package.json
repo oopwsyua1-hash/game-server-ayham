@@ -1,16 +1,17 @@
 {
-  "name": "haki-jarayed-server",
+  "name": "bigo-pwa",
   "version": "1.0.0",
-  "main": "app.js",
+  "description": "تطبيق غرف صوتية مع تسجيل دخول",
+  "main": "server.js",
   "scripts": {
-    "start": "node app.js"
+    "start": "node server.js"
   },
   "dependencies": {
     "express": "^4.18.2",
-    "mongoose": "^8.0.3",
-    "cors": "^2.8.5",
     "socket.io": "^4.7.2",
-    "dotenv": "^16.3.1"
+    "@supabase/supabase-js": "^2.39.0",
+    "bcrypt": "^5.1.1",
+    "express-session": "^1.17.3"
   },
   "engines": {
     "node": ">=18.0.0"
