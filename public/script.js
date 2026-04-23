@@ -14,7 +14,6 @@ function login() {
   z.style.right = "0";
 }
 
-// تسجيل الدخول
 document.getElementById('login').addEventListener('submit', async (e) => {
   e.preventDefault();
   const username = document.getElementById('loginUser').value;
@@ -35,7 +34,6 @@ document.getElementById('login').addEventListener('submit', async (e) => {
   }
 });
 
-// انشاء حساب
 document.getElementById('register').addEventListener('submit', async (e) => {
   e.preventDefault();
   
@@ -63,6 +61,6 @@ document.getElementById('register').addEventListener('submit', async (e) => {
   alert(data.message);
   
   if (res.ok) {
-    login(); // رجعه عتسجيل الدخول
+    login();
   }
 });
