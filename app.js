@@ -19,6 +19,17 @@ mongoose.connect(process.env.MONGO_URI)
 .then(() => console.log('MongoDB شغال 👑'))
 .catch(err => console.log('Mongo Error:', err));
 
+const RoomSchema = new mongoose.Schema({
+  name: String,
+  createdBy: String,
+  owner: String,
+  admins: [String],
+  mics: [{ userId: String, username: String, seat: Number }],
+  banned: [String],
+  isVip: { type: Boolean, default: false }
+});
+const Room = mongoose.model('Room', RoomSchema);
+
 const MessageSchema = new mongoose.Schema({
   room: String,
   username: String,
@@ -26,14 +37,6 @@ const MessageSchema = new mongoose.Schema({
   time: { type: Date, default: Date.now }
 });
 const Message = mongoose.model('Message', MessageSchema);
-
-const RoomSchema = new mongoose.Schema({
-  name: { type: String, unique: true },
-  createdBy: String,
-  users: [String],
-  isVip: { type: Boolean, default: false }
-});
-const Room = mongoose.model('Room', RoomSchema);
 
 app.get('/api/rooms', async (req, res) => {
   const rooms = await Room.find().sort({ isVip: -1 });
@@ -44,33 +47,106 @@ app.post('/api/rooms', async (req, res) => {
   const room = new Room({
     name: req.body.name,
     createdBy: req.body.createdBy,
-    users: []
+    owner: req.body.createdBy,
+    admins: [req.body.createdBy],
+    mics: [],
+    banned: []
   });
   await room.save();
   res.json(room);
 });
 
-app.get('/api/messages/:room', async (req, res) => {
-  const messages = await Message.find({ room: req.params.room }).sort({ time: 1 }).limit(100);
-  res.json(messages);
+app.get('/api/room/:id', async (req, res) => {
+  const room = await Room.findById(req.params.id);
+  res.json(room);
 });
 
 let onlineUsers = {};
+let roomStates = {}; // { roomId: { mics: [], users: [] } }
 
 io.on('connection', (socket) => {
+
   socket.on('joinRoom', async ({ username, room }) => {
     socket.join(room);
-    onlineUsers[socket.id] = { username, room };
+    onlineUsers[socket.id] = { username, room, userId: socket.id };
 
-    await Room.findByIdAndUpdate(room, { $addToSet: { users: username } });
+    const roomData = await Room.findById(room);
+    if (roomData.banned.includes(username)) {
+      socket.emit('banned');
+      socket.disconnect();
+      return;
+    }
+
+    if (!roomStates[room]) roomStates[room] = { mics: roomData.mics, users: [] };
+    roomStates[room].users.push({ username, userId: socket.id });
 
     const oldMessages = await Message.find({ room }).sort({ time: 1 }).limit(50);
     socket.emit('oldMessages', oldMessages);
+    socket.emit('roomData', roomData);
+    socket.emit('updateMics', roomStates[room].mics);
 
-    socket.to(room).emit('userJoined', { username, text: `${username} دخل الغرفة` });
+    io.to(room).emit('userJoined', { username, text: `${username} دخل الغرفة` });
+    io.to(room).emit('updateUsers', roomStates[room].users);
+  });
 
-    const roomUsers = Object.values(onlineUsers).filter(u => u.room === room);
-    io.to(room).emit('roomUsers', roomUsers);
+  // طلوع عالمايك
+  socket.on('takeMic', async ({ room, seat }) => {
+    const user = onlineUsers[socket.id];
+    if (!user) return;
+
+    let mics = roomStates[room].mics;
+    if (mics.find(m => m.seat === seat)) return; // الكرسي محجوز
+    if (mics.find(m => m.userId === socket.id)) return; // انت عالمايك اصلا
+
+    mics.push({ userId: socket.id, username: user.username, seat });
+    roomStates[room].mics = mics;
+    await Room.findByIdAndUpdate(room, { mics });
+
+    io.to(room).emit('updateMics', mics);
+    io.to(room).emit('systemMsg', `${user.username} طلع مايك ${seat}`);
+  });
+
+  // نزول من المايك
+  socket.on('leaveMic', async ({ room }) => {
+    const user = onlineUsers[socket.id];
+    let mics = roomStates[room].mics.filter(m => m.userId!== socket.id);
+    roomStates[room].mics = mics;
+    await Room.findByIdAndUpdate(room, { mics });
+
+    io.to(room).emit('updateMics', mics);
+    io.to(room).emit('systemMsg', `${user.username} نزل من المايك`);
+  });
+
+  // تنزيل من المايك - للمدراء
+  socket.on('kickMic', async ({ room, targetUserId }) => {
+    const user = onlineUsers[socket.id];
+    const roomData = await Room.findById(room);
+    if (!roomData.admins.includes(user.username) && roomData.owner!== user.username) return;
+
+    let mics = roomStates[room].mics.filter(m => m.userId!== targetUserId);
+    roomStates[room].mics = mics;
+    await Room.findByIdAndUpdate(room, { mics });
+
+    io.to(room).emit('updateMics', mics);
+    io.to(targetUserId).emit('kickedFromMic');
+  });
+
+  // الصوت اللحظي
+  socket.on('voice', ({ room, blob }) => {
+    const user = onlineUsers[socket.id];
+    if (!roomStates[room].mics.find(m => m.userId === socket.id)) return; // بس اللي عالمايك
+    socket.to(room).emit('voice', { userId: socket.id, username: user.username, blob });
+  });
+
+  // WebRTC Signaling
+  socket.on('offer', ({ room, target, offer }) => {
+    io.to(target).emit('offer', { from: socket.id, offer });
+  });
+  socket.on('answer', ({ room, target, answer }) => {
+    io.to(target).emit('answer', { from: socket.id, answer });
+  });
+  socket.on('ice', ({ room, target, candidate }) => {
+    io.to(target).emit('ice', { from: socket.id, candidate });
   });
 
   socket.on('chatMessage', async ({ username, room, text }) => {
@@ -79,14 +155,21 @@ io.on('connection', (socket) => {
     io.to(room).emit('message', { username, text, time: message.time });
   });
 
-  socket.on('disconnect', () => {
+  socket.on('disconnect', async () => {
     const user = onlineUsers[socket.id];
-    if (user) {
-      socket.to(user.room).emit('userLeft', { username: user.username, text: `${user.username} طلع من الغرفة` });
-      delete onlineUsers[socket.id];
-      const roomUsers = Object.values(onlineUsers).filter(u => u.room === user.room);
-      io.to(user.room).emit('roomUsers', roomUsers);
+    if (!user) return;
+    const room = user.room;
+
+    if (roomStates[room]) {
+      roomStates[room].users = roomStates[room].users.filter(u => u.userId!== socket.id);
+      roomStates[room].mics = roomStates[room].mics.filter(m => m.userId!== socket.id);
+      await Room.findByIdAndUpdate(room, { mics: roomStates[room].mics });
+
+      io.to(room).emit('updateUsers', roomStates[room].users);
+      io.to(room).emit('updateMics', roomStates[room].mics);
+      io.to(room).emit('systemMsg', `${user.username} طلع من الغرفة`);
     }
+    delete onlineUsers[socket.id];
   });
 });
 
