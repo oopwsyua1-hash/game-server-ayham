@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <title>الغرفة - السبع الحلبي</title>
+    <style>
+        body { background: #05030a; color: #fff; font-family: 'Cairo'; margin: 0; }
+       .header { background: #1a0b2e; padding: 15px; display: flex; justify-content: space-between; }
+       .room-name { font-size: 18px; font-weight: 900; color: #ffd700; }
+       .mics {
+            display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px;
+            padding: 20px; margin-top: 20px;
+        }
+       .mic {
+            text-align: center; background: #1a0b2e; padding: 15px; border-radius: 15px;
+            border: 2px solid #333;
+        }
+       .mic.speaking { border: 2px solid #00ff88; box-shadow: 0 0 20px #00ff88; }
+       .mic-pic {
+            width: 60px; height: 60px; border-radius: 50%; margin: 0 auto 8px;
+            background: url('https://i.imgur.com/default-avatar.png') center/cover;
+        }
+       .mic-name { font-size: 13px; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <button onclick="window.location.href='/'">← رجوع</button>
+        <div class="room-name" id="roomName">جاري التحميل...</div>
+        <div>👥 <span id="userCount">0</span></div>
+    </div>
+
+    <div class="mics" id="mics">
+        <!-- 8 مايكات -->
+        <div class="mic"><div class="mic-pic"></div><div class="mic-name">فارغ</div></div>
+        <div class="mic"><div class="mic-pic"></div><div class="mic-name">فارغ</div></div>
+        <div class="mic"><div class="mic-pic"></div><div class="mic-name">فارغ</div></div>
+        <div class="mic"><div class="mic-pic"></div><div class="mic-name">فارغ</div></div>
+        <div class="mic"><div class="mic-pic"></div><div class="mic-name">فارغ</div></div>
+        <div class="mic"><div class="mic-pic"></div><div class="mic-name">فارغ</div></div>
+        <div class="mic"><div class="mic-pic"></div><div class="mic-name">فارغ</div></div>
+        <div class="mic"><div class="mic-pic"></div><div class="mic-name">فارغ</div></div>
+    </div>
+
+<script>
+const roomId = window.location.pathname.split('/')[2];
+
+async function loadRoom() {
+    const res = await fetch(`/api/room/${roomId}`);
+    const room = await res.json();
+    document.getElementById('roomName').textContent = room.name;
+    document.getElementById('userCount').textContent = room.users.length;
+
+    const mics = document.querySelectorAll('.mic');
+    room.users.forEach((user, i) => {
+        if (mics[i]) {
+            mics[i].querySelector('.mic-name').textContent = user.name;
+            if (user.speaking) mics[i].classList.add('speaking');
+        }
+    });
+}
+loadRoom();
+</script>
+</body>
+</html>
