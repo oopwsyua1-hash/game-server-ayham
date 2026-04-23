@@ -52,6 +52,35 @@ io.on('connection', (socket) => {
   })
 })
 
+// ملف manifest.json للتطبيق - كامل للـ APK
+app.get('/manifest.json', (req, res) => {
+  res.json({
+    "name": "وكالة السبع السوري",
+    "short_name": "السبع السوري",
+    "description": "غرف دردشة صوتية وحفلات لايف ومنشورات - Honey Jar العربي",
+    "start_url": "/",
+    "display": "standalone",
+    "background_color": "#0f0f1e",
+    "theme_color": "#ff0080",
+    "orientation": "portrait",
+    "categories": ["social", "entertainment"],
+    "icons": [
+      {
+        "src": "https://i.imgur.com/8QfQZ8z.png",
+        "sizes": "192x192",
+        "type": "image/png",
+        "purpose": "any"
+      },
+      {
+        "src": "https://i.imgur.com/8QfQZ8z.png",
+        "sizes": "512x512",
+        "type": "image/png",
+        "purpose": "any maskable"
+      }
+    ]
+  })
+})
+
 // قسم الغلاف = الصفحة الرئيسية
 app.get('/', (req, res) => {
   res.send(`
@@ -61,6 +90,8 @@ app.get('/', (req, res) => {
       <title>وكالة السبع السوري</title>
       <meta charset="UTF-8">
       <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <link rel="manifest" href="/manifest.json">
+      <meta name="theme-color" content="#ff0080">
       <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
       <style>
         @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap');
@@ -215,6 +246,8 @@ app.get('/posts', (req, res) => {
       <title>المنشورات - السبع السوري</title>
       <meta charset="UTF-8">
       <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <link rel="manifest" href="/manifest.json">
+      <meta name="theme-color" content="#ff0080">
       <style>
         @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap');
         * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -333,9 +366,181 @@ app.get('/posts', (req, res) => {
   `)
 })
 
+// قسم الحفلات
+app.get('/party', (req, res) => {
+  res.send(`
+    <!DOCTYPE html>
+    <html dir="rtl">
+    <head>
+      <title>الحفلات - السبع السوري</title>
+      <meta charset="UTF-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <link rel="manifest" href="/manifest.json">
+      <meta name="theme-color" content="#ff0080">
+      <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+      <style>
+        @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap');
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+          font-family: 'Cairo', sans-serif;
+          background: #0a0a0a; color: #fff; min-height: 100vh; 
+          padding-bottom: 80px; overflow-x: hidden;
+        }
+        .live-header {
+          background: linear-gradient(45deg, #ff0080, #8a2be2);
+          padding: 20px; text-align: center; position: relative;
+        }
+        .live-badge {
+          background: #ff0000; padding: 5px 15px; border-radius: 20px;
+          font-weight: 900; animation: blink 1s infinite;
+        }
+        @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.5} }
+        .host-pic {
+          width: 100px; height: 100px; border-radius: 50%;
+          border: 4px solid #FFD700; box-shadow: 0 0 30px #FFD700;
+          margin: 15px auto;
+        }
+        .title-gold {
+          background: linear-gradient(45deg, #FFD700, #FFA500);
+          -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+          font-size: 1.8rem; font-weight: 900;
+        }
+        .viewers { background: rgba(0,0,0,0.5); padding: 8px 15px; border-radius: 20px; display: inline-block; margin-top: 10px; }
+        .gifts-bar {
+          position: fixed; bottom: 80px; width: 100%; background: rgba(26,26,46,0.95);
+          display: flex; justify-content: space-around; padding: 10px; z-index: 50;
+        }
+        .gift-btn {
+          background: linear-gradient(145deg, #ff0080, #c2006b);
+          border: none; border-radius: 15px; padding: 10px; color: #fff;
+          font-size: 1.5rem; cursor: pointer; min-width: 60px;
+        }
+        .gift-btn:active { transform: scale(0.9); }
+        .chat-box {
+          background: rgba(0,0,0,0.4); margin: 15px; padding: 15px;
+          border-radius: 15px; max-height: 250px; overflow-y: auto;
+        }
+        .msg { margin: 8px 0; text-align: right; }
+        .msg .user { color: #00ff88; font-weight: bold; }
+        .gift-animation {
+          position: fixed; font-size: 3rem; z-index: 100;
+          animation: flyUp 3s ease-out forwards; pointer-events: none;
+        }
+        @keyframes flyUp {
+          0% { bottom: 100px; opacity: 1; transform: translateX(0) scale(1); }
+          100% { bottom: 100vh; opacity: 0; transform: translateX(100px) scale(1.5); }
+        }
+        .bottom-nav {
+          position: fixed; bottom: 0; width: 100%; background: #1a1a2e;
+          display: flex; justify-content: space-around; padding: 12px 0;
+          border-top: 1px solid #333; z-index: 100;
+        }
+        .nav-item { text-align: center; color: #888; font-size: 0.8rem; cursor: pointer; }
+        .nav-item.active { color: #ff0080; }
+        .nav-item .icon { font-size: 1.5rem; display: block; }
+        input {
+          font-family: 'Cairo'; padding: 12px; margin: 5px; border-radius: 10px; border: none;
+          background: #1e293b; color: #fff; width: 70%;
+        }
+        button { background: #ff0080; color: #fff; font-weight: bold; cursor: pointer; border: none; padding: 12px; border-radius: 10px; }
+      </style>
+    </head>
+    <body>
+      <div class="live-header">
+        <div class="live-badge">🔴 LIVE</div>
+        <img src="https://i.pravatar.cc/150?img=32" class="host-pic">
+        <h1 class="title-gold">حفلة السبع السوري</h1>
+        <div class="viewers">👥 <span id="viewerCount">0</span> مشاهد</div>
+      </div>
+
+      <div class="chat-box" id="chatBox">
+        <div class="msg"><span class="user">النظام:</span> أهلاً فيك بحفلة السبع 🔥</div>
+      </div>
+
+      <div style="text-align:center; padding:0 20px;">
+        <input id="msgInput" placeholder="اكتب رسالة..." onkeypress="if(event.key==='Enter')sendMsg()">
+        <button onclick="sendMsg()">ارسال</button>
+      </div>
+
+      <div class="gifts-bar">
+        <button class="gift-btn" onclick="sendGift('🌹', 10)">🌹<br><small>10</small></button>
+        <button class="gift-btn" onclick="sendGift('🚀', 50)">🚀<br><small>50</small></button>
+        <button class="gift-btn" onclick="sendGift('👑', 100)">👑<br><small>100</small></button>
+        <button class="gift-btn" onclick="sendGift('💎', 500)">💎<br><small>500</small></button>
+        <button class="gift-btn" onclick="sendGift('🏆', 1000)">🏆<br><small>1000</small></button>
+      </div>
+
+      <div class="bottom-nav">
+        <div class="nav-item" onclick="location.href='/profile'">
+          <span class="icon">👤</span>ملفي
+        </div>
+        <div class="nav-item" onclick="location.href='/chat'">
+          <span class="icon">💬</span>الدردشة
+        </div>
+        <div class="nav-item" onclick="location.href='/'">
+          <span class="icon">🎤</span>الغرفة
+        </div>
+        <div class="nav-item active">
+          <span class="icon">🎉</span>الحفلات
+        </div>
+        <div class="nav-item" onclick="location.href='/posts'">
+          <span class="icon">🏠</span>المنشورات
+        </div>
+      </div>
+
+      <script>
+        const socket = io();
+        let myUsername = 'زائر_' + Math.floor(Math.random() * 1000);
+        
+        socket.emit('login', myUsername);
+        socket.emit('join_room', 'party');
+
+        socket.on('users_count', (count) => {
+          document.getElementById('viewerCount').innerText = count;
+        });
+
+        function sendMsg() {
+          const msg = document.getElementById('msgInput').value;
+          if(!msg) return;
+          socket.emit('send_message', { room: 'party', message: msg });
+          document.getElementById('msgInput').value = '';
+        }
+
+        function sendGift(emoji, points) {
+          socket.emit('send_message', { 
+            room: 'party', 
+            message: \`أرسل هدية \${emoji} بقيمة \${points} نقطة\` 
+          });
+          showGiftAnimation(emoji);
+        }
+
+        function showGiftAnimation(emoji) {
+          const gift = document.createElement('div');
+          gift.className = 'gift-animation';
+          gift.style.left = Math.random() * 80 + 10 + '%';
+          gift.innerText = emoji;
+          document.body.appendChild(gift);
+          setTimeout(() => gift.remove(), 3000);
+        }
+
+        socket.on('new_message', (data) => {
+          const chatBox = document.getElementById('chatBox');
+          chatBox.innerHTML += \`<div class="msg"><span class="user">\${data.user}:</span> \${data.message}</div>\`;
+          chatBox.scrollTop = chatBox.scrollHeight;
+          
+          if(data.message.includes('هدية')) {
+            const emoji = data.message.match(/🌹|🚀|👑|💎|🏆/);
+            if(emoji) showGiftAnimation(emoji[0]);
+          }
+        });
+      </script>
+    </body>
+    </html>
+  `)
+})
+
 // باقي الأقسام قريباً
 app.get('/chat', (req, res) => res.send('<h1 style="color:white;background:#0f0f1e;padding:50px;text-align:center;font-family:Cairo;">قسم الدردشة - قريباً 💬</h1>'))
-app.get('/party', (req, res) => res.send('<h1 style="color:white;background:#0f0f1e;padding:50px;text-align:center;font-family:Cairo;">قسم الحفلات - قريباً 🎉</h1>'))
 app.get('/profile', (req, res) => res.send('<h1 style="color:white;background:#0f0f1e;padding:50px;text-align:center;font-family:Cairo;">ملف الشخصي - قريباً 👤</h1>'))
 
 app.get('/health', (req, res) => {
