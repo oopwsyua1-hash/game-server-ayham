@@ -20,8 +20,8 @@ const storage = multer.diskStorage({
 const upload = multer({ storage });
 app.use('/uploads', express.static('public/uploads'));
 
-// الاتصال بقاعدة البيانات - لازم تجيب الرابط الصح من MongoDB Atlas
-mongoose.connect('mongodb+srv://sabonggaming1_db_user:nfMuSWdCbzn4Zk7A@cluster0.XXXXXX.mongodb.net/sab3?retryWrites=true&w=majority&appName=Cluster0')
+// الاتصال بقاعدة البيانات - حطيتلك رابطك
+mongoose.connect('mongodb+srv://sabonggaming1_db_user:nfMuSWdCbzn4Zk7A@cluster0.iwqejsw.mongodb.net/sab3?retryWrites=true&w=majority&appName=Cluster0')
   .then(() => console.log('Connected to MongoDB'))
   .catch(err => console.error('MongoDB connection error:', err));
 
@@ -63,6 +63,8 @@ app.post('/login', async (req, res) => {
   } catch (err) {
     res.status(500).json({ message: 'خطأ بالسيرفر', error: err.message });
   }
+});
+
 app.get('/users', async (req, res) => {
   try {
     const users = await User.find().select('-password -email -phone').sort({ createdAt: -1 });
@@ -106,7 +108,6 @@ app.post('/upload/cover', upload.single('cover'), async (req, res) => {
   }
 });
 
-// اهم سطرين - البورت الصح
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log(`السبع الحلبي شغال على ${PORT}`);
