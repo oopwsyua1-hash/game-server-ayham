@@ -5,11 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>السبع الحلبي يرحب بكم</title>
   <style>
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
     body {
       font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
       background: #0f0f1e;
@@ -77,9 +73,7 @@
       font-size: 16px;
       outline: none;
     }
-    input::placeholder {
-      color: #666;
-    }
+    input::placeholder { color: #666; }
     input:focus {
       border-color: #00ffff;
       box-shadow: 0 0 10px rgba(0, 255, 255, 0.5);
@@ -95,24 +89,14 @@
       margin-bottom: 12px;
       transition: transform 0.2s;
     }
-    .btn:hover {
-      transform: translateY(-2px);
-    }
+    .btn:hover { transform: translateY(-2px); }
     .btn-primary {
       background: linear-gradient(135deg, #ff00ff 0%, #9d00ff 100%);
       color: white;
     }
-    .btn-gmail {
-      background: #ff4500;
-      color: white;
-    }
-    .btn-phone {
-      background: #00ff88;
-      color: #0f0f1e;
-    }
-    .password-wrapper {
-      position: relative;
-    }
+    .btn-gmail { background: #ff4500; color: white; }
+    .btn-phone { background: #00ff88; color: #0f0f1e; }
+    .password-wrapper { position: relative; }
     .eye-icon {
       position: absolute;
       left: 15px;
@@ -121,9 +105,7 @@
       cursor: pointer;
       font-size: 20px;
     }
-    .hidden {
-      display: none;
-    }
+    .hidden { display: none; }
   </style>
 </head>
 <body>
@@ -186,21 +168,14 @@
     async function login() {
       const email = document.getElementById('loginEmail').value;
       const password = document.getElementById('loginPassword').value;
-
-      if (!email || !password) {
-        alert('عبي كل الحقول');
-        return;
-      }
-
+      if (!email || !password) return alert('عبي كل الحقول');
       try {
         const response = await fetch(`${API_URL}/api/login`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ email, password })
         });
-
         const data = await response.json();
-
         if (response.ok) {
           localStorage.setItem('token', data.token);
           localStorage.setItem('username', data.username);
@@ -217,26 +192,15 @@
       const username = document.getElementById('regUsername').value;
       const email = document.getElementById('regEmail').value;
       const password = document.getElementById('regPassword').value;
-
-      if (!username || !email || !password) {
-        alert('عبي كل الحقول');
-        return;
-      }
-
-      if (password.length < 6) {
-        alert('كلمة السر قصيرة');
-        return;
-      }
-
+      if (!username || !email || !password) return alert('عبي كل الحقول');
+      if (password.length < 6) return alert('كلمة السر قصيرة');
       try {
         const response = await fetch(`${API_URL}/api/register`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ username, email, password })
         });
-
         const data = await response.json();
-
         if (response.ok) {
           localStorage.setItem('token', data.token);
           localStorage.setItem('username', data.username);
@@ -249,7 +213,7 @@
       }
     }
 
-    // اذا كان مسجل دخول قبل، حوله عالبروفايل دغري
+    // اذا مسجل دخول حوله عالبروفايل
     if (localStorage.getItem('token')) {
       window.location.href = '/profile';
     }
