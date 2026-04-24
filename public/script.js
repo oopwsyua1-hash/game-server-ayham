@@ -1,10 +1,14 @@
-// script.js - نسخة localStorage بدون كوكيز
+const API_URL = 'https://game-server-ayham.onrender.com';
+const msgDiv = document.getElementById('msg');
+
 async function register() {
   const username = document.getElementById('username').value;
   const password = document.getElementById('password').value;
+  
+  msgDiv.innerText = 'جاري انشاء الحساب...';
 
   try {
-    const res = await fetch(`https://game-server-ayham.onrender.com/api/auth/register`, {
+    const res = await fetch(`${API_URL}/api/auth/register`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ username, password })
@@ -13,23 +17,24 @@ async function register() {
     const data = await res.json();
     
     if (res.ok) {
-      localStorage.setItem('token', data.token); // خزن التوكن
-      alert('تم التسجيل بنجاح');
-      window.location.href = '/profile.html';
+      localStorage.setItem('token', data.token);
+      msgDiv.innerText = data.msg + ' ✅';
     } else {
-      alert('خطأ: ' + data.msg);
+      msgDiv.innerText = 'خطأ: ' + data.msg;
     }
   } catch (err) {
-    alert('فشل الطلب: ' + err.message);
+    msgDiv.innerText = 'فشل الاتصال: ' + err.message;
   }
 }
 
 async function login() {
   const username = document.getElementById('username').value;
   const password = document.getElementById('password').value;
+  
+  msgDiv.innerText = 'جاري تسجيل الدخول...';
 
   try {
-    const res = await fetch(`https://game-server-ayham.onrender.com/api/auth/login`, {
+    const res = await fetch(`${API_URL}/api/auth/login`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ username, password })
@@ -38,26 +43,15 @@ async function login() {
     const data = await res.json();
     
     if (res.ok) {
-      localStorage.setItem('token', data.token); // خزن التوكن
-      alert('تم الدخول');
-      window.location.href = '/profile.html';
+      localStorage.setItem('token', data.token);
+      msgDiv.innerText = data.msg + ' ✅';
     } else {
-      alert('خطأ: ' + data.msg);
+      msgDiv.innerText = 'خطأ: ' + data.msg;
     }
   } catch (err) {
-    alert('فشل الطلب: ' + err.message);
+    msgDiv.innerText = 'فشل الاتصال: ' + err.message;
   }
 }
 
-// مثال كيف تجيب بيانات اليوزر بعدين
-async function getMe() {
-  const token = localStorage.getItem('token');
-  const res = await fetch(`https://game-server-ayham.onrender.com/api/auth/me`, {
-    headers: { 'Authorization': `Bearer ${token}` }
-  });
-  const data = await res.json();
-  console.log(data);
-}
-
-document.getElementById('loginBtn')?.addEventListener('click', login);
-document.getElementById('registerBtn')?.addEventListener('click', register);
+document.getElementById('loginBtn').addEventListener('click', login);
+document.getElementById('registerBtn').addEventListener('click', register);
