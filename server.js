@@ -1,77 +1,53 @@
 const express = require('express');
 const mongoose = require('mongoose');
-const jwt = require('jsonwebtoken');
-const bcrypt = require('bcryptjs');
-const path = require('path');
 const cors = require('cors');
+const bcrypt = require('bcryptjs');
+const jwt = require('jsonwebtoken');
+const path = require('path');
+require('dotenv').config();
 
 const app = express();
+const PORT = process.env.PORT || 3000;
+const JWT_SECRET = 'ayham-secret-key-2024';
 
 // Middleware
 app.use(cors());
 app.use(express.json());
-app.get('/me.html', (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'me.html'));
-});
-app.use(express.static('public'));
+app.use(express.static(path.join(__dirname, 'public')));
 
-// اتصال قاعدة البيانات
-mongoose.connect(process.env.MONGO_URI)
-.then(() => console.log('متصل بقاعدة البيانات'))
-.catch(err => console.log('خطأ بقاعدة البيانات:', err));
+// MongoDB Connection
+mongoose.connect(process.env.MONGODB_URI)
+   .then(() => console.log('✅ MongoDB Connected'))
+   .catch(err => console.log('❌ MongoDB Error:', err));
 
-// موديل المستخدم
-const UserSchema = new mongoose.Schema({
+// User Schema
+const userSchema = new mongoose.Schema({
     username: { type: String, required: true },
     lastName: { type: String, required: true },
     email: { type: String, required: true, unique: true },
     password: { type: String, required: true },
     country: { type: String, required: true },
-    birthDate: { type: Date, required: true },
+    birthDate: { type: String, required: true },
     age: { type: Number, required: true },
     gender: { type: String, required: true },
-    followers: { type: Number, default: 0 },
-    following: { type: Number, default: 0 },
-    friends: { type: Number, default: 0 },
-    isLinked: { type: Boolean, default: false },
-    linkedGmail: String,
-    linkedPhone: String,
     createdAt: { type: Date, default: Date.now }
 });
 
-const User = mongoose.model('User', UserSchema);
+const User = mongoose.model('User', userSchema);
 
-// Middleware التحقق من التوكن
-const auth = (req, res, next) => {
-    const token = req.headers.authorization?.split(' ')[1];
-    if (!token) return res.status(401).json({ error: 'غير مصرح' });
-    try {
-        const decoded = jwt.verify(token, process.env.JWT_SECRET);
-        req.userId = decoded.userId;
-        next();
-    } catch {
-        res.status(401).json({ error: 'توكن غير صالح' });
-    }
-};
-
-// ========== API Routes ==========
-
-// تسجيل حساب جديد
+// Register API
 app.post('/api/register', async (req, res) => {
     try {
         const { username, lastName, email, password, country, birthDate, age, gender } = req.body;
 
-        // تحقق اذا المستخدم موجود
-        const existingUser = await User.findOne({ $or: [{ email }, { username }] });
+        const existingUser = await User.findOne({ email });
         if (existingUser) {
-            return res.status(400).json({ error: 'المستخدم او الايميل موجود' });
+            return res.status(400).json({ error: 'الايميل مستخدم من قبل' });
         }
 
-        // تشفير كلمة السر
         const hashedPassword = await bcrypt.hash(password, 10);
 
-        // انشاء مستخدم جديد
-        const user = new User({
+        const newUser = new User({
             username,
             lastName,
             email,
@@ -82,94 +58,67 @@ app.post('/api/register', async (req, res) => {
             gender
         });
 
-        await user.save();
+        await newUser.save();
 
-        // انشاء توكن
-        const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET, { expiresIn: '30d' });
-
-        res.json({
-            token,
-            user: {
-                _id: user._id,
-                username: user.username,
-                lastName: user.lastName,
-                email: user.email
-            }
-        });
+        const token = jwt.sign({ userId: newUser._id }, JWT_SECRET);
+        res.json({ token, user: { username, lastName, email } });
     } catch (error) {
-        console.log(error);
         res.status(500).json({ error: 'خطأ بالسيرفر' });
     }
 });
 
-// تسجيل دخول
+// Login API
 app.post('/api/login', async (req, res) => {
     try {
         const { email, password } = req.body;
 
-        // البحث عن المستخدم
         const user = await User.findOne({ email });
         if (!user) {
-            return res.status(400).json({ error: 'الإيميل او كلمة السر غلط' });
+            return res.status(400).json({ error: 'الايميل او كلمة السر غلط' });
         }
 
-        // تحقق كلمة السر
-        const isPasswordValid = await bcrypt.compare(password, user.password);
-        if (!isPasswordValid) {
-            return res.status(400).json({ error: 'الإيميل او كلمة السر غلط' });
+        const isValidPassword = await bcrypt.compare(password, user.password);
+        if (!isValidPassword) {
+            return res.status(400).json({ error: 'الايميل او كلمة السر غلط' });
         }
 
-        // انشاء توكن
-        const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET, { expiresIn: '30d' });
-
-        res.json({
-            token,
-            user: {
-                _id: user._id,
-                username: user.username,
-                lastName: user.lastName,
-                email: user.email
-            }
-        });
+        const token = jwt.sign({ userId: user._id }, JWT_SECRET);
+        res.json({ token, user: { username: user.username, lastName: user.lastName, email: user.email } });
     } catch (error) {
-        console.log(error);
         res.status(500).json({ error: 'خطأ بالسيرفر' });
     }
 });
 
-// جلب بيانات المستخدم الحالي
-app.get('/api/me', auth, async (req, res) => {
+// Profile API - هاد الجديد عشان البروفايل يشتغل
+app.get('/api/profile', async (req, res) => {
     try {
-        const user = await User.findById(req.userId).select('-password');
-        if (!user) return res.status(404).json({ error: 'المستخدم غير موجود' });
-        res.json(user);
+        const token = req.headers.authorization?.split(' ')[1];
+        if (!token) return res.status(401).json({ error: 'مافي توكن' });
+
+        const decoded = jwt.verify(token, JWT_SECRET);
+        const user = await User.findById(decoded.userId).select('-password');
+
+        if (!user) return res.status(404).json({ error: 'اليوزر مو موجود' });
+
+        res.json({ user });
     } catch (error) {
-        res.status(500).json({ error: 'خطأ بالسيرفر' });
+        res.status(401).json({ error: 'توكن غلط او منتهي' });
     }
 });
 
-// تحديث البروفايل
-app.put('/api/update-profile', auth, async (req, res) => {
-    try {
-        const { username, lastName, country } = req.body;
-        const user = await User.findByIdAndUpdate(
-            req.userId,
-            { username, lastName, country },
-            { new: true }
-        ).select('-password');
-        res.json({ success: true, user });
-    } catch (error) {
-        res.status(500).json({ error: 'خطأ بالسيرفر' });
-    }
-});
-
-// صفحة البداية
-app.get('*', (req, res) => {
+// Routes للصفحات
+app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
-// تشغيل السيرفر
-const PORT = process.env.PORT || 3000;
+app.get('/login', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'login.html'));
+});
+
+app.get('/me', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'me.html'));
+});
+
 app.listen(PORT, () => {
-    console.log(`السيرفر شغال على بورت ${PORT}`);
+    console.log(`🚀 Server running on port ${PORT}`);
 });
