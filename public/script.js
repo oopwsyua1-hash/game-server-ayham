@@ -1,29 +1,26 @@
-// script.js - نسخة كشف الغلط الحقيقي
+// script.js - نسخة localStorage بدون كوكيز
 async function register() {
   const username = document.getElementById('username').value;
   const password = document.getElementById('password').value;
 
   try {
-    // استخدم الرابط الكامل بدل النسبي عشان نلغي مشاكل الموبايل
     const res = await fetch(`https://game-server-ayham.onrender.com/api/auth/register`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      credentials: 'include',
       body: JSON.stringify({ username, password })
     });
 
     const data = await res.json();
     
     if (res.ok) {
+      localStorage.setItem('token', data.token); // خزن التوكن
       alert('تم التسجيل بنجاح');
       window.location.href = '/profile.html';
     } else {
-      alert('رد السيرفر: ' + data.msg); // رح يعطيك الغلط الحقيقي
+      alert('خطأ: ' + data.msg);
     }
   } catch (err) {
-    // هون رح نعرف الغلط الحقيقي
-    console.error('Fetch Error:', err);
-    alert('فشل الطلب. السبب: ' + err.message); 
+    alert('فشل الطلب: ' + err.message);
   }
 }
 
@@ -35,22 +32,31 @@ async function login() {
     const res = await fetch(`https://game-server-ayham.onrender.com/api/auth/login`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      credentials: 'include',
       body: JSON.stringify({ username, password })
     });
 
     const data = await res.json();
     
     if (res.ok) {
+      localStorage.setItem('token', data.token); // خزن التوكن
       alert('تم الدخول');
       window.location.href = '/profile.html';
     } else {
-      alert('رد السيرفر: ' + data.msg);
+      alert('خطأ: ' + data.msg);
     }
   } catch (err) {
-    console.error('Fetch Error:', err);
-    alert('فشل الطلب. السبب: ' + err.message);
+    alert('فشل الطلب: ' + err.message);
   }
+}
+
+// مثال كيف تجيب بيانات اليوزر بعدين
+async function getMe() {
+  const token = localStorage.getItem('token');
+  const res = await fetch(`https://game-server-ayham.onrender.com/api/auth/me`, {
+    headers: { 'Authorization': `Bearer ${token}` }
+  });
+  const data = await res.json();
+  console.log(data);
 }
 
 document.getElementById('loginBtn')?.addEventListener('click', login);
