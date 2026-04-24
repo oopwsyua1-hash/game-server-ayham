@@ -114,11 +114,12 @@
         </div>
     </div>
     <script>
-        // هاي الـ 4 سطور بس اللي ضفتهن لكودك عشان يودي اليوزر على me.html اذا مسجل دخول
+        // ===== التعديل 1: اذا مسجل دخول روح على me.html =====
         const token = localStorage.getItem('token');
         if (token) {
             window.location.href = '/me';
         }
+        // ===== نهاية التعديل 1 =====
 
         function showAlert(msg, title = 'تطبيق السبع') {
             document.getElementById('alertTitle').textContent = title;
@@ -174,7 +175,7 @@
                 if (data.token) {
                     localStorage.setItem('token', data.token);
                     showAlert('تم تسجيل الدخول بنجاح', 'تطبيق السبع');
-                    setTimeout(() => window.location.href = '/me', 1500);
+                    setTimeout(() => window.location.href = '/me', 1500); // التعديل 2
                 } else {
                     showAlert(data.error || 'صار خطأ', 'خطأ');
                 }
@@ -199,7 +200,7 @@
                 if (data.token) {
                     localStorage.setItem('token', data.token);
                     showAlert('تم تسجيل الدخول إلى تطبيق السبع', 'أهلاً وسهلاً');
-                    setTimeout(() => window.location.href = '/me', 1500);
+                    setTimeout(() => window.location.href = '/me', 1500); // التعديل 3
                 } else {
                     showAlert(data.error || 'الإيميل او كلمة السر غلط', 'خطأ');
                 }
