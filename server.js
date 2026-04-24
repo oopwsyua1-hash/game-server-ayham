@@ -16,9 +16,19 @@ app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
 
 // MongoDB Connection
-mongoose.connect(process.env.MONGODB_URI)
-   .then(() => console.log('✅ MongoDB Connected'))
-   .catch(err => console.log('❌ MongoDB Error:', err));
+const mongoURI = process.env.MONGODB_URI;
+
+if (!mongoURI) {
+    console.log('❌ MONGODB_URI مو موجود بالـ Environment Variables');
+    process.exit(1);
+}
+
+mongoose.connect(mongoURI)
+  .then(() => console.log('✅ MongoDB Connected - السيرفر شغال'))
+  .catch(err => {
+       console.log('❌ MongoDB Error:', err.message);
+       process.exit(1);
+   });
 
 // User Schema
 const userSchema = new mongoose.Schema({
@@ -61,8 +71,12 @@ app.post('/api/register', async (req, res) => {
         await newUser.save();
 
         const token = jwt.sign({ userId: newUser._id }, JWT_SECRET);
-        res.json({ token, user: { username, lastName, email } });
+        res.json({
+            token,
+            user: { username, lastName, email, country, age, gender }
+        });
     } catch (error) {
+        console.log(error);
         res.status(500).json({ error: 'خطأ بالسيرفر' });
     }
 });
@@ -83,13 +97,24 @@ app.post('/api/login', async (req, res) => {
         }
 
         const token = jwt.sign({ userId: user._id }, JWT_SECRET);
-        res.json({ token, user: { username: user.username, lastName: user.lastName, email: user.email } });
+        res.json({
+            token,
+            user: {
+                username: user.username,
+                lastName: user.lastName,
+                email: user.email,
+                country: user.country,
+                age: user.age,
+                gender: user.gender
+            }
+        });
     } catch (error) {
+        console.log(error);
         res.status(500).json({ error: 'خطأ بالسيرفر' });
     }
 });
 
-// Profile API - هاد الجديد عشان البروفايل يشتغل
+// Profile API - هاد عشان يجيب بيانات اليوزر بصفحة me.html
 app.get('/api/profile', async (req, res) => {
     try {
         const token = req.headers.authorization?.split(' ')[1];
