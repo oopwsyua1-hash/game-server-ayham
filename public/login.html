@@ -1,27 +1,165 @@
 <!DOCTYPE html>
-<html lang="ar" dir="rtl">
+<html dir="rtl" lang="ar">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>تسجيل الدخول</title>
-  <style>
-    body { font-family: sans-serif; background: #1a1a1a; color: white; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
-    .box { background: #2a2a2a; padding: 30px; border-radius: 10px; width: 300px; }
-    input { width: 100%; padding: 10px; margin: 10px 0; border: none; border-radius: 5px; background: #333; color: white; box-sizing: border-box; }
-    button { width: 100%; padding: 10px; margin: 5px 0; border: none; border-radius: 5px; background: #5865F2; color: white; cursor: pointer; }
-    #msg { margin-top: 15px; text-align: center; min-height: 20px; }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CYBER CARDS - تسجيل الدخول</title>
+    <style>
+        body { 
+            font-family: 'Segoe UI', Tahoma; 
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); 
+            margin: 0; 
+            padding: 0; 
+            display: flex; 
+            justify-content: center; 
+            align-items: center; 
+            min-height: 100vh;
+        }
+        .container { 
+            background: rgba(0,0,0,0.7); 
+            padding: 30px; 
+            border-radius: 15px; 
+            width: 90%; 
+            max-width: 400px;
+            backdrop-filter: blur(10px);
+        }
+        h1 { color: #fff; text-align: center; margin-bottom: 30px; }
+        input { 
+            width: 100%; 
+            padding: 12px; 
+            margin: 10px 0; 
+            border: none; 
+            border-radius: 8px; 
+            background: rgba(255,255,255,0.1); 
+            color: #fff; 
+            box-sizing: border-box;
+        }
+        input::placeholder { color: #ccc; }
+        button { 
+            width: 100%; 
+            padding: 12px; 
+            margin: 10px 0; 
+            border: none; 
+            border-radius: 8px; 
+            background: #5B63F5; 
+            color: #fff; 
+            font-size: 16px; 
+            cursor: pointer;
+        }
+        button:hover { background: #4a52d4; }
+        .error { color: #ff6b6b; text-align: center; margin: 10px 0; }
+        .success { color: #51cf66; text-align: center; margin: 10px 0; }
+        .switch { color: #ccc; text-align: center; margin-top: 15px; cursor: pointer; }
+    </style>
 </head>
 <body>
-  <div class="box">
-    <h2>تسجيل الدخول</h2>
-    <input type="text" id="username" placeholder="اسم المستخدم">
-    <input type="password" id="password" placeholder="كلمة المرور">
-    <button id="loginBtn">دخول</button>
-    <button id="registerBtn">انشاء حساب</button>
-    <div id="msg"></div>
-  </div>
+    <div class="container">
+        <h1 id="formTitle">تسجيل الدخول</h1>
+        <div id="message"></div>
+        
+        <!-- فورم تسجيل الدخول -->
+        <div id="loginForm">
+            <input type="email" id="loginEmail" placeholder="الايميل">
+            <input type="password" id="loginPassword" placeholder="كلمة المرور">
+            <button onclick="login()">دخول</button>
+            <div class="switch" onclick="showRegister()">ما عندك حساب؟ انشاء حساب</div>
+        </div>
 
-  <script src="script.js"></script>
+        <!-- فورم التسجيل -->
+        <div id="registerForm" style="display:none">
+            <input type="text" id="regUsername" placeholder="اسم المستخدم">
+            <input type="text" id="regLastName" placeholder="الكنية">
+            <input type="email" id="regEmail" placeholder="الايميل">
+            <input type="password" id="regPassword" placeholder="كلمة المرور">
+            <input type="text" id="regCountry" placeholder="الدولة">
+            <input type="date" id="regBirthDate" placeholder="تاريخ الميلاد">
+            <select id="regGender" style="width:100%;padding:12px;margin:10px 0;border:none;border-radius:8px;background:rgba(255,255,255,0.1);color:#fff">
+                <option value="">الجنس</option>
+                <option value="ذكر">ذكر</option>
+                <option value="أنثى">أنثى</option>
+            </select>
+            <button onclick="register()">انشاء حساب</button>
+            <div class="switch" onclick="showLogin()">عندك حساب؟ تسجيل دخول</div>
+        </div>
+    </div>
+
+<script>
+function showRegister() {
+    document.getElementById('loginForm').style.display = 'none';
+    document.getElementById('registerForm').style.display = 'block';
+    document.getElementById('formTitle').innerText = 'انشاء حساب';
+    document.getElementById('message').innerText = '';
+}
+
+function showLogin() {
+    document.getElementById('registerForm').style.display = 'none';
+    document.getElementById('loginForm').style.display = 'block';
+    document.getElementById('formTitle').innerText = 'تسجيل الدخول';
+    document.getElementById('message').innerText = '';
+}
+
+async function login() {
+    const email = document.getElementById('loginEmail').value;
+    const password = document.getElementById('loginPassword').value;
+    const msg = document.getElementById('message');
+    
+    try {
+        const res = await fetch('/api/login', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email, password })
+        });
+        const data = await res.json();
+        
+        if (data.success) {
+            localStorage.setItem('token', data.token);
+            msg.className = 'success';
+            msg.innerText = data.msg;
+            setTimeout(() => window.location.href = '/me', 1000);
+        } else {
+            msg.className = 'error';
+            msg.innerText = data.error;
+        }
+    } catch (error) {
+        msg.className = 'error';
+        msg.innerText = 'فشل الاتصال بالسيرفر';
+    }
+}
+
+async function register() {
+    const msg = document.getElementById('message');
+    const body = {
+        username: document.getElementById('regUsername').value,
+        lastName: document.getElementById('regLastName').value,
+        email: document.getElementById('regEmail').value,
+        password: document.getElementById('regPassword').value,
+        country: document.getElementById('regCountry').value,
+        birthDate: document.getElementById('regBirthDate').value,
+        gender: document.getElementById('regGender').value
+    };
+    
+    try {
+        const res = await fetch('/api/register', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(body)
+        });
+        const data = await res.json();
+        
+        if (data.success) {
+            localStorage.setItem('token', data.token);
+            msg.className = 'success';
+            msg.innerText = data.msg;
+            setTimeout(() => window.location.href = '/me', 1000);
+        } else {
+            msg.className = 'error';
+            msg.innerText = data.error;
+        }
+    } catch (error) {
+        msg.className = 'error';
+        msg.innerText = 'فشل الاتصال بالسيرفر';
+    }
+}
+</script>
 </body>
 </html>
