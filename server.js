@@ -9,6 +9,9 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
+// جديد - خلي السيرفر يقرأ من مجلد public
+app.use(express.static(path.join(__dirname, 'public')));
+
 mongoose.connect(process.env.MONGO_URL).then(() => {
     console.log('Connected to MongoDB ✅');
 }).catch(err => {
@@ -63,8 +66,9 @@ app.post('/api/login', async (req, res) => {
     }
 });
 
+// جديد - صار يقرأ index.html من مجلد public
 app.get('/', (req, res) => {
-    res.sendFile(path.join(__dirname, 'index.html'));
+    res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
 const PORT = process.env.PORT || 10000;
