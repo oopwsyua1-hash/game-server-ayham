@@ -8,50 +8,42 @@
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #0a0a14; color: #fff; min-height: 100vh; overflow-x: hidden; }
         
-        /* شاشة الترحيب المتحركة */
         #welcomeScreen {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: #000; display: flex; flex-direction: column; justify-content: center; align-items: center;
-            z-index: 9999; animation: fadeOut 1s ease-in-out 6s forwards; overflow: hidden;
-        }
-        
-        /* فيديو المرقص بالخلفية */
-        #welcomeScreen::before {
-            content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-            background: url('https://media.giphy.com/media/l0MYt5jPR6QX5pnqM/giphy.gif') center/cover;
-            filter: brightness(0.4) blur(2px); z-index: -1;
+            background: radial-gradient(circle, #1a0a2e, #0a0a14);
+            display: flex; flex-direction: column; justify-content: center; align-items: center;
+            z-index: 9999; animation: fadeOut 1s ease-in-out 5s forwards; overflow: hidden;
         }
         
         .welcome-text {
             font-size: 42px; font-weight: bold; text-align: center;
             background: linear-gradient(90deg, #ff00ff, #00ffff, #ff00ff);
             background-size: 200% 200%; -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-            animation: gradientMove 2s ease infinite, scaleIn 1s ease; margin-bottom: 30px;
+            animation: gradientMove 2s ease infinite, scaleIn 1s ease; margin-bottom: 40px;
             text-shadow: 0 0 30px rgba(255, 0, 255, 1), 0 0 60px rgba(0, 255, 255, 0.8);
             padding: 0 20px; z-index: 2;
         }
         
         .dancers { 
-            display: flex; gap: 30px; align-items: center; justify-content: center;
+            display: flex; gap: 40px; align-items: center; justify-content: center;
             width: 100%; height: 350px; z-index: 2;
         }
         .dancer {
-            width: 200px; height: 300px; object-fit: cover; border-radius: 15px;
+            width: 180px; height: 320px; object-fit: cover; border-radius: 20px;
             border: 3px solid #ff00ff;
-            animation: dance 1.2s ease-in-out infinite alternate;
-            box-shadow: 0 0 30px rgba(255, 0, 255, 0.8);
+            animation: dance 1s ease-in-out infinite alternate;
+            box-shadow: 0 0 40px rgba(255, 0, 255, 0.9), 0 0 80px rgba(0, 255, 255, 0.5);
         }
         .dancer-boy { animation-delay: 0s; }
-        .dancer-girl { animation-delay: 0.6s; }
+        .dancer-girl { animation-delay: 0.5s; }
         @keyframes dance { 
             0% { transform: translateY(0) rotate(-3deg) scale(1); } 
-            100% { transform: translateY(-15px) rotate(3deg) scale(1.05); } 
+            100% { transform: translateY(-20px) rotate(3deg) scale(1.05); } 
         }
         @keyframes gradientMove { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
         @keyframes scaleIn { 0% { transform: scale(0); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
         @keyframes fadeOut { to { opacity: 0; visibility: hidden; } }
         
-        /* التنبيه الخاص */
         #customAlert {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(0,0,0,0.8); display: none; justify-content: center; align-items: center; z-index: 10000;
@@ -69,8 +61,7 @@
         }
         @keyframes popIn { 0% { transform: scale(0.5); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
         
-        /* الفورم الأساسي */
-        .container { max-width: 450px; margin: 0 auto; padding: 20px; opacity: 0; animation: fadeIn 1s ease 6.5s forwards; }
+        .container { max-width: 450px; margin: 0 auto; padding: 20px; opacity: 0; animation: fadeIn 1s ease 5.5s forwards; }
         @keyframes fadeIn { to { opacity: 1; } }
         .logo { text-align: center; font-size: 32px; font-weight: bold; margin: 20px 0; background: linear-gradient(90deg, #ff00ff, #00ffff); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
         .form-box { background: #141428; border: 2px solid #ff00ff; border-radius: 15px; padding: 25px; box-shadow: 0 0 20px rgba(255, 0, 255, 0.3); }
@@ -88,18 +79,16 @@
     </style>
 </head>
 <body>
-    <!-- شاشة الترحيب -->
     <div id="welcomeScreen">
         <div class="welcome-text">اسم السبع الحلبي يرحب بكم</div>
         <div class="dancers">
-            <!-- بنت بترقص بالمرقص -->
-            <img src="https://media.giphy.com/media/3oKIPtjElfqwMOTbH2/giphy.gif" class="dancer dancer-girl" alt="بنت ترقص">
-            <!-- شب بيرقص بالمرقص -->
-            <img src="https://media.giphy.com/media/l0HlvtIPzP04IoV8Y/giphy.gif" class="dancer dancer-boy" alt="شب يرقص">
+            <!-- بنت بترقص - رابط شغال -->
+            <img src="https://i.imgur.com/8zW7F4v.gif" class="dancer dancer-girl" alt="بنت ترقص">
+            <!-- شب بيرقص - رابط شغال -->
+            <img src="https://i.imgur.com/J5qj7xK.gif" class="dancer dancer-boy" alt="شب يرقص">
         </div>
     </div>
 
-    <!-- التنبيه الخاص -->
     <div id="customAlert">
         <div class="alert-box">
             <h3 id="alertTitle">تطبيق السبع</h3>
@@ -108,7 +97,6 @@
         </div>
     </div>
 
-    <!-- الفورم الأساسي -->
     <div class="container">
         <div class="logo">CYBER CARDS</div>
         <div class="form-box">
