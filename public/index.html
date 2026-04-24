@@ -7,9 +7,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700;800&display=swap');
-        
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        
         body { 
             font-family: 'Tajawal', sans-serif; 
             background: #0a0a14; 
@@ -19,7 +17,6 @@
                 radial-gradient(circle at 20% 50%, rgba(255, 0, 255, 0.15) 0%, transparent 50%),
                 radial-gradient(circle at 80% 80%, rgba(0, 255, 255, 0.15) 0%, transparent 50%);
         }
-
         #welcomeScreen {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: #000; display: flex; flex-direction: column; justify-content: center; align-items: center;
@@ -44,7 +41,6 @@
         @keyframes gradientMove { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
         @keyframes scaleIn { 0% { transform: scale(0); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
         @keyframes fadeOut { to { opacity: 0; visibility: hidden; } }
-
         #customAlert {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(0,0,0,0.85); backdrop-filter: blur(10px);
@@ -64,10 +60,8 @@
         }
        .alert-box button:hover { transform: translateY(-2px); box-shadow: 0 8px 30px rgba(255, 0, 255, 0.6); }
         @keyframes popIn { 0% { transform: scale(0.5); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
-
         .container { max-width: 480px; margin: 0 auto; padding: 20px; opacity: 0; animation: fadeIn 1s ease 6.5s forwards; }
         @keyframes fadeIn { to { opacity: 1; } }
-        
        .logo { 
             text-align: center; font-size: 36px; font-weight: 800; margin: 25px 0; 
             background: linear-gradient(90deg, #ff00ff, #00ffff); 
@@ -75,7 +69,6 @@
             filter: drop-shadow(0 0 20px rgba(255, 0, 255, 0.8));
             letter-spacing: 2px;
         }
-        
        .form-box { 
             background: rgba(20, 20, 40, 0.6); 
             backdrop-filter: blur(20px);
@@ -84,7 +77,6 @@
             padding: 30px; 
             box-shadow: 0 8px 32px rgba(255, 0, 255, 0.3), inset 0 0 20px rgba(255, 0, 255, 0.05);
         }
-        
         input, select { 
             width: 100%; padding: 14px 18px; margin: 10px 0; 
             border: 2px solid rgba(255, 0, 255, 0.3); 
@@ -100,7 +92,6 @@
         }
         input:read-only { background: rgba(26, 26, 46, 0.6); cursor: not-allowed; opacity: 0.7; }
         label { color: #ff00ff; font-size: 13px; display: block; margin-top: 12px; margin-bottom: -5px; font-weight: 500; }
-        
         button { 
             width: 100%; padding: 15px; margin-top: 18px; 
             background: linear-gradient(135deg, #ff00ff, #9d00ff); 
@@ -116,17 +107,13 @@
             box-shadow: 0 5px 20px rgba(0, 255, 255, 0.4);
         }
         .btn-secondary:hover { box-shadow: 0 8px 30px rgba(0, 255, 255, 0.7); }
-        
        .switch { text-align: center; margin-top: 18px; color: #aaa; font-size: 14px; }
        .switch span { color: #00ffff; cursor: pointer; font-weight: 700; transition: 0.3s; }
        .switch span:hover { text-shadow: 0 0 10px rgba(0, 255, 255, 0.8); }
         h2 { color: #ff00ff; text-align: center; margin-bottom: 25px; font-size: 26px; font-weight: 800; }
-        
         .page { display: none; animation: slideIn 0.4s ease; }
         .page.active { display: block; }
         @keyframes slideIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
-        
-        /* صفحة أنا - تصميم فخم */
         .me-card {
             background: rgba(20, 20, 40, 0.6);
             backdrop-filter: blur(20px);
@@ -136,7 +123,6 @@
             box-shadow: 0 8px 32px rgba(255, 0, 255, 0.3), inset 0 0 20px rgba(255, 0, 255, 0.05);
             margin-bottom: 20px;
         }
-        
         .profile-header { display: flex; align-items: center; gap: 18px; margin-bottom: 25px; }
         .avatar-small { 
             width: 75px; height: 75px; border-radius: 50%; 
@@ -148,14 +134,12 @@
             animation: pulse 2s ease-in-out infinite;
         }
         @keyframes pulse { 0%, 100% { box-shadow: 0 0 25px rgba(255, 0, 255, 0.6); } 50% { box-shadow: 0 0 35px rgba(255, 0, 255, 0.9); } }
-        
         .profile-info h3 { color: #00ffff; font-size: 22px; margin-bottom: 6px; font-weight: 700; }
         .profile-info p { color: #aaa; font-size: 13px; }
         .profile-info .vip-badge {
             display: inline-block; background: linear-gradient(135deg, #ff00ff, #ff0066);
             padding: 2px 10px; border-radius: 8px; font-size: 11px; font-weight: 700; margin-right: 8px;
         }
-        
         .arrow-btn {
             margin-right: auto; font-size: 28px; cursor: pointer; 
             color: #ff00ff; transition: 0.3s;
@@ -163,7 +147,6 @@
             border-radius: 12px; background: rgba(255, 0, 255, 0.1);
         }
         .arrow-btn:hover { background: rgba(255, 0, 255, 0.2); transform: translateX(-5px); }
-        
         .stats-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin: 25px 0; }
         .stat-item { 
             background: rgba(26, 26, 46, 0.8); 
@@ -181,7 +164,6 @@
             text-shadow: 0 0 15px rgba(0, 255, 255, 0.8);
         }
         .stat-label { color: #aaa; font-size: 12px; margin-top: 6px; font-weight: 500; }
-        
         .menu-list { 
             background: rgba(26, 26, 46, 0.6); 
             backdrop-filter: blur(20px);
@@ -210,8 +192,6 @@
             font-size: 11px; font-weight: 700;
             box-shadow: 0 0 10px rgba(255, 0, 255, 0.6);
         }
-
-        /* الملف الشخصي الكامل */
         .full-profile-card {
             background: rgba(20, 20, 40, 0.6);
             backdrop-filter: blur(20px);
@@ -231,7 +211,6 @@
             content: ''; position: absolute; bottom: 0; left: 0; width: 100%; height: 60px;
             background: linear-gradient(to top, rgba(20, 20, 40, 1), transparent);
         }
-        
         .profile-full { padding: 0 25px 25px; margin-top: -50px; position: relative; }
         .avatar-big { 
             width: 110px; height: 110px; border-radius: 50%; 
@@ -248,7 +227,6 @@
             text-shadow: 0 0 20px rgba(0, 255, 255, 0.6);
         }
         .profile-id { text-align: center; color: #aaa; font-size: 14px; margin-bottom: 25px; }
-        
         .info-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin: 20px 0; }
         .info-box { 
             background: rgba(26, 26, 46, 0.8); 
@@ -275,7 +253,6 @@
             <source src="https://assets.mixkit.co/videos/8713/8713-720.mp4" type="video/mp4">
         </video>
     </div>
-
     <div id="customAlert">
         <div class="alert-box">
             <h3 id="alertTitle">تطبيق السبع</h3>
@@ -283,11 +260,8 @@
             <button onclick="closeAlert()">حسناً</button>
         </div>
     </div>
-
     <div class="container">
         <div class="logo">CYBER CARDS</div>
-        
-        <!-- صفحة تسجيل الدخول -->
         <div id="loginPage" class="page form-box">
             <h2>تسجيل الدخول</h2>
             <input type="email" id="loginEmail" placeholder="الإيميل">
@@ -295,8 +269,6 @@
             <button onclick="login()">دخول</button>
             <div class="switch">ما عندك حساب؟ <span onclick="showPage('registerPage')">انشاء حساب</span></div>
         </div>
-
-        <!-- صفحة انشاء حساب -->
         <div id="registerPage" class="page form-box">
             <h2>انشاء حساب</h2>
             <input type="text" id="regUsername" placeholder="اسم المستخدم">
@@ -339,8 +311,6 @@
             <button onclick="register()">انشاء حساب</button>
             <div class="switch">عندك حساب؟ <span onclick="showPage('loginPage')">تسجيل دخول</span></div>
         </div>
-
-        <!-- صفحة "أنا" -->
         <div id="mePage" class="page">
             <div class="me-card">
                 <div class="profile-header">
@@ -353,7 +323,6 @@
                         <i class="fa-solid fa-chevron-left"></i>
                     </div>
                 </div>
-
                 <div class="stats-grid">
                     <div class="stat-item">
                         <div class="stat-value" id="meFollowers">0</div>
@@ -369,7 +338,6 @@
                     </div>
                 </div>
             </div>
-
             <div class="menu-list">
                 <div class="menu-item" onclick="showAlert('قريباً', 'المحفظة')">
                     <div class="menu-item-left">
@@ -425,8 +393,6 @@
                 </div>
             </div>
         </div>
-
-        <!-- الملف الشخصي الكامل -->
         <div id="fullProfilePage" class="page">
             <div class="full-profile-card">
                 <div class="cover"></div>
@@ -434,7 +400,6 @@
                     <div class="avatar-big" id="fullAvatar">S</div>
                     <div class="profile-name" id="fullName">-</div>
                     <div class="profile-id">ID: <span id="fullId">-</span></div>
-                    
                     <div class="info-grid">
                         <div class="info-box">
                             <div class="info-box-value" id="fullAge">-</div>
@@ -453,15 +418,12 @@
                             <div class="info-box-label">المستوى</div>
                         </div>
                     </div>
-                    
                     <button class="btn-secondary" onclick="showPage('mePage')">
                         <i class="fa-solid fa-arrow-right"></i> رجوع
                     </button>
                 </div>
             </div>
         </div>
-
-        <!-- تعديل البروفايل -->
         <div id="editProfilePage" class="page form-box">
             <h2>تعديل البروفايل</h2>
             <input type="text" id="editUsername" placeholder="اسم المستخدم">
@@ -494,8 +456,6 @@
             </button>
             <button class="btn-secondary" onclick="showPage('mePage')">الغاء</button>
         </div>
-
-        <!-- ربط الحساب -->
         <div id="linkAccountPage" class="page form-box">
             <h2>ربط الحساب</h2>
             <p style="color: #aaa; text-align: center; margin-bottom: 25px; line-height: 1.6;">اربط حسابك لحمايته من الضياع واسترداده بسهولة</p>
@@ -508,7 +468,6 @@
             <button class="btn-secondary" onclick="showPage('mePage')">رجوع</button>
         </div>
     </div>
-
     <script>
         const API_URL = window.location.origin;
         let currentUser = null;
@@ -566,7 +525,7 @@
                 const data = await res.json();
                 if (data.token) {
                     localStorage.setItem('token', data.token);
-                    showAlert('تم تسجيل الدخول بنجاح', 'تطبيق السبع');
+                    showAlert('تم انشاء الحساب بنجاح', 'تطبيق السبع');
                     setTimeout(() => loadProfile(), 1000);
                 } else if (data.error === 'المستخدم او الايميل موجود') {
                     const loginRes = await fetch(`${API_URL}/api/login`, { 
@@ -591,16 +550,4 @@
         async function login() {
             const email = document.getElementById('loginEmail').value.trim();
             const password = document.getElementById('loginPassword').value;
-            if (!email ||!password) { showAlert('عبي الإيميل وكلمة السر', 'تنبيه'); return; }
-            try {
-                const res = await fetch(`${API_URL}/api/login`, { 
-                    method: 'POST', 
-                    headers: { 'Content-Type': 'application/json' }, 
-                    body: JSON.stringify({ email, password }) 
-                });
-                const data = await res.json();
-                if (data.token) {
-                    localStorage.setItem('token', data.token);
-                    showAlert('تم تسجيل الدخول إلى تطبيق السبع', 'أهلاً وسهلاً');
-                    setTimeout(() => loadProfile(), 1000);
-                } else { showAlert(data.error
+            if (!email ||!password)
