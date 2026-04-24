@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>مركز الوكالة</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Tajawal', sans-serif; }
+    body { background: #0d0d0d; color: #fff; }
+ .header { background: #1a1a1a; padding: 15px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid #333; }
+ .back { color: #ff2d55; text-decoration: none; font-size: 20px; }
+ .room-header { padding: 20px; text-align: center; background: #1a1a1a; }
+ .room-img { width: 100px; height: 100px; border-radius: 15px; object-fit: cover; margin-bottom: 10px; }
+ .room-name { font-size: 22px; margin-bottom: 5px; }
+ .room-id { font-size: 14px; color: #aaa; margin-bottom: 15px; }
+ .stats { display: flex; justify-content: center; gap: 30px; margin-bottom: 15px; }
+ .stat { text-align: center; }
+ .stat-num { font-size: 18px; font-weight: bold; }
+ .stat-label { font-size: 12px; color: #aaa; }
+ .actions { display: flex; gap: 10px; justify-content: center; }
+ .btn { padding: 10px 20px; border: none; border-radius: 8px; cursor: pointer; font-size: 14px; }
+ .btn-primary { background: #ff2d55; color: #fff; }
+ .btn-secondary { background: #333; color: #fff; }
+ .container { padding: 15px; }
+ .section { background: #1a1a1a; border-radius: 10px; padding: 15px; margin-bottom: 15px; }
+ .section-title { font-size: 16px; margin-bottom: 15px; color: #ff2d55; }
+ .member { display: flex; align-items: center; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #333; }
+ .member:last-child { border-bottom: none; }
+ .member-info { display: flex; align-items: center; gap: 10px; }
+ .member img { width: 40px; height: 40px; border-radius: 50%; }
+ .member-name { font-size: 15px; }
+ .member-role { font-size: 12px; color: #aaa; }
+ .member-actions { display: flex; gap: 5px; }
+ .btn-small { padding: 5px 10px; font-size: 12px; border-radius: 5px; border: none; cursor: pointer; }
+ .btn-danger { background: #e74c3c; color: #fff; }
+ .btn-warning { background: #f39c12; color: #fff; }
+ .setting-item { display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid #333; }
+ .setting-item:last-child { border-bottom: none; }
+ .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 999; align-items: center; justify-content: center; }
+ .modal.active { display: flex; }
+ .modal-box { background: #1a1a1a; width: 90%; max-width: 400px; border-radius: 15px; padding: 20px; }
+ .modal-box input { width: 100%; padding: 12px; background: #0d0d0d; border: 1px solid #333; border-radius: 8px; color: #fff; margin-bottom: 10px; }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <a href="/edit-profile" class="back">←</a>
+    <h2>مركز الوكالة</h2>
+    <div></div>
+  </div>
+
+  <div id="agencyContent">
+    <!-- يتعبي بالجافاسكربت -->
+  </div>
+
+  <div class="modal" id="editRoomModal">
+    <div class="modal-box">
+      <h3 id="editRoomTitle">تعديل</h3>
+      <input type="text" id="editRoomValue" placeholder="">
+      <div style="display:flex;gap:10px;margin-top:15px">
+        <button class="btn btn-secondary" style="flex:1" onclick="closeEditModal()">إلغاء</button>
+        <button class="btn btn-primary" style="flex:1" onclick="saveRoomEdit()">حفظ</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const token = localStorage.getItem('token');
+    let agencyData = {};
+    let myRole = '';
+    let currentEditField = '';
+
+    if (!token) window.location.href = '/';
+
+    async function loadAgency() {
+      const res = await fetch('/api/agency/my', { headers: { 'Authorization': 'Bearer ' + token } });
+      if (!res.ok) {
+        document.getElementById('agencyContent').innerHTML = '<div style="text-align:center;padding:50px">لست عضو في وكالة</div>';
+        return;
+      }
+      const data = await res.json();
+      agencyData = data.agency;
+      myRole = data.role;
+      renderAgency();
+    }
+
+    function renderAgency() {
+      const isOwner = myRole === 'owner';
+      const isAdmin = myRole === 'admin' || isOwner;
+
+      document.getElementById('agencyContent').innerHTML = `
+        <div class="room-header">
+          <img class="room-img" src="${agencyData.roomImage}" onerror="this.src='https://i.ibb.co/3pPYj6V/agency-default.png'">
+          <div class="room-name">${agencyData.name}</div>
+          <div class="room-id">ID: ${agencyData.agencyId}</div>
+          <div class="stats">
+            <div class="stat">
+              <div class="stat-num">${agencyData.members.length}</div>
+              <div class="stat-label">الأعضاء</div>
+            </div>
+            <div class="stat">
+              <div class="stat-num">${agencyData.followers.length}</div>
+              <div class="stat-label">المتابعين</div>
+            </div>
+          </div>
+          <div class="actions">
+            <button class="btn btn-primary" onclick="followAgency()">متابعة الغرفة</button>
+            <button class="btn btn-secondary" onclick="leaveAgency()">ماي ايدي / خروج</button>
+          </div>
+        </div>
+
+        <div class="container">
+          ${isAdmin? `
+          <div class="section">
+            <div class="section-title">إدارة الوكالة</div>
+            <div class="setting-item">
+              <span>تغيير اسم الغرفة</span>
+              <button class="btn-small btn-primary" onclick="openEditRoom('name')">تعديل</button>
+            </div>
+            <div class="setting-item">
+              <span>تغيير صورة الغرفة</span>
+              <button class="btn-small btn-primary" onclick="openEditRoom('roomImage')">تعديل</button>
+            </div>
+            <div class="setting-item">
+              <span>دخول الغرفة</span>
+              <button class="btn-small btn-primary" onclick="enterRoom()">دخول</button>
+            </div>
+          </div>
+          ` : ''}
+
+          <div class="section">
+            <div class="section-title">أعضاء الوكالة</div>
+            ${agencyData.members.map(m => `
+              <div class="member">
+                <div class="member-info">
+                  <img src="${m.user.avatar}" onerror="this.src='https://i.ibb.co/3pPYj6V/default-avatar.png'">
+                  <div>
+                    <div class="member-name">${m.user.username}</div>
+                    <div class="member-role">${m.role === 'owner'? 'مالك' : m.role === 'admin'? 'مشرف' : 'عضو'} • ID: ${m.user.userId}</div>
+                  </div>
+                </div>
+                ${isAdmin && m.user._id!== agencyData.owner? `
+                <div class="member-actions">
+                  ${m.role === 'member'? `<button class="btn-small btn-warning" onclick="promoteMember('${m.user._id}')">ترقية</button>` : ''}
+                  <button class="btn-small btn-danger" onclick="kickMember('${m.user._id}')">طرد</button>
+                </div>
+                ` : ''}
+              </div>
+            `).join('')}
+          </div>
+        </div>
+      `;
+    }
+
+    function openEditRoom(field) {
+      currentEditField = field;
+      document.getElementById('editRoomTitle').innerText = field === 'name'? 'تغيير اسم الغرفة' : 'تغيير صورة الغرفة';
+      document.getElementById('editRoomValue').value = agencyData[field];
+      document.getElementById('editRoomValue').placeholder = field === 'name'? 'اسم الغرفة الجديد' : 'رابط الصورة الجديد';
+      document.getElementById('editRoomModal').classList.add('active');
+    }
+
+    function closeEditModal() {
+      document.getElementById('editRoomModal').classList.remove('active');
+    }
+
+    async function saveRoomEdit() {
+      const value = document.getElementById('editRoomValue').value;
+      await fetch('/api/agency/update', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+        body: JSON.stringify({ [currentEditField]: value })
+      });
+      closeEditModal();
+      loadAgency();
+    }
+
+    async function kickMember(userId) {
+      if (!confirm('متأكد تبي تطرد العضو؟')) return;
+      await fetch('/api/agency/kick', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+        body: JSON.stringify({ userId })
+      });
+      loadAgency();
+    }
+
+    async function promoteMember(userId) {
+      await fetch('/api/agency/promote', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+        body: JSON.stringify({ userId })
+      });
+      loadAgency();
+    }
+
+    async function followAgency() {
+      await fetch('/api/agency/follow', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token }
+      });
+      alert('تمت المتابعة');
+      loadAgency();
+    }
+
+    async function leaveAgency() {
+      if (!confirm('متأكد تبي تطلع من الوكالة؟')) return;
+      await fetch('/api/agency/leave', {
+        method: 'POST',
+        headers: { 'Authorization': 'Bearer ' + token }
+      });
+      window.location.href = '/edit-profile';
+    }
+
+    function enterRoom() {
+      alert('دخلت الغرفة: ' + agencyData.name);
+    }
+
+    loadAgency();
+  </script>
+</body>
+</html>
