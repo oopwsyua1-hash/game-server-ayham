@@ -1,91 +1,87 @@
 const express = require('express');
 const mongoose = require('mongoose');
 const bcrypt = require('bcryptjs');
-const jwt = require('jsonwebtoken');
 const cors = require('cors');
 const path = require('path');
 
 const app = express();
 
-// اهم سطر عشان الموبايل يشتغل
+// 1. اطبع كل طلب بيجي عالسيرفر
+app.use((req, res, next) => {
+  console.log(`[${new Date().toISOString()}] ${req.method} ${req.url}`);
+  console.log('Headers:', req.headers);
+  console.log('Body:', req.body);
+  next();
+});
+
 app.use(cors());
 app.use(express.json());
 app.use(express.static('public'));
 
-// اتصال قاعدة البيانات
+// 2. اتصال قاعدة البيانات مع طباعة الغلط
 mongoose.connect(process.env.MONGO_URI)
-  .then(() => console.log('✅ MongoDB Connected'))
-  .catch(err => console.log('MongoDB Error:', err));
+  .then(() => console.log('✅ MongoDB Connected Successfully'))
+  .catch(err => console.error('❌ MongoDB Error:', err.message));
 
-// موديل المستخدم
 const User = mongoose.model('User', new mongoose.Schema({
   username: { type: String, required: true, unique: true },
   password: { type: String, required: true }
 }));
 
-// Middleware للتحقق من التوكن
-const auth = (req, res, next) => {
-  const token = req.header('Authorization')?.replace('Bearer ', '');
-  if (!token) return res.status(401).json({ msg: 'No token' });
-  
-  try {
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    req.user = decoded.user;
-    next();
-  } catch (err) {
-    res.status(401).json({ msg: 'Token invalid' });
-  }
-};
+// 3. راوت تيست عشان نشوف اذا السيرفر صاحي
+app.get('/test', (req, res) => {
+  console.log('Test route hit');
+  res.json({ msg: 'السيرفر شغال 100%', time: new Date() });
+});
 
-// تسجيل حساب جديد
+// 4. تسجيل حساب مع طباعة كل الغلط
 app.post('/api/auth/register', async (req, res) => {
+  console.log('=== Register Request Started ===');
   try {
     const { username, password } = req.body;
-    if (!username || !password) return res.status(400).json({ msg: 'عبي كل الحقول' });
+    console.log('Username:', username, 'Password Length:', password?.length);
     
-    if (await User.findOne({ username })) return res.status(400).json({ msg: 'اسم المستخدم موجود' });
+    if (!username || !password) {
+      console.log('Error: Missing fields');
+      return res.status(400).json({ msg: 'عبي كل الحقول', error: 'missing_fields' });
+    }
+    
+    const existingUser = await User.findOne({ username });
+    console.log('Existing user check:', existingUser ? 'Found' : 'Not found');
+    
+    if (existingUser) {
+      return res.status(400).json({ msg: 'اسم المستخدم موجود', error: 'user_exists' });
+    }
 
     const hashedPassword = await bcrypt.hash(password, 10);
+    console.log('Password hashed');
+    
     const user = new User({ username, password: hashedPassword });
     await user.save();
-
-    const token = jwt.sign({ user: { id: user.id } }, process.env.JWT_SECRET, { expiresIn: '30d' });
-    res.json({ token, msg: 'تم التسجيل بنجاح' });
+    console.log('User saved to DB:', user._id);
+    
+    res.json({ msg: 'تم التسجيل بنجاح', userId: user._id });
+    console.log('=== Register Success ===');
+    
   } catch (err) {
-    res.status(500).json({ msg: 'خطأ سيرفر: ' + err.message });
+    console.error('❌ REGISTER CRASH:', err.message);
+    console.error('Full Error:', err);
+    res.status(500).json({ 
+      msg: 'غلط سيرفر', 
+      error: err.message, // هاد اهم شي - رح يبين بالمتصفح
+      stack: err.stack 
+    });
   }
 });
 
-// تسجيل دخول
-app.post('/api/auth/login', async (req, res) => {
-  try {
-    const { username, password } = req.body;
-    const user = await User.findOne({ username });
-    if (!user) return res.status(400).json({ msg: 'بيانات الدخول غلط' });
-
-    const isMatch = await bcrypt.compare(password, user.password);
-    if (!isMatch) return res.status(400).json({ msg: 'بيانات الدخول غلط' });
-
-    const token = jwt.sign({ user: { id: user.id } }, process.env.JWT_SECRET, { expiresIn: '30d' });
-    res.json({ token, msg: 'تم الدخول بنجاح' });
-  } catch (err) {
-    res.status(500).json({ msg: 'خطأ سيرفر: ' + err.message });
-  }
-});
-
-// جلب بيانات المستخدم
-app.get('/api/auth/me', auth, async (req, res) => {
-  try {
-    const user = await User.findById(req.user.id).select('-password');
-    res.json(user);
-  } catch (err) {
-    res.status(500).json({ msg: 'خطأ سيرفر' });
-  }
-});
-
-// الصفحة الرئيسية
 app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'login.html'));
+});
+
+// 5. امسك اي غلط تاني ما توقعناه
+app.use((err, req, res, next) => {
+  console.error('❌ UNHANDLED ERROR:', err);
+  res.status(500).json({ msg: 'غلط غير متوقع', error: err.message });
 });
 
 const PORT = process.env.PORT || 10000;
