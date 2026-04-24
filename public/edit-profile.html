@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>تعديل الملف الشخصي</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Tajawal', sans-serif; }
+    body { background: #0d0d0d; color: #fff; }
+ .header { background: #1a1a1a; padding: 15px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid #333; }
+ .header h2 { font-size: 18px; }
+ .back { color: #ff2d55; text-decoration: none; font-size: 20px; }
+ .container { padding: 15px; padding-bottom: 80px; }
+ .item { background: #1a1a1a; margin-bottom: 10px; padding: 15px; border-radius: 10px; display: flex; justify-content: space-between; align-items: center; }
+ .item-left { display: flex; align-items: center; gap: 10px; flex: 1; }
+ .item img { width: 50px; height: 50px; border-radius: 50%; object-fit: cover; }
+ .item-title { font-size: 14px; color: #aaa; }
+ .item-value { font-size: 16px; margin-top: 3px; word-break: break-word; }
+ .edit-btn { color: #ff2d55; font-size: 14px; cursor: pointer; white-space: nowrap; }
+ .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 999; align-items: center; justify-content: center; }
+ .modal.active { display: flex; }
+ .modal-box { background: #1a1a1a; width: 90%; max-width: 400px; border-radius: 15px; padding: 20px; }
+ .modal-box h3 { margin-bottom: 15px; text-align: center; }
+ .modal-box input,.modal-box select { width: 100%; padding: 12px; background: #0d0d0d; border: 1px solid #333; border-radius: 8px; color: #fff; margin-bottom: 10px; }
+ .modal-actions { display: flex; gap: 10px; margin-top: 15px; }
+ .modal-actions button { flex: 1; padding: 12px; border: none; border-radius: 8px; font-size: 16px; cursor: pointer; }
+ .btn-cancel { background: #333; color: #fff; }
+ .btn-save { background: #ff2d55; color: #fff; }
+ .agency-option { background: #0d0d0d; padding: 20px; border-radius: 10px; margin-bottom: 10px; cursor: pointer; border: 2px solid transparent; text-align: center; }
+ .agency-option:hover { border-color: #ff2d55; }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <a href="/me" class="back">←</a>
+    <h2>تعديل الملف الشخصي</h2>
+    <div></div>
+  </div>
+  <div class="container" id="profileList"></div>
+
+  <div class="modal" id="editModal">
+    <div class="modal-box">
+      <h3 id="modalTitle">تعديل</h3>
+      <div id="modalContent"></div>
+      <div class="modal-actions">
+        <button class="btn-cancel" onclick="closeModal()">إلغاء</button>
+        <button class="btn-save" onclick="saveEdit()">حفظ</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal" id="agencyModal">
+    <div class="modal-box">
+      <h3>مركز الوكالة</h3>
+      <div class="agency-option" onclick="joinAgency()">
+        <h4>انضم إلى وكالة</h4>
+        <p>ادخل ID الوكالة للانضمام</p>
+      </div>
+      <div class="agency-option" onclick="createAgency()">
+        <h4>إنشاء وكالة جديدة</h4>
+        <p>أنشئ وكالتك الخاصة</p>
+      </div>
+      <button class="btn-cancel" style="width:100%;margin-top:10px" onclick="closeAgencyModal()">إغلاق</button>
+    </div>
+  </div>
+
+  <script>
+    let userData = {};
+    let currentEditField = '';
+    const token = localStorage.getItem('token');
+    if (!token) window.location.href = '/';
+
+    async function loadProfile() {
+      const res = await fetch('/api/user/me', { headers: { 'Authorization': 'Bearer ' + token } });
+      userData = await res.json();
+      renderProfile();
+    }
+
+    function renderProfile() {
+      const items = [
+        { title: 'الصورة الشخصية', value: '', img: userData.avatar, field: 'avatar' },
+        { title: 'الاسم', value: userData.username, field: 'username' },
+        { title: 'النبذة', value: userData.bio || 'لم تكتب نبذة', field: 'bio' },
+        { title: 'البريد الإلكتروني', value: userData.email || 'أضف بريد جديد', field: 'email' },
+        { title: 'رقم التواصل', value: userData.phone || 'أضف رقم', field: 'phone' },
+        { title: 'الجنس', value: userData.gender || 'لم يحدد', field: 'gender' },
+        { title: 'تاريخ الميلاد', value: userData.birthDate || 'لم يحدد', field: 'birthDate' },
+        { title: 'مركز الوكالة', value: userData.agency? 'عرض الوكالة' : 'انضم أو أنشئ وكالة', field: 'agency' }
+      ];
+      document.getElementById('profileList').innerHTML = items.map(item => `
+        <div class="item">
+          <div class="item-left">
+            ${item.img? `<img src="${item.img}">` : ''}
+            <div>
+              <div class="item-title">${item.title}</div>
+              <div class="item-value">${item.value}</div>
+            </div>
+          </div>
+          <div class="edit-btn" onclick="openEdit('${item.field}')">تعديل</div>
+        </div>
+      `).join('');
+    }
+
+    function openEdit(field) {
+      currentEditField = field;
+      if (field === 'agency') {
+        if (userData.agency) window.location.href = '/agency';
+        else document.getElementById('agencyModal').classList.add('active');
+        return;
+      }
+      const titles = { avatar: 'تغيير الصورة', username: 'تغيير الاسم', bio: 'تعديل النبذة', email: 'إضافة بريد جديد', phone: 'تعديل رقم التواصل', gender: 'اختيار الجنس', birthDate: 'تعديل تاريخ الميلاد' };
+      let content = '';
+      if (field === 'gender') {
+        content = `<select id="editValue"><option value="ذكر">ذكر</option><option value="أنثى">أنثى</option></select>`;
+      } else if (field === 'birthDate') {
+        content = `<input type="date" id="editValue" value="${userData.birthDate || ''}">`;
+      } else {
+        content = `<input type="text" id="editValue" value="${userData[field] || ''}" placeholder="${titles[field]}">`;
+      }
+      document.getElementById('modalTitle').innerText = titles[field];
+      document.getElementById('modalContent').innerHTML = content;
+      document.getElementById('editModal').classList.add('active');
+    }
+
+    function closeModal() { document.getElementById('editModal').classList.remove('active'); }
+    function closeAgencyModal() { document.getElementById('agencyModal').classList.remove('active'); }
+
+    async function saveEdit() {
+      const value = document.getElementById('editValue').value;
+      await fetch('/api/user/update', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+        body: JSON.stringify({ [currentEditField]: value })
+      });
+      closeModal();
+      loadProfile();
+    }
+
+    async function createAgency() {
+      const name = prompt('ادخل اسم الوكالة:');
+      if (!name) return;
+      const res = await fetch('/api/agency/create', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+        body: JSON.stringify({ name })
+      });
+      if (res.ok) window.location.href = '/agency';
+    }
+
+    async function joinAgency() {
+      const agencyId = prompt('ادخل ID الوكالة:');
+      if (!agencyId) return;
+      const res = await fetch('/api/agency/join', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+        body: JSON.stringify({ agencyId })
+      });
+      if (res.ok) window.location.href = '/agency';
+      else alert('فشل الانضمام');
+    }
+
+    loadProfile();
+  </script>
+</body>
+</html>
