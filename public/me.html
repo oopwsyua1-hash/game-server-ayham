@@ -3,125 +3,42 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>تسجيل الدخول - تطبيق السبع</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <title>الملف الشخصي</title>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700;800&display=swap');
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { 
-            font-family: 'Tajawal', sans-serif; 
-            background: #0a0a14; 
-            color: #fff; 
-            min-height: 100vh;
-            background-image: 
-                radial-gradient(circle at 20% 50%, rgba(255, 0, 255, 0.15) 0%, transparent 50%),
-                radial-gradient(circle at 80% 80%, rgba(0, 255, 255, 0.15) 0%, transparent 50%);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        .container { max-width: 420px; width: 100%; padding: 20px; }
-        .logo { 
-            text-align: center; font-size: 36px; font-weight: 800; margin-bottom: 30px; 
-            background: linear-gradient(90deg, #ff00ff, #00ffff); 
-            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-            filter: drop-shadow(0 0 20px rgba(255, 0, 255, 0.8));
-            letter-spacing: 2px;
-        }
-        .form-box { 
-            background: rgba(20, 20, 40, 0.6); 
-            backdrop-filter: blur(20px);
-            border: 2px solid rgba(255, 0, 255, 0.5); 
-            border-radius: 25px; 
-            padding: 35px; 
-            box-shadow: 0 8px 32px rgba(255, 0, 255, 0.3), inset 0 0 20px rgba(255, 0, 255, 0.05);
-            animation: slideIn 0.4s ease;
-        }
-        @keyframes slideIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
-        h2 { color: #ff00ff; text-align: center; margin-bottom: 25px; font-size: 26px; font-weight: 800; }
-        input { 
-            width: 100%; padding: 14px 18px; margin: 10px 0; 
-            border: 2px solid rgba(255, 0, 255, 0.3); 
-            border-radius: 12px; 
-            background: rgba(15, 15, 30, 0.8); 
-            color: white; font-size: 15px; outline: none; 
-            transition: 0.3s; font-family: 'Tajawal', sans-serif;
-        }
-        input:focus { 
-            border-color: #00ffff; 
-            box-shadow: 0 0 20px rgba(0, 255, 255, 0.4), inset 0 0 10px rgba(0, 255, 255, 0.1);
-            background: rgba(15, 15, 30, 1);
-        }
-        button { 
-            width: 100%; padding: 15px; margin-top: 18px; 
-            background: linear-gradient(135deg, #ff00ff, #9d00ff); 
-            border: none; border-radius: 14px; color: white; font-size: 17px; 
-            font-weight: 700; cursor: pointer; transition: 0.3s;
-            box-shadow: 0 5px 20px rgba(255, 0, 255, 0.4);
-            font-family: 'Tajawal', sans-serif;
-        }
-        button:hover { transform: translateY(-3px); box-shadow: 0 8px 30px rgba(255, 0, 255, 0.7); }
-        .link { 
-            color: #00ffff; text-align: center; margin-top: 20px; cursor: pointer; 
-            font-size: 14px; transition: 0.3s; font-weight: 500;
-        }
-        .link:hover { color: #ff00ff; text-shadow: 0 0 10px rgba(255, 0, 255, 0.6); }
+        body { font-family: 'Segoe UI', Tahoma, sans-serif; background: #0a0a14; color: #fff; padding: 20px; text-align: center; }
+        .profile-box { background: #141428; border: 2px solid #ff00ff; border-radius: 15px; padding: 30px; max-width: 400px; margin: 50px auto; }
+        h1 { color: #ff00ff; }
+        button { padding: 12px 30px; background: linear-gradient(90deg, #ff00ff, #9d00ff); border: none; border-radius: 8px; color: white; font-size: 16px; font-weight: bold; cursor: pointer; margin-top: 20px; }
     </style>
 </head>
 <body>
-    <div class="container">
-        <div class="logo">CYBER CARDS</div>
-        <div class="form-box">
-            <h2>تسجيل الدخول</h2>
-            <input type="email" id="loginEmail" placeholder="البريد الالكتروني">
-            <input type="password" id="loginPassword" placeholder="كلمة السر">
-            <button onclick="login()">
-                <i class="fa-solid fa-right-to-bracket"></i> دخول
-            </button>
-            <div class="link" onclick="window.location.href='/register.html'">
-                ما عندك حساب؟ انشئ حساب جديد
-            </div>
-        </div>
+    <div class="profile-box">
+        <h1>اهلاً <span id="userName">...</span> 👋</h1>
+        <p>نورت تطبيق السبع الحلبي</p>
+        <button onclick="logout()">تسجيل خروج</button>
     </div>
 
     <script>
-        const API_URL = window.location.origin;
-
-        async function login() {
-            const email = document.getElementById('loginEmail').value.trim();
-            const password = document.getElementById('loginPassword').value;
-            
-            if (!email || !password) {
-                alert('عبي الايميل والباسوورد');
-                return;
-            }
-            
-            try {
-                const res = await fetch(`${API_URL}/api/login`, { 
-                    method: 'POST', 
-                    headers: { 'Content-Type': 'application/json' }, 
-                    body: JSON.stringify({ email, password }) 
-                });
-                
-                const data = await res.json();
-                
-                if (data.token) {
-                    localStorage.setItem('token', data.token);
-                    window.location.href = '/me.html';
-                } else { 
-                    alert(data.error || 'خطأ بالتسجيل'); 
-                }
-            } catch (error) {
-                alert('خطأ بالاتصال بالسيرفر');
-            }
+        const token = localStorage.getItem('token');
+        if (!token) {
+            window.location.href = '/';
         }
 
-        // اذا مسجل دخول اصلاً حوله عالبروفايل
-        window.onload = () => {
-            const token = localStorage.getItem('token');
-            if (token) {
-                window.location.href = '/me.html';
-            }
+        fetch('/api/profile', {
+            headers: { 'Authorization': 'Bearer ' + token }
+        })
+        .then(res => res.json())
+        .then(data => {
+            document.getElementById('userName').textContent = data.user.username;
+        })
+        .catch(() => {
+            localStorage.removeItem('token');
+            window.location.href = '/';
+        });
+
+        function logout() {
+            localStorage.removeItem('token');
+            window.location.href = '/';
         }
     </script>
 </body>
