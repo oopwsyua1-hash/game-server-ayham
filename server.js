@@ -1,231 +1,224 @@
+require('dotenv').config();
 const express = require('express');
 const mongoose = require('mongoose');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
-const cors = require('cors');
-require('dotenv').config();
+const path = require('path');
+
+const User = require('./models/User');
+const Agency = require('./models/Agency');
 
 const app = express();
-
-// Middlewares
-app.use(cors());
 app.use(express.json());
 app.use(express.static('public'));
 
-// MongoDB Connection
+// MongoDB
 mongoose.connect(process.env.MONGO_URI)
 .then(() => console.log('✅ MongoDB Connected'))
 .catch(err => console.log('❌ MongoDB Error:', err));
 
-// User Schema الجديد كامل مع كل الحقول
-const userSchema = new mongoose.Schema({
-    username: { type: String, required: true, unique: true },
-    lastName: { type: String, default: '' },
-    email: { type: String, required: true, unique: true },
-    password: { type: String, required: true },
-    country: { type: String, default: '' },
-    birthDate: { type: String, default: '' },
-    age: { type: Number, default: 0 },
-    gender: { type: String, default: '' },
-
-    // احصائيات Bigo - كلها صفر بالبداية
-    followers: { type: Number, default: 0 },
-    following: { type: Number, default: 0 },
-    friends: { type: Number, default: 0 },
-    visitors: { type: Number, default: 0 },
-    coins: { type: Number, default: 0 },
-    beans: { type: Number, default: 0 },
-    vipLevel: { type: Number, default: 0 },
-    wealthLevel: { type: Number, default: 0 },
-    profilePercent: { type: Number, default: 0 },
-
-    // صور ومعلومات
-    profilePic: { type: String, default: '' },
-    coverPic: { type: String, default: '' },
-    bio: { type: String, default: '' },
-    clubName: { type: String, default: '' },
-    location: { type: String, default: '' },
-    isOnline: { type: Boolean, default: true },
-    isVerified: { type: Boolean, default: false },
-
-    // احصائيات اللعبة القديمة
-    points: { type: Number, default: 0 },
-    wins: { type: Number, default: 0 },
-    games: { type: Number, default: 0 },
-    level: { type: Number, default: 1 },
-    rank: { type: String, default: 'مبتدئ' },
-    createdAt: { type: Date, default: Date.now },
-    lastSeen: { type: Date, default: Date.now }
-});
-
-const User = mongoose.model('User', userSchema);
-
 // Auth Middleware
-function authMiddleware(req, res, next) {
-    const authHeader = req.headers['authorization'];
-    const token = authHeader && authHeader.split(' ')[1];
+const auth = async (req, res, next) => {
+  try {
+    const token = req.headers.authorization?.split(' ')[1];
+    if (!token) return res.status(401).json({ message: 'No token' });
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    req.userId = decoded.userId;
+    next();
+  } catch (err) {
+    res.status(401).json({ message: 'Invalid token' });
+  }
+};
 
-    if (!token) {
-        return res.status(401).json({ message: 'ما في توكن' });
-    }
+// صفحات
+app.get('/me', (req, res) => res.sendFile(path.join(__dirname, 'public', 'me.html')));
+app.get('/edit-profile', (req, res) => res.sendFile(path.join(__dirname, 'public', 'edit-profile.html')));
+app.get('/agency', (req, res) => res.sendFile(path.join(__dirname, 'public', 'agency.html')));
 
-    jwt.verify(token, process.env.JWT_SECRET, (err, decoded) => {
-        if (err) {
-            return res.status(403).json({ message: 'التوكن غلط' });
-        }
-        req.userId = decoded.userId;
-        next();
-    });
-}
-
-// Register
+// API تسجيل
 app.post('/api/register', async (req, res) => {
-    try {
-        const { username, lastName, email, password, country, birthDate, age, gender } = req.body;
-
-        if (!username ||!email ||!password) {
-            return res.status(400).json({ message: 'املأ كل الحقول المطلوبة' });
-        }
-
-        const existingUser = await User.findOne({ $or: [{ email }, { username }] });
-        if (existingUser) {
-            return res.status(400).json({ message: 'الايميل او اسم المستخدم موجود' });
-        }
-
-        const hashedPassword = await bcrypt.hash(password, 10);
-
-        const newUser = new User({
-            username,
-            lastName,
-            email,
-            password: hashedPassword,
-            country,
-            birthDate,
-            age,
-            gender
-        });
-
-        await newUser.save();
-
-        const token = jwt.sign({ userId: newUser._id }, process.env.JWT_SECRET, { expiresIn: '7d' });
-
-        res.status(201).json({
-            message: 'تم التسجيل بنجاح',
-            token,
-            user: {
-                id: newUser._id,
-                username: newUser.username,
-                email: newUser.email
-            }
-        });
-
-    } catch (error) {
-        console.log('Register Error:', error);
-        res.status(500).json({ message: 'خطأ بالسيرفر' });
-    }
+  try {
+    const { username, password } = req.body;
+    const hashedPassword = await bcrypt.hash(password, 10);
+    const user = await User.create({ username, password: hashedPassword });
+    const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET);
+    res.json({ token, user });
+  } catch (err) {
+    res.status(500).json({ message: 'Error' });
+  }
 });
 
-// Login
+// API دخول
 app.post('/api/login', async (req, res) => {
-    try {
-        const { email, password } = req.body;
+  try {
+    const { username, password } = req.body;
+    const user = await User.findOne({ username });
+    if (!user) return res.status(400).json({ message: 'اليوزر غير موجود' });
 
-        if (!email ||!password) {
-            return res.status(400).json({ message: 'املأ كل الحقول' });
-        }
+    const isMatch = await bcrypt.compare(password, user.password);
+    if (!isMatch) return res.status(400).json({ message: 'كلمة السر غلط' });
 
-        const user = await User.findOne({ email });
-        if (!user) {
-            return res.status(400).json({ message: 'الايميل غلط' });
-        }
+    const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET);
+    res.json({ token, user });
+  } catch (err) {
+    res.status(500).json({ message: 'Error' });
+  }
+});
 
-        const isMatch = await bcrypt.compare(password, user.password);
-        if (!isMatch) {
-            return res.status(400).json({ message: 'كلمة السر غلط' });
-        }
+// API بيانات اليوزر
+app.get('/api/user/me', auth, async (req, res) => {
+  try {
+    const user = await User.findById(req.userId).populate('agency');
+    res.json(user);
+  } catch (err) {
+    res.status(500).json({ message: 'Error' });
+  }
+});
 
-        user.lastSeen = new Date();
-        await user.save();
+// API تحديث اليوزر
+app.post('/api/user/update', auth, async (req, res) => {
+  try {
+    const user = await User.findByIdAndUpdate(req.userId, req.body, { new: true });
+    res.json(user);
+  } catch (err) {
+    res.status(500).json({ message: 'Error' });
+  }
+});
 
-        const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET, { expiresIn: '7d' });
+// API انشاء وكالة
+app.post('/api/agency/create', auth, async (req, res) => {
+  try {
+    const { name } = req.body;
+    const agency = await Agency.create({
+      name,
+      owner: req.userId,
+      members: [{ user: req.userId, role: 'owner' }]
+    });
+    await User.findByIdAndUpdate(req.userId, { agency: agency._id, agencyRole: 'owner' });
+    res.json(agency);
+  } catch (err) {
+    res.status(500).json({ message: 'Error' });
+  }
+});
 
-        res.json({
-            message: 'تم تسجيل الدخول',
-            token,
-            user: {
-                id: user._id,
-                username: user.username,
-                email: user.email
-            }
-        });
+// API انضمام لوكالة
+app.post('/api/agency/join', auth, async (req, res) => {
+  try {
+    const { agencyId } = req.body;
+    const agency = await Agency.findOne({ agencyId });
+    if (!agency) return res.status(404).json({ message: 'الوكالة غير موجودة' });
 
-    } catch (error) {
-        console.log('Login Error:', error);
-        res.status(500).json({ message: 'خطأ بالسيرفر' });
+    const isMember = agency.members.some(m => m.user.toString() === req.userId);
+    if (isMember) return res.status(400).json({ message: 'انت عضو بالفعل' });
+
+    agency.members.push({ user: req.userId, role: 'member' });
+    await agency.save();
+    await User.findByIdAndUpdate(req.userId, { agency: agency._id, agencyRole: 'member' });
+    res.json(agency);
+  } catch (err) {
+    res.status(500).json({ message: 'Error' });
+  }
+});
+
+// API بيانات الوكالة
+app.get('/api/agency/my', auth, async (req, res) => {
+  try {
+    const user = await User.findById(req.userId).populate({
+      path: 'agency',
+      populate: { path: 'members.user', select: 'username avatar userId' }
+    });
+    if (!user.agency) return res.status(404).json({ message: 'لا يوجد وكالة' });
+    res.json({ agency: user.agency, role: user.agencyRole });
+  } catch (err) {
+    res.status(500).json({ message: 'Error' });
+  }
+});
+
+// API خروج من الوكالة
+app.post('/api/agency/leave', auth, async (req, res) => {
+  try {
+    const user = await User.findById(req.userId);
+    if (!user.agency) return res.status(400).json({ message: 'لست في وكالة' });
+
+    await Agency.updateOne(
+      { _id: user.agency },
+      { $pull: { members: { user: req.userId } } }
+    );
+    await User.findByIdAndUpdate(req.userId, { agency: null, agencyRole: null });
+    res.json({ message: 'تم الخروج' });
+  } catch (err) {
+    res.status(500).json({ message: 'Error' });
+  }
+});
+
+// تحديث بيانات الوكالة - للمالك والمشرف فقط
+app.post('/api/agency/update', auth, async (req, res) => {
+  try {
+    const user = await User.findById(req.userId);
+    if (!user.agency || (user.agencyRole!== 'owner' && user.agencyRole!== 'admin')) {
+      return res.status(403).json({ message: 'غير مصرح' });
     }
+    await Agency.findByIdAndUpdate(user.agency, req.body);
+    res.json({ message: 'تم التحديث' });
+  } catch (err) {
+    res.status(500).json({ message: 'Error' });
+  }
 });
 
-// Get Profile
-app.get('/api/profile', authMiddleware, async (req, res) => {
-    try {
-        const user = await User.findById(req.userId);
-        if (!user) return res.status(404).json({ message: 'اليوزر مو موجود' });
-
-        user.lastSeen = new Date();
-        await user.save();
-
-        res.json(user);
-
-    } catch (error) {
-        console.log('Profile Error:', error);
-        res.status(500).json({ message: 'خطأ بالسيرفر' });
+// طرد عضو
+app.post('/api/agency/kick', auth, async (req, res) => {
+  try {
+    const { userId } = req.body;
+    const user = await User.findById(req.userId);
+    if (!user.agency || (user.agencyRole!== 'owner' && user.agencyRole!== 'admin')) {
+      return res.status(403).json({ message: 'غير مصرح' });
     }
+    await Agency.updateOne(
+      { _id: user.agency },
+      { $pull: { members: { user: userId } } }
+    );
+    await User.findByIdAndUpdate(userId, { agency: null, agencyRole: null });
+    res.json({ message: 'تم الطرد' });
+  } catch (err) {
+    res.status(500).json({ message: 'Error' });
+  }
 });
 
-// Update Profile - عشان صفحة التعديل
-app.put('/api/update-profile', authMiddleware, async (req, res) => {
-    try {
-        const { bio, location, clubName } = req.body;
-
-        const user = await User.findById(req.userId);
-        if (!user) return res.status(404).json({ message: 'اليوزر مو موجود' });
-
-        if (bio!== undefined) user.bio = bio;
-        if (location!== undefined) user.location = location;
-        if (clubName!== undefined) user.clubName = clubName;
-
-        // حساب نسبة اكتمال البروفايل
-        let percent = 0;
-        if (user.username) percent += 20;
-        if (user.profilePic) percent += 20;
-        if (user.coverPic) percent += 20;
-        if (user.bio) percent += 20;
-        if (user.location) percent += 20;
-        user.profilePercent = percent;
-
-        await user.save();
-        res.json({ message: 'تم التحديث', user });
-
-    } catch (error) {
-        console.log('Update Error:', error);
-        res.status(500).json({ message: 'خطأ بالسيرفر' });
+// ترقية عضو لمشرف
+app.post('/api/agency/promote', auth, async (req, res) => {
+  try {
+    const { userId } = req.body;
+    const user = await User.findById(req.userId);
+    if (!user.agency || user.agencyRole!== 'owner') {
+      return res.status(403).json({ message: 'المالك فقط يقدر يرقي' });
     }
+    await Agency.updateOne(
+      { _id: user.agency, 'members.user': userId },
+      { $set: { 'members.$.role': 'admin' } }
+    );
+    await User.findByIdAndUpdate(userId, { agencyRole: 'admin' });
+    res.json({ message: 'تمت الترقية' });
+  } catch (err) {
+    res.status(500).json({ message: 'Error' });
+  }
 });
 
-// Routes للصفحات
-app.get('/', (req, res) => {
-    res.sendFile(__dirname + '/public/index.html');
+// متابعة الوكالة
+app.post('/api/agency/follow', auth, async (req, res) => {
+  try {
+    const user = await User.findById(req.userId);
+    if (!user.agency) return res.status(400).json({ message: 'لست في وكالة' });
+
+    const agency = await Agency.findById(user.agency);
+    if (!agency.followers.includes(req.userId)) {
+      agency.followers.push(req.userId);
+      await agency.save();
+    }
+    res.json({ message: 'تمت المتابعة' });
+  } catch (err) {
+    res.status(500).json({ message: 'Error' });
+  }
 });
 
-app.get('/me', (req, res) => {
-    res.sendFile(__dirname + '/public/me.html');
-});
-
-app.get('/edit-profile', (req, res) => {
-    res.sendFile(__dirname + '/public/edit-profile.html');
-});
-
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
-    console.log(`🚀 Server running on port ${PORT}`);
-});
+const PORT = process.env.PORT || 10000;
+app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
