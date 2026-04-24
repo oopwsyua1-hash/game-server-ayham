@@ -1,10 +1,16 @@
-// script.js - النسخة اللي فيها فحص اخطاء
+// script.js - نسخة الفحص الكامل
 async function register() {
   const username = document.getElementById('username').value;
   const password = document.getElementById('password').value;
+  
+  // تأكد انو الحقول مو فاضية
+  if (!username || !password) {
+    alert('عبي الاسم وكلمة المرور');
+    return;
+  }
 
   try {
-    console.log('عم جرب سجل...'); // للفحص
+    console.log('بداية الطلب...');
     
     const res = await fetch(`/api/auth/register`, {
       method: 'POST',
@@ -13,25 +19,30 @@ async function register() {
       body: JSON.stringify({ username, password })
     });
 
-    console.log('الرد من السيرفر:', res.status); // للفحص
-
+    console.log('حالة الرد:', res.status);
     const data = await res.json();
+    console.log('الداتا:', data);
     
     if (res.ok) {
       alert('تم التسجيل بنجاح');
       window.location.href = '/profile.html';
     } else {
-      alert('خطأ: ' + data.msg);
+      alert('خطأ من السيرفر: ' + data.msg);
     }
   } catch (err) {
     console.error('الغلط الكامل:', err);
-    alert('خطأ بالاتصال بالسيرفر. تأكد انو النت شغال');
+    alert('خطأ بالاتصال. السبب: ' + err.message);
   }
 }
 
 async function login() {
   const username = document.getElementById('username').value;
   const password = document.getElementById('password').value;
+  
+  if (!username || !password) {
+    alert('عبي الاسم وكلمة المرور');
+    return;
+  }
 
   try {
     const res = await fetch(`/api/auth/login`, {
@@ -51,7 +62,7 @@ async function login() {
     }
   } catch (err) {
     console.error('الغلط الكامل:', err);
-    alert('خطأ بالاتصال بالسيرفر');
+    alert('خطأ بالاتصال. السبب: ' + err.message);
   }
 }
 
