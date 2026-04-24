@@ -14,7 +14,7 @@ app.use(cors());
 app.use(express.json()); 
 app.use(express.static(path.join(__dirname, 'public'))); 
 
-// اطبع كل طلب عشان نعرف اذا وصل او لا
+// طباعة كل طلب
 app.use((req, res, next) => {
   console.log(`[${new Date().toISOString()}] ${req.method} ${req.url}`);
   console.log('Body:', req.body);
@@ -34,27 +34,35 @@ mongoose.connect(mongoURI)
     process.exit(1); 
   }); 
 
-// User Schema
+// User Schema - عدلتها عشان تمشي مع الفورم تبعك
 const userSchema = new mongoose.Schema({ 
   username: { type: String, required: true }, 
-  lastName: { type: String, required: true }, 
+  lastName: { type: String, default: '' }, 
   email: { type: String, required: true, unique: true }, 
   password: { type: String, required: true }, 
-  country: { type: String, required: true }, 
-  birthDate: { type: String, required: true }, 
-  age: { type: Number, required: true }, 
-  gender: { type: String, required: true }, 
+  country: { type: String, default: 'غير محدد' }, 
+  birthDate: { type: String, default: '' }, 
+  age: { type: Number, default: 0 }, 
+  gender: { type: String, default: 'غير محدد' }, 
   createdAt: { type: Date, default: Date.now } 
 }); 
 const User = mongoose.model('User', userSchema); 
 
-// Register API
+// Register API - عدلتها عشان تقبل الفورم تبعك
 app.post('/api/register', async (req, res) => { 
   try { 
-    const { username, lastName, email, password, country, birthDate, age, gender } = req.body; 
+    let { username, lastName, email, password, country, birthDate, age, gender } = req.body; 
     
-    if (!username || !lastName || !email || !password || !country || !birthDate || !age || !gender) {
-      return res.status(400).json({ error: 'عبي كل الحقول المطلوبة' });
+    // اذا العمر مو موجود احسبو من تاريخ الميلاد
+    if (!age && birthDate) {
+      const birth = new Date(birthDate);
+      const today = new Date();
+      age = today.getFullYear() - birth.getFullYear();
+    }
+    
+    // الحقول الاساسية بس
+    if (!username || !email || !password) {
+      return res.status(400).json({ error: 'اسم المستخدم والايميل وكلمة السر مطلوبين' });
     }
     
     const existingUser = await User.findOne({ email }); 
@@ -63,12 +71,26 @@ app.post('/api/register', async (req, res) => {
     } 
     
     const hashedPassword = await bcrypt.hash(password, 10); 
-    const newUser = new User({ username, lastName, email, password: hashedPassword, country, birthDate, age, gender }); 
+    const newUser = new User({ 
+      username, 
+      lastName: lastName || '', 
+      email, 
+      password: hashedPassword, 
+      country: country || 'غير محدد', 
+      birthDate: birthDate || '', 
+      age: age || 0, 
+      gender: gender || 'غير محدد'
+    }); 
     await newUser.save(); 
     
     const token = jwt.sign({ userId: newUser._id }, JWT_SECRET); 
-    console.log('User registered:', email);
-    res.json({ token, user: { username, lastName, email, country, age, gender } }); 
+    console.log('SUCCESS: User registered:', email);
+    res.json({ 
+      success: true,
+      msg: 'تم التسجيل بنجاح',
+      token, 
+      user: { username, lastName: lastName || '', email, country, age, gender } 
+    }); 
   } catch (error) { 
     console.log('REGISTER ERROR:', error.message); 
     res.status(500).json({ error: 'خطأ بالسيرفر', details: error.message }); 
@@ -88,8 +110,13 @@ app.post('/api/login', async (req, res) => {
     if (!isValidPassword) return res.status(400).json({ error: 'الايميل او كلمة السر غلط' }); 
     
     const token = jwt.sign({ userId: user._id }, JWT_SECRET); 
-    console.log('User logged in:', email);
-    res.json({ token, user: { username: user.username, lastName: user.lastName, email: user.email, country: user.country, age: user.age, gender: user.gender } }); 
+    console.log('SUCCESS: User logged in:', email);
+    res.json({ 
+      success: true,
+      msg: 'تم تسجيل الدخول بنجاح',
+      token, 
+      user: { username: user.username, lastName: user.lastName, email: user.email, country: user.country, age: user.age, gender: user.gender } 
+    }); 
   } catch (error) { 
     console.log('LOGIN ERROR:', error.message);
     res.status(500).json({ error: 'خطأ بالسيرفر', details: error.message }); 
