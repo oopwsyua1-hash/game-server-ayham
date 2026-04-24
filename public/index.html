@@ -114,7 +114,7 @@
         </div>
     </div>
     <script>
-        // اذا اليوزر مسجل دخول من قبل، وديه على me.html فوراً
+        // هاي الـ 4 سطور بس اللي ضفتهن لكودك عشان يودي اليوزر على me.html اذا مسجل دخول
         const token = localStorage.getItem('token');
         if (token) {
             window.location.href = '/me';
@@ -173,7 +173,7 @@
                 const data = await res.json();
                 if (data.token) {
                     localStorage.setItem('token', data.token);
-                    showAlert('تم انشاء الحساب بنجاح', 'تطبيق السبع');
+                    showAlert('تم تسجيل الدخول بنجاح', 'تطبيق السبع');
                     setTimeout(() => window.location.href = '/me', 1500);
                 } else {
                     showAlert(data.error || 'صار خطأ', 'خطأ');
