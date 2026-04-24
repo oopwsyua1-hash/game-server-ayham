@@ -4,246 +4,71 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>تطبيق السبع</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700;800&display=swap');
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { 
-            font-family: 'Tajawal', sans-serif; 
-            background: #0a0a14; 
-            color: #fff; 
-            min-height: 100vh;
-            background-image: 
-                radial-gradient(circle at 20% 50%, rgba(255, 0, 255, 0.15) 0%, transparent 50%),
-                radial-gradient(circle at 80% 80%, rgba(0, 255, 255, 0.15) 0%, transparent 50%);
-        }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #0a0a14; color: #fff; min-height: 100vh; overflow-x: hidden; }
+
         #welcomeScreen {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: #000; display: flex; flex-direction: column; justify-content: center; align-items: center;
             z-index: 9999; animation: fadeOut 1s ease-in-out 6s forwards; overflow: hidden;
         }
+
        .welcome-text {
-            font-size: 42px; font-weight: 800; text-align: center;
+            font-size: 42px; font-weight: bold; text-align: center;
             background: linear-gradient(90deg, #ff00ff, #00ffff, #ff00ff);
             background-size: 200% 200%; -webkit-background-clip: text; -webkit-text-fill-color: transparent;
             animation: gradientMove 2s ease infinite, scaleIn 1s ease; margin-bottom: 30px;
-            text-shadow: 0 0 40px rgba(255, 0, 255, 1);
+            text-shadow: 0 0 30px rgba(255, 0, 255, 1), 0 0 60px rgba(0, 255, 255, 0.8);
             padding: 0 20px; z-index: 2; position: absolute; top: 8%;
         }
+
        .dance-video {
             width: 100%; height: 100%; object-fit: cover; position: absolute;
-            top: 0; left: 0; z-index: 1; filter: brightness(0.6);
+            top: 0; left: 0; z-index: 1; filter: brightness(0.7);
         }
+
         #welcomeScreen::after {
             content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.4); z-index: 1;
+            background: rgba(0,0,0,0.3); z-index: 1;
         }
+
         @keyframes gradientMove { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
         @keyframes scaleIn { 0% { transform: scale(0); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
         @keyframes fadeOut { to { opacity: 0; visibility: hidden; } }
+
         #customAlert {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.85); backdrop-filter: blur(10px);
-            display: none; justify-content: center; align-items: center; z-index: 10000;
+            background: rgba(0,0,0,0.8); display: none; justify-content: center; align-items: center; z-index: 10000;
         }
        .alert-box {
-            background: rgba(20, 20, 40, 0.9); border: 2px solid #00ffff; border-radius: 20px; padding: 35px;
-            text-align: center; box-shadow: 0 0 40px rgba(0, 255, 255, 0.6), inset 0 0 20px rgba(0, 255, 255, 0.1);
+            background: #141428; border: 2px solid #00ffff; border-radius: 15px; padding: 30px;
+            text-align: center; box-shadow: 0 0 30px rgba(0, 255, 255, 0.5);
             animation: popIn 0.3s ease; max-width: 350px; margin: 20px;
         }
-       .alert-box h3 { color: #00ffff; font-size: 24px; margin-bottom: 15px; font-weight: 700; }
-       .alert-box p { color: #fff; font-size: 16px; margin-bottom: 25px; line-height: 1.6; }
+       .alert-box h3 { color: #00ffff; font-size: 22px; margin-bottom: 15px; }
+       .alert-box p { color: #fff; font-size: 16px; margin-bottom: 20px; }
        .alert-box button {
-            padding: 12px 35px; background: linear-gradient(135deg, #ff00ff, #9d00ff);
-            border: none; border-radius: 12px; color: white; font-size: 16px; font-weight: 700; cursor: pointer;
-            box-shadow: 0 5px 20px rgba(255, 0, 255, 0.4); transition: 0.3s;
+            padding: 10px 30px; background: linear-gradient(90deg, #ff00ff, #9d00ff);
+            border: none; border-radius: 8px; color: white; font-size: 16px; font-weight: bold; cursor: pointer;
         }
-       .alert-box button:hover { transform: translateY(-2px); box-shadow: 0 8px 30px rgba(255, 0, 255, 0.6); }
         @keyframes popIn { 0% { transform: scale(0.5); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
-        .container { max-width: 480px; margin: 0 auto; padding: 20px; opacity: 0; animation: fadeIn 1s ease 6.5s forwards; }
+
+       .container { max-width: 450px; margin: 0 auto; padding: 20px; opacity: 0; animation: fadeIn 1s ease 6.5s forwards; }
         @keyframes fadeIn { to { opacity: 1; } }
-       .logo { 
-            text-align: center; font-size: 36px; font-weight: 800; margin: 25px 0; 
-            background: linear-gradient(90deg, #ff00ff, #00ffff); 
-            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-            filter: drop-shadow(0 0 20px rgba(255, 0, 255, 0.8));
-            letter-spacing: 2px;
-        }
-       .form-box { 
-            background: rgba(20, 20, 40, 0.6); 
-            backdrop-filter: blur(20px);
-            border: 2px solid rgba(255, 0, 255, 0.5); 
-            border-radius: 25px; 
-            padding: 30px; 
-            box-shadow: 0 8px 32px rgba(255, 0, 255, 0.3), inset 0 0 20px rgba(255, 0, 255, 0.05);
-        }
-        input, select { 
-            width: 100%; padding: 14px 18px; margin: 10px 0; 
-            border: 2px solid rgba(255, 0, 255, 0.3); 
-            border-radius: 12px; 
-            background: rgba(15, 15, 30, 0.8); 
-            color: white; font-size: 15px; outline: none; 
-            transition: 0.3s; font-family: 'Tajawal', sans-serif;
-        }
-        input:focus, select:focus { 
-            border-color: #00ffff; 
-            box-shadow: 0 0 20px rgba(0, 255, 255, 0.4), inset 0 0 10px rgba(0, 255, 255, 0.1);
-            background: rgba(15, 15, 30, 1);
-        }
-        input:read-only { background: rgba(26, 26, 46, 0.6); cursor: not-allowed; opacity: 0.7; }
-        label { color: #ff00ff; font-size: 13px; display: block; margin-top: 12px; margin-bottom: -5px; font-weight: 500; }
-        button { 
-            width: 100%; padding: 15px; margin-top: 18px; 
-            background: linear-gradient(135deg, #ff00ff, #9d00ff); 
-            border: none; border-radius: 14px; color: white; font-size: 17px; 
-            font-weight: 700; cursor: pointer; transition: 0.3s;
-            box-shadow: 0 5px 20px rgba(255, 0, 255, 0.4);
-            font-family: 'Tajawal', sans-serif;
-        }
-        button:hover { transform: translateY(-3px); box-shadow: 0 8px 30px rgba(255, 0, 255, 0.7); }
-        button:active { transform: translateY(-1px); }
-        .btn-secondary { 
-            background: linear-gradient(135deg, #00ffff, #0099ff);
-            box-shadow: 0 5px 20px rgba(0, 255, 255, 0.4);
-        }
-        .btn-secondary:hover { box-shadow: 0 8px 30px rgba(0, 255, 255, 0.7); }
-       .switch { text-align: center; margin-top: 18px; color: #aaa; font-size: 14px; }
-       .switch span { color: #00ffff; cursor: pointer; font-weight: 700; transition: 0.3s; }
-       .switch span:hover { text-shadow: 0 0 10px rgba(0, 255, 255, 0.8); }
-        h2 { color: #ff00ff; text-align: center; margin-bottom: 25px; font-size: 26px; font-weight: 800; }
-        .page { display: none; animation: slideIn 0.4s ease; }
-        .page.active { display: block; }
-        @keyframes slideIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
-        .me-card {
-            background: rgba(20, 20, 40, 0.6);
-            backdrop-filter: blur(20px);
-            border: 2px solid rgba(255, 0, 255, 0.5);
-            border-radius: 25px;
-            padding: 25px;
-            box-shadow: 0 8px 32px rgba(255, 0, 255, 0.3), inset 0 0 20px rgba(255, 0, 255, 0.05);
-            margin-bottom: 20px;
-        }
-        .profile-header { display: flex; align-items: center; gap: 18px; margin-bottom: 25px; }
-        .avatar-small { 
-            width: 75px; height: 75px; border-radius: 50%; 
-            background: linear-gradient(135deg, #ff00ff, #00ffff); 
-            display: flex; align-items: center; justify-content: center; 
-            font-size: 32px; font-weight: 800; 
-            border: 3px solid rgba(255, 0, 255, 0.8);
-            box-shadow: 0 0 25px rgba(255, 0, 255, 0.6);
-            animation: pulse 2s ease-in-out infinite;
-        }
-        @keyframes pulse { 0%, 100% { box-shadow: 0 0 25px rgba(255, 0, 255, 0.6); } 50% { box-shadow: 0 0 35px rgba(255, 0, 255, 0.9); } }
-        .profile-info h3 { color: #00ffff; font-size: 22px; margin-bottom: 6px; font-weight: 700; }
-        .profile-info p { color: #aaa; font-size: 13px; }
-        .profile-info .vip-badge {
-            display: inline-block; background: linear-gradient(135deg, #ff00ff, #ff0066);
-            padding: 2px 10px; border-radius: 8px; font-size: 11px; font-weight: 700; margin-right: 8px;
-        }
-        .arrow-btn {
-            margin-right: auto; font-size: 28px; cursor: pointer; 
-            color: #ff00ff; transition: 0.3s;
-            width: 40px; height: 40px; display: flex; align-items: center; justify-content: center;
-            border-radius: 12px; background: rgba(255, 0, 255, 0.1);
-        }
-        .arrow-btn:hover { background: rgba(255, 0, 255, 0.2); transform: translateX(-5px); }
-        .stats-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin: 25px 0; }
-        .stat-item { 
-            background: rgba(26, 26, 46, 0.8); 
-            border: 2px solid rgba(255, 0, 255, 0.3); 
-            border-radius: 16px; padding: 15px; text-align: center;
-            transition: 0.3s; cursor: pointer;
-        }
-        .stat-item:hover { 
-            border-color: #00ffff; 
-            box-shadow: 0 0 20px rgba(0, 255, 255, 0.3);
-            transform: translateY(-3px);
-        }
-        .stat-value { 
-            color: #00ffff; font-size: 24px; font-weight: 800;
-            text-shadow: 0 0 15px rgba(0, 255, 255, 0.8);
-        }
-        .stat-label { color: #aaa; font-size: 12px; margin-top: 6px; font-weight: 500; }
-        .menu-list { 
-            background: rgba(26, 26, 46, 0.6); 
-            backdrop-filter: blur(20px);
-            border: 2px solid rgba(255, 0, 255, 0.4); 
-            border-radius: 20px; overflow: hidden;
-            box-shadow: 0 8px 32px rgba(255, 0, 255, 0.2);
-        }
-        .menu-item { 
-            padding: 18px 22px; border-bottom: 1px solid rgba(255, 0, 255, 0.1); 
-            display: flex; justify-content: space-between; align-items: center; 
-            cursor: pointer; transition: 0.3s; 
-        }
-        .menu-item:last-child { border-bottom: none; }
-        .menu-item:hover { 
-            background: rgba(255, 0, 255, 0.15); 
-            padding-right: 28px;
-        }
-        .menu-item-left { display: flex; align-items: center; gap: 15px; }
-        .menu-item-left i { font-size: 20px; width: 25px; text-align: center; }
-        .menu-item span { color: #fff; font-size: 16px; font-weight: 500; }
-        .menu-item .arrow { color: #ff00ff; font-size: 20px; transition: 0.3s; }
-        .menu-item:hover .arrow { transform: translateX(-5px); }
-        .badge { 
-            background: linear-gradient(135deg, #ff00ff, #ff0066); 
-            color: white; padding: 3px 10px; border-radius: 10px; 
-            font-size: 11px; font-weight: 700;
-            box-shadow: 0 0 10px rgba(255, 0, 255, 0.6);
-        }
-        .full-profile-card {
-            background: rgba(20, 20, 40, 0.6);
-            backdrop-filter: blur(20px);
-            border: 2px solid rgba(255, 0, 255, 0.5);
-            border-radius: 25px;
-            overflow: hidden;
-            box-shadow: 0 8px 32px rgba(255, 0, 255, 0.3);
-        }
-        .cover { 
-            width: 100%; height: 200px; 
-            background: linear-gradient(135deg, #ff00ff, #00ffff, #9d00ff);
-            background-size: 200% 200%;
-            animation: gradientMove 3s ease infinite;
-            position: relative; 
-        }
-        .cover::after {
-            content: ''; position: absolute; bottom: 0; left: 0; width: 100%; height: 60px;
-            background: linear-gradient(to top, rgba(20, 20, 40, 1), transparent);
-        }
-        .profile-full { padding: 0 25px 25px; margin-top: -50px; position: relative; }
-        .avatar-big { 
-            width: 110px; height: 110px; border-radius: 50%; 
-            background: linear-gradient(135deg, #ff00ff, #00ffff); 
-            border: 5px solid #0a0a14; 
-            margin: 0 auto 20px; display: flex; align-items: center; justify-content: center; 
-            font-size: 45px; font-weight: 800;
-            box-shadow: 0 0 40px rgba(255, 0, 255, 0.8);
-            animation: pulse 2s ease-in-out infinite;
-        }
-        .profile-name { 
-            text-align: center; color: #00ffff; font-size: 26px; 
-            margin-bottom: 8px; font-weight: 800;
-            text-shadow: 0 0 20px rgba(0, 255, 255, 0.6);
-        }
-        .profile-id { text-align: center; color: #aaa; font-size: 14px; margin-bottom: 25px; }
-        .info-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin: 20px 0; }
-        .info-box { 
-            background: rgba(26, 26, 46, 0.8); 
-            border: 2px solid rgba(0, 255, 255, 0.3); 
-            border-radius: 16px; padding: 15px; text-align: center;
-            transition: 0.3s;
-        }
-        .info-box:hover {
-            border-color: #ff00ff;
-            box-shadow: 0 0 20px rgba(255, 0, 255, 0.3);
-            transform: translateY(-3px);
-        }
-        .info-box-value { 
-            color: #ff00ff; font-size: 18px; font-weight: 700;
-            text-shadow: 0 0 15px rgba(255, 0, 255, 0.6);
-        }
-        .info-box-label { color: #aaa; font-size: 12px; margin-top: 5px; font-weight: 500; }
+       .logo { text-align: center; font-size: 32px; font-weight: bold; margin: 20px 0; background: linear-gradient(90deg, #ff00ff, #00ffff); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+       .form-box { background: #141428; border: 2px solid #ff00ff; border-radius: 15px; padding: 25px; box-shadow: 0 0 20px rgba(255, 0, 255, 0.3); }
+        input, select { width: 100%; padding: 12px; margin: 8px 0; border: 2px solid #ff00ff; border-radius: 8px; background: #0f0f1e; color: white; font-size: 16px; outline: none; }
+        input:focus, select:focus { border-color: #00ffff; box-shadow: 0 0 10px rgba(0, 255, 255, 0.5); }
+        input:read-only { background: #1a1a2e; cursor: not-allowed; }
+        label { color: #ff00ff; font-size: 14px; display: block; margin-top: 10px; margin-bottom: -5px; }
+        button { width: 100%; padding: 14px; margin-top: 15px; background: linear-gradient(90deg, #ff00ff, #9d00ff); border: none; border-radius: 8px; color: white; font-size: 18px; font-weight: bold; cursor: pointer; transition: 0.3s; }
+        button:hover { transform: scale(1.03); box-shadow: 0 0 15px rgba(255, 0, 255, 0.6); }
+       .switch { text-align: center; margin-top: 15px; color: #aaa; }
+       .switch span { color: #00ffff; cursor: pointer; font-weight: bold; }
+        h2 { color: #ff00ff; text-align: center; margin-bottom: 20px; }
+        #loginForm { display: block; }
+        #registerForm { display: none; }
     </style>
 </head>
 <body>
@@ -253,6 +78,7 @@
             <source src="https://assets.mixkit.co/videos/8713/8713-720.mp4" type="video/mp4">
         </video>
     </div>
+
     <div id="customAlert">
         <div class="alert-box">
             <h3 id="alertTitle">تطبيق السبع</h3>
@@ -260,238 +86,79 @@
             <button onclick="closeAlert()">حسناً</button>
         </div>
     </div>
+
     <div class="container">
         <div class="logo">CYBER CARDS</div>
-        <div id="loginPage" class="page form-box">
-            <h2>تسجيل الدخول</h2>
-            <input type="email" id="loginEmail" placeholder="الإيميل">
-            <input type="password" id="loginPassword" placeholder="كلمة السر">
-            <button onclick="login()">دخول</button>
-            <div class="switch">ما عندك حساب؟ <span onclick="showPage('registerPage')">انشاء حساب</span></div>
-        </div>
-        <div id="registerPage" class="page form-box">
-            <h2>انشاء حساب</h2>
-            <input type="text" id="regUsername" placeholder="اسم المستخدم">
-            <input type="text" id="regLastName" placeholder="الكنية">
-            <input type="email" id="regEmail" placeholder="الإيميل">
-            <input type="password" id="regPassword" placeholder="كلمة السر">
-            <label>الدولة:</label>
-            <select id="regCountry">
-                <option value="">اختر دولتك</option>
-                <option value="سوريا">سوريا</option>
-                <option value="السعودية">السعودية</option>
-                <option value="الإمارات">الإمارات</option>
-                <option value="مصر">مصر</option>
-                <option value="العراق">العراق</option>
-                <option value="الأردن">الأردن</option>
-                <option value="لبنان">لبنان</option>
-                <option value="فلسطين">فلسطين</option>
-                <option value="الكويت">الكويت</option>
-                <option value="قطر">قطر</option>
-                <option value="البحرين">البحرين</option>
-                <option value="عمان">عمان</option>
-                <option value="اليمن">اليمن</option>
-                <option value="ليبيا">ليبيا</option>
-                <option value="تونس">تونس</option>
-                <option value="الجزائر">الجزائر</option>
-                <option value="المغرب">المغرب</option>
-                <option value="السودان">السودان</option>
-                <option value="تركيا">تركيا</option>
-                <option value="اخرى">اخرى</option>
-            </select>
-            <label>تاريخ الميلاد:</label>
-            <input type="date" id="regBirthDate" onchange="calculateAge()">
-            <input type="text" id="regAge" placeholder="العمر" readonly>
-            <label>الجنس:</label>
-            <select id="regGender">
-                <option value="">اختر الجنس</option>
-                <option value="male">ذكر</option>
-                <option value="female">أنثى</option>
-            </select>
-            <button onclick="register()">انشاء حساب</button>
-            <div class="switch">عندك حساب؟ <span onclick="showPage('loginPage')">تسجيل دخول</span></div>
-        </div>
-        <div id="mePage" class="page">
-            <div class="me-card">
-                <div class="profile-header">
-                    <div class="avatar-small" id="meAvatar">S</div>
-                    <div class="profile-info">
-                        <h3 id="meName">جاري التحميل...</h3>
-                        <p><span class="vip-badge">VIP 0</span> ID: <span id="meId">-</span></p>
-                    </div>
-                    <div class="arrow-btn" onclick="showPage('fullProfilePage')">
-                        <i class="fa-solid fa-chevron-left"></i>
-                    </div>
-                </div>
-                <div class="stats-grid">
-                    <div class="stat-item">
-                        <div class="stat-value" id="meFollowers">0</div>
-                        <div class="stat-label">متابعين</div>
-                    </div>
-                    <div class="stat-item">
-                        <div class="stat-value" id="meFollowing">0</div>
-                        <div class="stat-label">يتابع</div>
-                    </div>
-                    <div class="stat-item">
-                        <div class="stat-value" id="meFriends">0</div>
-                        <div class="stat-label">أصدقاء</div>
-                    </div>
-                </div>
+        <div class="form-box">
+            <div id="loginForm">
+                <h2>تسجيل الدخول</h2>
+                <input type="email" id="loginEmail" placeholder="الإيميل">
+                <input type="password" id="loginPassword" placeholder="كلمة السر">
+                <button onclick="login()">دخول</button>
+                <div class="switch">ما عندك حساب؟ <span onclick="showRegister()">انشاء حساب</span></div>
             </div>
-            <div class="menu-list">
-                <div class="menu-item" onclick="showAlert('قريباً', 'المحفظة')">
-                    <div class="menu-item-left">
-                        <i class="fa-solid fa-wallet" style="color: #ffd700;"></i>
-                        <span>المحفظة</span>
-                    </div>
-                    <i class="fa-solid fa-chevron-left arrow"></i>
-                </div>
-                <div class="menu-item" onclick="showPage('editProfilePage')">
-                    <div class="menu-item-left">
-                        <i class="fa-solid fa-pen-to-square" style="color: #00ffff;"></i>
-                        <span>تعديل البروفايل</span>
-                    </div>
-                    <i class="fa-solid fa-chevron-left arrow"></i>
-                </div>
-                <div class="menu-item" onclick="showPage('linkAccountPage')">
-                    <div class="menu-item-left">
-                        <i class="fa-solid fa-link" style="color: #9d00ff;"></i>
-                        <span>ربط الحساب</span>
-                    </div>
-                    <div style="display: flex; align-items: center; gap: 10px;">
-                        <span id="linkBadge" class="badge" style="display:none;">مربوط</span>
-                        <i class="fa-solid fa-chevron-left arrow"></i>
-                    </div>
-                </div>
-                <div class="menu-item" onclick="showAlert('قريباً', 'ملحقاتي')">
-                    <div class="menu-item-left">
-                        <i class="fa-solid fa-gift" style="color: #ff0066;"></i>
-                        <span>ملحقاتي</span>
-                    </div>
-                    <i class="fa-solid fa-chevron-left arrow"></i>
-                </div>
-                <div class="menu-item" onclick="showAlert('قريباً', 'غرفتي')">
-                    <div class="menu-item-left">
-                        <i class="fa-solid fa-house" style="color: #00ff88;"></i>
-                        <span>غرفتي</span>
-                    </div>
-                    <i class="fa-solid fa-chevron-left arrow"></i>
-                </div>
-                <div class="menu-item" onclick="showAlert('قريباً', 'منشوراتي')">
-                    <div class="menu-item-left">
-                        <i class="fa-solid fa-newspaper" style="color: #ffaa00;"></i>
-                        <span>منشوراتي</span>
-                    </div>
-                    <i class="fa-solid fa-chevron-left arrow"></i>
-                </div>
-                <div class="menu-item" onclick="logout()">
-                    <div class="menu-item-left">
-                        <i class="fa-solid fa-right-from-bracket" style="color: #ff0040;"></i>
-                        <span>تسجيل خروج</span>
-                    </div>
-                    <i class="fa-solid fa-chevron-left arrow"></i>
-                </div>
+            <div id="registerForm">
+                <h2>انشاء حساب</h2>
+                <input type="text" id="regUsername" placeholder="اسم المستخدم">
+                <input type="text" id="regLastName" placeholder="الكنية">
+                <input type="email" id="regEmail" placeholder="الإيميل">
+                <input type="password" id="regPassword" placeholder="كلمة السر">
+                <label>الدولة:</label>
+                <select id="regCountry">
+                    <option value="">اختر دولتك</option>
+                    <option value="سوريا">سوريا</option>
+                    <option value="السعودية">السعودية</option>
+                    <option value="الإمارات">الإمارات</option>
+                    <option value="مصر">مصر</option>
+                    <option value="العراق">العراق</option>
+                    <option value="الأردن">الأردن</option>
+                    <option value="لبنان">لبنان</option>
+                    <option value="فلسطين">فلسطين</option>
+                    <option value="الكويت">الكويت</option>
+                    <option value="قطر">قطر</option>
+                    <option value="البحرين">البحرين</option>
+                    <option value="عمان">عمان</option>
+                    <option value="اليمن">اليمن</option>
+                    <option value="ليبيا">ليبيا</option>
+                    <option value="تونس">تونس</option>
+                    <option value="الجزائر">الجزائر</option>
+                    <option value="المغرب">المغرب</option>
+                    <option value="السودان">السودان</option>
+                    <option value="تركيا">تركيا</option>
+                    <option value="امريكا">امريكا</option>
+                    <option value="بريطانيا">بريطانيا</option>
+                    <option value="المانيا">المانيا</option>
+                    <option value="فرنسا">فرنسا</option>
+                    <option value="روسيا">روسيا</option>
+                    <option value="الصين">الصين</option>
+                    <option value="اليابان">اليابان</option>
+                    <option value="الهند">الهند</option>
+                    <option value="اخرى">اخرى</option>
+                </select>
+                <label>تاريخ الميلاد:</label>
+                <input type="date" id="regBirthDate" onchange="calculateAge()">
+                <input type="text" id="regAge" placeholder="العمر" readonly>
+                <label>الجنس:</label>
+                <select id="regGender">
+                    <option value="">اختر الجنس</option>
+                    <option value="male">ذكر</option>
+                    <option value="female">أنثى</option>
+                </select>
+                <button onclick="register()">انشاء حساب</button>
+                <div class="switch">عندك حساب؟ <span onclick="showLogin()">تسجيل دخول</span></div>
             </div>
-        </div>
-        <div id="fullProfilePage" class="page">
-            <div class="full-profile-card">
-                <div class="cover"></div>
-                <div class="profile-full">
-                    <div class="avatar-big" id="fullAvatar">S</div>
-                    <div class="profile-name" id="fullName">-</div>
-                    <div class="profile-id">ID: <span id="fullId">-</span></div>
-                    <div class="info-grid">
-                        <div class="info-box">
-                            <div class="info-box-value" id="fullAge">-</div>
-                            <div class="info-box-label">العمر</div>
-                        </div>
-                        <div class="info-box">
-                            <div class="info-box-value" id="fullGender">-</div>
-                            <div class="info-box-label">الجنس</div>
-                        </div>
-                        <div class="info-box">
-                            <div class="info-box-value" id="fullCountry">-</div>
-                            <div class="info-box-label">الدولة</div>
-                        </div>
-                        <div class="info-box">
-                            <div class="info-box-value">VIP 0</div>
-                            <div class="info-box-label">المستوى</div>
-                        </div>
-                    </div>
-                    <button class="btn-secondary" onclick="showPage('mePage')">
-                        <i class="fa-solid fa-arrow-right"></i> رجوع
-                    </button>
-                </div>
-            </div>
-        <div id="editProfilePage" class="page form-box">
-            <h2>تعديل البروفايل</h2>
-            <input type="text" id="editUsername" placeholder="اسم المستخدم">
-            <input type="text" id="editLastName" placeholder="الكنية">
-            <select id="editCountry">
-                <option value="">اختر دولتك</option>
-                <option value="سوريا">سوريا</option>
-                <option value="السعودية">السعودية</option>
-                <option value="الإمارات">الإمارات</option>
-                <option value="مصر">مصر</option>
-                <option value="العراق">العراق</option>
-                <option value="الأردن">الأردن</option>
-                <option value="لبنان">لبنان</option>
-                <option value="فلسطين">فلسطين</option>
-                <option value="الكويت">الكويت</option>
-                <option value="قطر">قطر</option>
-                <option value="البحرين">البحرين</option>
-                <option value="عمان">عمان</option>
-                <option value="اليمن">اليمن</option>
-                <option value="ليبيا">ليبيا</option>
-                <option value="تونس">تونس</option>
-                <option value="الجزائر">الجزائر</option>
-                <option value="المغرب">المغرب</option>
-                <option value="السودان">السودان</option>
-                <option value="تركيا">تركيا</option>
-                <option value="اخرى">اخرى</option>
-            </select>
-            <button onclick="updateProfile()">
-                <i class="fa-solid fa-floppy-disk"></i> حفظ التعديلات
-            </button>
-            <button class="btn-secondary" onclick="showPage('mePage')">الغاء</button>
-        </div>
-        <div id="linkAccountPage" class="page form-box">
-            <h2>ربط الحساب</h2>
-            <p style="color: #aaa; text-align: center; margin-bottom: 25px; line-height: 1.6;">اربط حسابك لحمايته من الضياع واسترداده بسهولة</p>
-            <button onclick="linkGmail()">
-                <i class="fa-brands fa-google"></i> ربط بحساب Gmail
-            </button>
-            <button onclick="linkPhone()">
-                <i class="fa-solid fa-mobile-screen"></i> ربط برقم الهاتف
-            </button>
-            <button class="btn-secondary" onclick="showPage('mePage')">رجوع</button>
         </div>
     </div>
-    <script>
-        const API_URL = window.location.origin;
-        let currentUser = null;
-        
-        window.onload = async () => {
-            const token = localStorage.getItem('token');
-            if (token) {
-                await loadProfile();
-            } else {
-                showPage('loginPage');
-            }
-        };
 
+    <script>
         function showAlert(msg, title = 'تطبيق السبع') {
             document.getElementById('alertTitle').textContent = title;
             document.getElementById('alertMsg').textContent = msg;
             document.getElementById('customAlert').style.display = 'flex';
         }
         function closeAlert() { document.getElementById('customAlert').style.display = 'none'; }
-        
-        function showPage(pageId) {
-            document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-            document.getElementById(pageId).classList.add('active');
-        }
-
+        function showRegister() { document.getElementById('loginForm').style.display = 'none'; document.getElementById('registerForm').style.display = 'block'; }
+        function showLogin() { document.getElementById('registerForm').style.display = 'none'; document.getElementById('loginForm').style.display = 'block'; }
         function calculateAge() {
             const birthDate = document.getElementById('regBirthDate').value;
             if (birthDate) {
@@ -502,7 +169,6 @@
                 document.getElementById('regAge').value = age + ' سنة';
             } else { document.getElementById('regAge').value = ''; }
         }
-
         async function register() {
             const username = document.getElementById('regUsername').value.trim();
             const lastName = document.getElementById('regLastName').value.trim();
@@ -516,151 +182,28 @@
                 showAlert('عبي كل الحقول يا وحش', 'تنبيه'); return;
             }
             try {
-                const res = await fetch(`${API_URL}/api/register`, { 
-                    method: 'POST', 
-                    headers: { 'Content-Type': 'application/json' }, 
-                    body: JSON.stringify({ username, lastName, email, password, country, birthDate, age: parseInt(age), gender }) 
-                });
+                const res = await fetch('/api/register', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ username, lastName, email, password, country, birthDate, age: parseInt(age), gender }) });
                 const data = await res.json();
                 if (data.token) {
                     localStorage.setItem('token', data.token);
-                    showAlert('تم انشاء الحساب بنجاح', 'تطبيق السبع');
-                    setTimeout(() => loadProfile(), 1000);
-                } else if (data.error === 'المستخدم او الايميل موجود') {
-                    const loginRes = await fetch(`${API_URL}/api/login`, { 
-                        method: 'POST', 
-                        headers: { 'Content-Type': 'application/json' }, 
-                        body: JSON.stringify({ email, password }) 
-                    });
-                    const loginData = await loginRes.json();
-                    if (loginData.token) {
-                        localStorage.setItem('token', loginData.token);
-                        showAlert('تم تسجيل الدخول بنجاح', 'تطبيق السبع');
-                        setTimeout(() => loadProfile(), 1000);
-                    } else {
-                        showAlert('الايميل موجود بس كلمة السر غلط', 'خطأ');
-                    }
-                } else { 
-                    showAlert(data.error || 'صار خطأ', 'خطأ'); 
-                }
+                    showAlert('تم تسجيل الدخول بنجاح', 'تطبيق السبع');
+                    setTimeout(() => location.reload(), 1500);
+                } else { showAlert(data.error || 'صار خطأ', 'خطأ'); }
             } catch (error) { showAlert('خطأ بالاتصال بالسيرفر', 'خطأ'); }
         }
-
         async function login() {
             const email = document.getElementById('loginEmail').value.trim();
             const password = document.getElementById('loginPassword').value;
             if (!email ||!password) { showAlert('عبي الإيميل وكلمة السر', 'تنبيه'); return; }
             try {
-                const res = await fetch(`${API_URL}/api/login`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ email, password })
-                });
+                const res = await fetch('/api/login', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email, password }) });
                 const data = await res.json();
                 if (data.token) {
                     localStorage.setItem('token', data.token);
                     showAlert('تم تسجيل الدخول إلى تطبيق السبع', 'أهلاً وسهلاً');
-                                        setTimeout(() => loadProfile(), 1000);
-                } else {
-                    showAlert(data.error || 'خطأ بالتسجيل', 'خطأ');
-                }
-            } catch (error) {
-                showAlert('خطأ بالاتصال بالسيرفر', 'خطأ');
-            }
-        }
-
-        async function loadProfile() {
-            const token = localStorage.getItem('token');
-            if (!token) { showPage('loginPage'); return; }
-            try {
-                const res = await fetch(`${API_URL}/api/profile`, {
-                    headers: { 'Authorization': `Bearer ${token}` }
-                });
-                const data = await res.json();
-                if (data.user) {
-                    currentUser = data.user;
-                    // حل مشكلة undefined
-                    const lastName = currentUser.lastName || '';
-                    const fullName = `${currentUser.username} ${lastName}`.trim();
-                    
-                    // تحديث صفحة "أنا"
-                    document.getElementById('meName').textContent = fullName;
-                    document.getElementById('meId').textContent = currentUser._id.substring(0, 8);
-                    document.getElementById('meAvatar').textContent = currentUser.username.charAt(0).toUpperCase();
-                    
-                    // تحديث الملف الشخصي الكامل
-                    document.getElementById('fullName').textContent = fullName;
-                    document.getElementById('fullId').textContent = currentUser._id.substring(0, 8);
-                    document.getElementById('fullAvatar').textContent = currentUser.username.charAt(0).toUpperCase();
-                    document.getElementById('fullAge').textContent = currentUser.age || '-';
-                    document.getElementById('fullGender').textContent = currentUser.gender === 'male' ? 'ذكر' : 'أنثى';
-                    document.getElementById('fullCountry').textContent = currentUser.country || '-';
-                    
-                    // تحديث حقول التعديل
-                    document.getElementById('editUsername').value = currentUser.username || '';
-                    document.getElementById('editLastName').value = currentUser.lastName || '';
-                    document.getElementById('editCountry').value = currentUser.country || '';
-                    
-                    // اظهار اذا مربوط
-                    if (currentUser.email) {
-                        document.getElementById('linkBadge').style.display = 'inline-block';
-                    }
-                    
-                    showPage('mePage');
-                } else {
-                    localStorage.removeItem('token');
-                    showPage('loginPage');
-                }
-            } catch (error) {
-                localStorage.removeItem('token');
-                showPage('loginPage');
-            }
-        }
-
-        async function updateProfile() {
-            const token = localStorage.getItem('token');
-            const username = document.getElementById('editUsername').value.trim();
-            const lastName = document.getElementById('editLastName').value.trim();
-            const country = document.getElementById('editCountry').value;
-            
-            if (!username || !lastName || !country) {
-                showAlert('عبي كل الحقول', 'تنبيه'); return;
-            }
-            
-            try {
-                const res = await fetch(`${API_URL}/api/profile`, {
-                    method: 'PUT',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${token}`
-                    },
-                    body: JSON.stringify({ username, lastName, country })
-                });
-                const data = await res.json();
-                if (data.user) {
-                    showAlert('تم حفظ التعديلات بنجاح', 'تم');
-                    await loadProfile();
-                } else {
-                    showAlert(data.error || 'صار خطأ', 'خطأ');
-                }
-            } catch (error) {
-                showAlert('خطأ بالاتصال بالسيرفر', 'خطأ');
-            }
-        }
-
-        function logout() {
-            localStorage.removeItem('token');
-            currentUser = null;
-            showAlert('تم تسجيل الخروج', 'تطبيق السبع');
-            setTimeout(() => showPage('loginPage'), 1000);
-        }
-
-        function linkGmail() {
-            showAlert('قريباً سيتم دعم ربط Gmail', 'تطبيق السبع');
-        }
-
-        function linkPhone() {
-            showAlert('قريباً سيتم دعم ربط رقم الهاتف', 'تطبيق السبع');
+                    setTimeout(() => location.reload(), 1500);
+                } else { showAlert(data.error || 'الإيميل او كلمة السر غلط', 'خطأ'); }
+            } catch (error) { showAlert('خطأ بالاتصال بالسيرفر', 'خطأ'); }
         }
     </script>
 </body>
