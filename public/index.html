@@ -6,8 +6,74 @@
     <title>سايبر كاردز</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #0a0a14; color: #fff; min-height: 100vh; }
-        .container { max-width: 450px; margin: 0 auto; padding: 20px; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #0a0a14; color: #fff; min-height: 100vh; overflow-x: hidden; }
+        
+        /* شاشة الترحيب المتحركة */
+        #welcomeScreen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(45deg, #0a0a14, #1a0a2e, #0a0a14);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            animation: fadeOut 1s ease-in-out 4s forwards;
+        }
+        
+        .welcome-text {
+            font-size: 42px;
+            font-weight: bold;
+            background: linear-gradient(90deg, #ff00ff, #00ffff, #ff00ff);
+            background-size: 200% 200%;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            animation: gradientMove 2s ease infinite, scaleIn 1s ease;
+            margin-bottom: 50px;
+            text-shadow: 0 0 30px rgba(255, 0, 255, 0.8);
+        }
+        
+        .dancers {
+            display: flex;
+            gap: 100px;
+            align-items: flex-end;
+        }
+        
+        .dancer {
+            font-size: 80px;
+            animation: dance 0.6s ease-in-out infinite alternate;
+        }
+        
+        .dancer-boy { animation-delay: 0s; }
+        .dancer-girl { animation-delay: 0.3s; }
+        
+        @keyframes dance {
+            0% { transform: translateY(0) rotate(-10deg); }
+            100% { transform: translateY(-30px) rotate(10deg); }
+        }
+        
+        @keyframes gradientMove {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+        
+        @keyframes scaleIn {
+            0% { transform: scale(0); opacity: 0; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+        
+        @keyframes fadeOut {
+            to { opacity: 0; visibility: hidden; }
+        }
+        
+        /* الفورم الأساسي */
+        .container { max-width: 450px; margin: 0 auto; padding: 20px; opacity: 0; animation: fadeIn 1s ease 4.5s forwards; }
+        @keyframes fadeIn { to { opacity: 1; } }
+        
         .logo { text-align: center; font-size: 32px; font-weight: bold; margin: 20px 0; background: linear-gradient(90deg, #ff00ff, #00ffff); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
         .form-box { background: #141428; border: 2px solid #ff00ff; border-radius: 15px; padding: 25px; box-shadow: 0 0 20px rgba(255, 0, 255, 0.3); }
         input, select { width: 100%; padding: 12px; margin: 8px 0; border: 2px solid #ff00ff; border-radius: 8px; background: #0f0f1e; color: white; font-size: 16px; outline: none; }
@@ -24,6 +90,16 @@
     </style>
 </head>
 <body>
+    <!-- شاشة الترحيب -->
+    <div id="welcomeScreen">
+        <div class="welcome-text">اسم السبع الحلبي يرحب بكم</div>
+        <div class="dancers">
+            <div class="dancer dancer-boy">🕺</div>
+            <div class="dancer dancer-girl">💃</div>
+        </div>
+    </div>
+
+    <!-- الفورم الأساسي -->
     <div class="container">
         <div class="logo">CYBER CARDS</div>
         <div class="form-box">
@@ -85,6 +161,8 @@
                 <div class="switch">عندك حساب؟ <span onclick="showLogin()">تسجيل دخول</span></div>
             </div>
         </div>
+    </div>
+
     <script>
         function showRegister() { document.getElementById('loginForm').style.display = 'none'; document.getElementById('registerForm').style.display = 'block'; }
         function showLogin() { document.getElementById('registerForm').style.display = 'none'; document.getElementById('loginForm').style.display = 'block'; }
