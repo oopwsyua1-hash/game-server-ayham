@@ -322,7 +322,6 @@
                     <div class="arrow-btn" onclick="showPage('fullProfilePage')">
                         <i class="fa-solid fa-chevron-left"></i>
                     </div>
-                </div>
                 <div class="stats-grid">
                     <div class="stat-item">
                         <div class="stat-value" id="meFollowers">0</div>
@@ -423,7 +422,6 @@
                     </button>
                 </div>
             </div>
-        </div>
         <div id="editProfilePage" class="page form-box">
             <h2>تعديل البروفايل</h2>
             <input type="text" id="editUsername" placeholder="اسم المستخدم">
@@ -548,4 +546,120 @@
         }
 
         async function login() {
-            const email = document.getElementById
+            const email = document.getElementById('loginEmail').value.trim();
+            const password = document.getElementById('loginPassword').value;
+            if (!email ||!password) { showAlert('عبي الإيميل وكلمة السر', 'تنبيه'); return; }
+            try {                const res = await fetch(`${API_URL}/api/login`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, password })
+                });
+                const data = await res.json();
+                if (data.token) {
+                    localStorage.setItem('token', data.token);
+                    showAlert('تم تسجيل الدخول إلى تطبيق السبع', 'أهلاً وسهلاً');
+                    setTimeout(() => loadProfile(), 1000);
+                } else {
+                    showAlert(data.error || 'خطأ بالتسجيل', 'خطأ');
+                }
+            } catch (error) {
+                showAlert('خطأ بالاتصال بالسيرفر', 'خطأ');
+            }
+        }
+
+        async function loadProfile() {
+            const token = localStorage.getItem('token');
+            if (!token) { showPage('loginPage'); return; }
+            try {
+                const res = await fetch(`${API_URL}/api/profile`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                const data = await res.json();
+                if (data.user) {
+                    currentUser = data.user;
+                    // حل مشكلة undefined
+                    const lastName = currentUser.lastName || '';
+                    const fullName = `${currentUser.username} ${lastName}`.trim();
+                    
+                    // تحديث صفحة "أنا"
+                    document.getElementById('meName').textContent = fullName;
+                    document.getElementById('meId').textContent = currentUser._id.substring(0, 8);
+                    document.getElementById('meAvatar').textContent = currentUser.username.charAt(0).toUpperCase();
+                    
+                    // تحديث الملف الشخصي الكامل
+                    document.getElementById('fullName').textContent = fullName;
+                    document.getElementById('fullId').textContent = currentUser._id.substring(0, 8);
+                    document.getElementById('fullAvatar').textContent = currentUser.username.charAt(0).toUpperCase();
+                    document.getElementById('fullAge').textContent = currentUser.age || '-';
+                    document.getElementById('fullGender').textContent = currentUser.gender === 'male' ? 'ذكر' : 'أنثى';
+                    document.getElementById('fullCountry').textContent = currentUser.country || '-';
+                    
+                    // تحديث حقول التعديل
+                    document.getElementById('editUsername').value = currentUser.username || '';
+                    document.getElementById('editLastName').value = currentUser.lastName || '';
+                    document.getElementById('editCountry').value = currentUser.country || '';
+                    
+                    // اظهار اذا مربوط
+                    if (currentUser.email) {
+                        document.getElementById('linkBadge').style.display = 'inline-block';
+                    }
+                    
+                    showPage('mePage');
+                } else {
+                    localStorage.removeItem('token');
+                    showPage('loginPage');
+                }
+            } catch (error) {
+                localStorage.removeItem('token');
+                showPage('loginPage');
+            }
+        }
+
+        async function updateProfile() {
+            const token = localStorage.getItem('token');
+            const username = document.getElementById('editUsername').value.trim();
+            const lastName = document.getElementById('editLastName').value.trim();
+            const country = document.getElementById('editCountry').value;
+            
+            if (!username || !lastName || !country) {
+                showAlert('عبي كل الحقول', 'تنبيه'); return;
+            }
+            
+            try {
+                const res = await fetch(`${API_URL}/api/profile`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({ username, lastName, country })
+                });
+                const data = await res.json();
+                if (data.user) {
+                    showAlert('تم حفظ التعديلات بنجاح', 'تم');
+                    await loadProfile();
+                } else {
+                    showAlert(data.error || 'صار خطأ', 'خطأ');
+                }
+            } catch (error) {
+                showAlert('خطأ بالاتصال بالسيرفر', 'خطأ');
+            }
+        }
+
+        function logout() {
+            localStorage.removeItem('token');
+            currentUser = null;
+            showAlert('تم تسجيل الخروج', 'تطبيق السبع');
+            setTimeout(() => showPage('loginPage'), 1000);
+        }
+
+        function linkGmail() {
+            showAlert('قريباً سيتم دعم ربط Gmail', 'تطبيق السبع');
+        }
+
+        function linkPhone() {
+            showAlert('قريباً سيتم دعم ربط رقم الهاتف', 'تطبيق السبع');
+        }
+    </script>
+</body>
+</html>
