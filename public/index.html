@@ -13,29 +13,38 @@
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: linear-gradient(45deg, #0a0a14, #1a0a2e, #0a0a14);
             display: flex; flex-direction: column; justify-content: center; align-items: center;
-            z-index: 9999; animation: fadeOut 1s ease-in-out 4s forwards;
+            z-index: 9999; animation: fadeOut 1s ease-in-out 5s forwards;
         }
         .welcome-text {
             font-size: 38px; font-weight: bold;
             background: linear-gradient(90deg, #ff00ff, #00ffff, #ff00ff);
             background-size: 200% 200%; -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-            animation: gradientMove 2s ease infinite, scaleIn 1s ease; margin-bottom: 50px;
+            animation: gradientMove 2s ease infinite, scaleIn 1s ease; margin-bottom: 40px;
             text-shadow: 0 0 30px rgba(255, 0, 255, 0.8); text-align: center; padding: 0 20px;
         }
-        .dancers { display: flex; gap: 100px; align-items: flex-end; }
-        .dancer { font-size: 80px; animation: dance 0.6s ease-in-out infinite alternate; }
+        .dancers { 
+            display: flex; gap: 50px; align-items: center; justify-content: center;
+            width: 100%; height: 300px;
+        }
+        .dancer {
+            width: 150px; height: 250px; object-fit: cover;
+            animation: dance 1s ease-in-out infinite alternate;
+            filter: drop-shadow(0 0 20px rgba(255, 0, 255, 0.6));
+        }
         .dancer-boy { animation-delay: 0s; }
-        .dancer-girl { animation-delay: 0.3s; }
-        @keyframes dance { 0% { transform: translateY(0) rotate(-10deg); } 100% { transform: translateY(-30px) rotate(10deg); } }
+        .dancer-girl { animation-delay: 0.5s; }
+        @keyframes dance { 
+            0% { transform: translateY(0) rotate(-5deg) scale(1); } 
+            100% { transform: translateY(-20px) rotate(5deg) scale(1.05); } 
+        }
         @keyframes gradientMove { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
         @keyframes scaleIn { 0% { transform: scale(0); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
         @keyframes fadeOut { to { opacity: 0; visibility: hidden; } }
         
-        /* التنبيه الخاص فينا */
+        /* التنبيه الخاص */
         #customAlert {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.8); display: none; justify-content: center; align-items: center;
-            z-index: 10000;
+            background: rgba(0,0,0,0.8); display: none; justify-content: center; align-items: center; z-index: 10000;
         }
         .alert-box {
             background: #141428; border: 2px solid #00ffff; border-radius: 15px; padding: 30px;
@@ -51,7 +60,7 @@
         @keyframes popIn { 0% { transform: scale(0.5); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
         
         /* الفورم الأساسي */
-        .container { max-width: 450px; margin: 0 auto; padding: 20px; opacity: 0; animation: fadeIn 1s ease 4.5s forwards; }
+        .container { max-width: 450px; margin: 0 auto; padding: 20px; opacity: 0; animation: fadeIn 1s ease 5.5s forwards; }
         @keyframes fadeIn { to { opacity: 1; } }
         .logo { text-align: center; font-size: 32px; font-weight: bold; margin: 20px 0; background: linear-gradient(90deg, #ff00ff, #00ffff); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
         .form-box { background: #141428; border: 2px solid #ff00ff; border-radius: 15px; padding: 25px; box-shadow: 0 0 20px rgba(255, 0, 255, 0.3); }
@@ -73,8 +82,10 @@
     <div id="welcomeScreen">
         <div class="welcome-text">اسم السبع الحلبي يرحب بكم</div>
         <div class="dancers">
-            <div class="dancer dancer-boy">🕺</div>
-            <div class="dancer dancer-girl">💃</div>
+            <!-- صورة بنت بترقص GIF -->
+            <img src="https://media.giphy.com/media/3o7TKSjRrfIPjeiVyM/giphy.gif" class="dancer dancer-girl" alt="بنت ترقص">
+            <!-- صورة شب بيرقص GIF -->
+            <img src="https://media.giphy.com/media/3o7TKPdUkkbCAVqWk0/giphy.gif" class="dancer dancer-boy" alt="شب يرقص">
         </div>
     </div>
 
@@ -157,16 +168,13 @@
             document.getElementById('alertMsg').textContent = msg;
             document.getElementById('customAlert').style.display = 'flex';
         }
-        function closeAlert() {
-            document.getElementById('customAlert').style.display = 'none';
-        }
+        function closeAlert() { document.getElementById('customAlert').style.display = 'none'; }
         function showRegister() { document.getElementById('loginForm').style.display = 'none'; document.getElementById('registerForm').style.display = 'block'; }
         function showLogin() { document.getElementById('registerForm').style.display = 'none'; document.getElementById('loginForm').style.display = 'block'; }
         function calculateAge() {
             const birthDate = document.getElementById('regBirthDate').value;
             if (birthDate) {
-                const today = new Date();
-                const birth = new Date(birthDate);
+                const today = new Date(); const birth = new Date(birthDate);
                 let age = today.getFullYear() - birth.getFullYear();
                 const monthDiff = today.getMonth() - birth.getMonth();
                 if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birth.getDate())) { age--; }
@@ -192,9 +200,7 @@
                     localStorage.setItem('token', data.token); 
                     showAlert('تم انشاء الحساب بنجاح', 'تطبيق السبع');
                     setTimeout(() => location.reload(), 1500);
-                } else { 
-                    showAlert(data.error || 'صار خطأ', 'خطأ'); 
-                }
+                } else { showAlert(data.error || 'صار خطأ', 'خطأ'); }
             } catch (error) { showAlert('خطأ بالاتصال بالسيرفر', 'خطأ'); }
         }
         async function login() {
@@ -208,9 +214,7 @@
                     localStorage.setItem('token', data.token); 
                     showAlert('تم تسجيل الدخول إلى تطبيق السبع', 'أهلاً وسهلاً'); 
                     setTimeout(() => location.reload(), 1500);
-                } else { 
-                    showAlert(data.error || 'الإيميل او كلمة السر غلط', 'خطأ'); 
-                }
+                } else { showAlert(data.error || 'الإيميل او كلمة السر غلط', 'خطأ'); }
             } catch (error) { showAlert('خطأ بالاتصال بالسيرفر', 'خطأ'); }
         }
     </script>
