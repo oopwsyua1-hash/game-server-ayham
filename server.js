@@ -1,5 +1,5 @@
 const express = require('express');
-const sqlite3 = require('sqlite3').verbose();
+const mongoose = require('mongoose');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const path = require('path');
@@ -11,99 +11,92 @@ const port = process.env.PORT || 3000;
 app.use(express.json());
 app.use(express.static('public'));
 
-// Database setup
-const db = new sqlite3.Database('./database.db');
+const JWT_SECRET = process.env.JWT_SECRET || 'sabe3_super_secret_key';
 
-db.serialize(() => {
-  db.run(`CREATE TABLE IF NOT EXISTS users (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    username TEXT NOT NULL,
-    lastName TEXT NOT NULL,
-    email TEXT UNIQUE NOT NULL,
-    password TEXT NOT NULL,
-    country TEXT NOT NULL,
-    birthDate TEXT NOT NULL,
-    age INTEGER NOT NULL,
-    gender TEXT NOT NULL,
-    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
-  )`);
+mongoose.connect(process.env.MONGODB_URI)
+.then(() => console.log('MongoDB Connected - السيرفر شغال'))
+.catch(err => console.log(err));
+
+const userSchema = new mongoose.Schema({
+    username: { type: String, required: true, unique: true },
+    email: { type: String, required: true, unique: true },
+    password: { type: String, required: true },
+    points: { type: Number, default: 0 },
+    wins: { type: Number, default: 0 },
+    games: { type: Number, default: 0 },
+    level: { type: Number, default: 1 },
+    rank: { type: String, default: 'مبتدئ' },
+    profilePic: { type: String, default: '' },
+    createdAt: { type: Date, default: Date.now },
+    lastSeen: { type: Date, default: Date.now }
 });
 
-// Register route
+const User = mongoose.model('User', userSchema);
+
+function authMiddleware(req, res, next) {
+    const token = req.headers.authorization?.split(' ')[1];
+    if (!token) return res.status(401).json({ message: 'مافي توكن' });
+    try {
+        const decoded = jwt.verify(token, JWT_SECRET);
+        req.userId = decoded.userId;
+        next();
+    } catch (error) {
+        res.status(401).json({ message: 'توكن غلط' });
+    }
+}
+
 app.post('/api/register', async (req, res) => {
-  const { username, lastName, email, password, country, birthDate, age, gender } = req.body;
-
-  if (!username ||!lastName ||!email ||!password ||!country ||!birthDate ||!age ||!gender) {
-    return res.status(400).json({ error: 'كل الحقول مطلوبة' });
-  }
-
-  try {
-    const hashedPassword = await bcrypt.hash(password, 10);
-
-    db.run(
-      'INSERT INTO users (username, lastName, email, password, country, birthDate, age, gender) VALUES (?,?,?,?,?,?,?,?)',
-      [username, lastName, email, hashedPassword, country, birthDate, age, gender],
-      function(err) {
-        if (err) {
-          if (err.message.includes('UNIQUE')) {
-            return res.status(400).json({ error: 'الإيميل مستخدم من قبل' });
-          }
-          return res.status(500).json({ error: 'خطأ بالسيرفر' });
-        }
-
-        const token = jwt.sign({ userId: this.lastID }, process.env.JWT_SECRET, { expiresIn: '7d' });
+    const { username, email, password } = req.body;
+    if (!username ||!email ||!password) return res.status(400).json({ message: 'كل الحقول مطلوبة' });
+    try {
+        const existingUser = await User.findOne({ email });
+        if (existingUser) return res.status(400).json({ message: 'الإيميل مستخدم من قبل' });
+        const hashedPassword = await bcrypt.hash(password, 10);
+        const user = new User({ username, email, password: hashedPassword });
+        await user.save();
+        const token = jwt.sign({ userId: user._id }, JWT_SECRET, { expiresIn: '7d' });
         res.json({ token, message: 'تم انشاء الحساب بنجاح' });
-      }
-    );
-  } catch (error) {
-    res.status(500).json({ error: 'خطأ بالسيرفر' });
-  }
+    } catch (error) {
+        res.status(500).json({ message: 'خطأ بالسيرفر' });
+    }
 });
 
-// Login route
-app.post('/api/login', (req, res) => {
-  const { email, password } = req.body;
-
-  if (!email ||!password) {
-    return res.status(400).json({ error: 'الإيميل وكلمة السر مطلوبين' });
-  }
-
-  db.get('SELECT * FROM users WHERE email =?', [email], async (err, user) => {
-    if (err) return res.status(500).json({ error: 'خطأ بالسيرفر' });
-    if (!user) return res.status(400).json({ error: 'الإيميل او كلمة السر غلط' });
-
-    const validPassword = await bcrypt.compare(password, user.password);
-    if (!validPassword) return res.status(400).json({ error: 'الإيميل او كلمة السر غلط' });
-
-    const token = jwt.sign({ userId: user.id }, process.env.JWT_SECRET, { expiresIn: '7d' });
-    res.json({ token, message: 'تم تسجيل الدخول بنجاح' });
-  });
+app.post('/api/login', async (req, res) => {
+    const { email, password } = req.body;
+    if (!email ||!password) return res.status(400).json({ message: 'الإيميل وكلمة السر مطلوبين' });
+    try {
+        const user = await User.findOne({ email });
+        if (!user) return res.status(400).json({ message: 'الإيميل او كلمة السر غلط' });
+        const validPassword = await bcrypt.compare(password, user.password);
+        if (!validPassword) return res.status(400).json({ message: 'الإيميل او كلمة السر غلط' });
+        const token = jwt.sign({ userId: user._id }, JWT_SECRET, { expiresIn: '7d' });
+        res.json({ token, message: 'تم تسجيل الدخول بنجاح' });
+    } catch (error) {
+        res.status(500).json({ message: 'خطأ بالسيرفر' });
+    }
 });
 
-// Get profile route
-app.get('/api/profile', (req, res) => {
-  const authHeader = req.headers['authorization'];
-  const token = authHeader && authHeader.split(' ')[1];
-
-  if (!token) return res.status(401).json({ error: 'مطلوب توكن' });
-
-  jwt.verify(token, process.env.JWT_SECRET, (err, decoded) => {
-    if (err) return res.status(401).json({ error: 'توكن غير صالح' });
-
-    db.get('SELECT id, username, lastName, email, country, age, gender FROM users WHERE id =?', [decoded.userId], (err, user) => {
-      if (err ||!user) return res.status(404).json({ error: 'المستخدم غير موجود' });
-      res.json({ user });
-    });
-  });
+app.get('/api/profile', authMiddleware, async (req, res) => {
+    try {
+        const user = await User.findById(req.userId);
+        if (!user) return res.status(404).json({ message: 'اليوزر مو موجود' });
+        user.lastSeen = new Date();
+        await user.save();
+        res.json({
+            username: user.username, email: user.email, points: user.points,
+            wins: user.wins, games: user.games, level: user.level,
+            rank: user.rank, profilePic: user.profilePic,
+            createdAt: user.createdAt, lastSeen: user.lastSeen
+        });
+    } catch (error) {
+        res.status(500).json({ message: 'خطأ بالسيرفر' });
+    }
 });
 
-// ===== الراوت الجديد تبع صفحة البروفايل =====
 app.get('/me', (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'me.html'));
+    res.sendFile(path.join(__dirname, 'public', 'me.html'));
 });
-// ===== نهاية الراوت الجديد =====
 
-// Start server
 app.listen(port, () => {
-  console.log(`Server running on port ${port}`);
+    console.log(`Server running on port ${port}`);
 });
