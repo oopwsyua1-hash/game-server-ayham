@@ -1,1 +1,27 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>تسجيل الدخول</title>
+  <style>
+    body { font-family: sans-serif; background: #1a1a1a; color: white; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
+    .box { background: #2a2a2a; padding: 30px; border-radius: 10px; width: 300px; }
+    input { width: 100%; padding: 10px; margin: 10px 0; border: none; border-radius: 5px; background: #333; color: white; box-sizing: border-box; }
+    button { width: 100%; padding: 10px; margin: 5px 0; border: none; border-radius: 5px; background: #5865F2; color: white; cursor: pointer; }
+    #msg { margin-top: 15px; text-align: center; min-height: 20px; }
+  </style>
+</head>
+<body>
+  <div class="box">
+    <h2>تسجيل الدخول</h2>
+    <input type="text" id="username" placeholder="اسم المستخدم">
+    <input type="password" id="password" placeholder="كلمة المرور">
+    <button id="loginBtn">دخول</button>
+    <button id="registerBtn">انشاء حساب</button>
+    <div id="msg"></div>
+  </div>
 
+  <script src="script.js"></script>
+</body>
+</html>
