@@ -3,12 +3,11 @@ const mongoose = require('mongoose');
 const cors = require('cors');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
-const path = require('path'); // جديد
+const path = require('path');
 
 const app = express();
 app.use(cors());
 app.use(express.json());
-app.use(express.static(__dirname)); // جديد - مشان يقرأ index.html
 
 mongoose.connect(process.env.MONGO_URL).then(() => {
     console.log('Connected to MongoDB ✅');
@@ -43,8 +42,9 @@ app.post('/api/register', async (req, res) => {
         const user = new User({ username, lastName, email, password: hashedPassword, country, birthDate, age: parseInt(age), gender });
         await user.save();
         const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET);
-        res.json({ token, user: { id: user._id, username: user.username, lastName: user.lastName, country: user.country, coins: user.coins } });
+        res.json({ token, user: { id: user._id, username: user.username, coins: user.coins } });
     } catch (error) {
+        console.log(error);
         res.status(500).json({ error: 'خطأ بالسيرفر' });
     }
 });
@@ -57,13 +57,12 @@ app.post('/api/login', async (req, res) => {
         const validPass = await bcrypt.compare(password, user.password);
         if (!validPass) return res.status(400).json({ error: 'كلمة السر غلط' });
         const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET);
-        res.json({ token, user: { id: user._id, username: user.username, lastName: user.lastName, country: user.country, coins: user.coins } });
+        res.json({ token, user: { id: user._id, username: user.username, coins: user.coins } });
     } catch (error) {
         res.status(500).json({ error: 'خطأ بالسيرفر' });
     }
 });
 
-// جديد - مشان يفتح صفحة اللعبة
 app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'index.html'));
 });
