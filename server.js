@@ -1,33 +1,30 @@
 const express = require('express');
 const mongoose = require('mongoose');
-const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
+const jwt = require('jsonwebtoken');
+const cors = require('cors');
 const path = require('path');
 
 const app = express();
 
+// اهم سطر عشان الموبايل يشتغل
+app.use(cors());
 app.use(express.json());
 app.use(express.static('public'));
 
-// CORS بسيط بدون كوكيز
-app.use((req, res, next) => {
-  res.header('Access-Control-Allow-Origin', '*');
-  res.header('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE,OPTIONS');
-  res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization');
-  if (req.method === 'OPTIONS') return res.sendStatus(200);
-  next();
-});
+// اتصال قاعدة البيانات
+mongoose.connect(process.env.MONGO_URI)
+  .then(() => console.log('✅ MongoDB Connected'))
+  .catch(err => console.log('MongoDB Error:', err));
 
-mongoose.connect(process.env.MONGO_URI).then(() => console.log('✅ MongoDB Connected'));
-
-const UserSchema = new mongoose.Schema({
+// موديل المستخدم
+const User = mongoose.model('User', new mongoose.Schema({
   username: { type: String, required: true, unique: true },
   password: { type: String, required: true }
-});
-const User = mongoose.model('User', UserSchema);
+}));
 
-// Middleware الجديد - بياخد التوكن من الـ Header
-const authMiddleware = (req, res, next) => {
+// Middleware للتحقق من التوكن
+const auth = (req, res, next) => {
   const token = req.header('Authorization')?.replace('Bearer ', '');
   if (!token) return res.status(401).json({ msg: 'No token' });
   
@@ -40,29 +37,26 @@ const authMiddleware = (req, res, next) => {
   }
 };
 
+// تسجيل حساب جديد
 app.post('/api/auth/register', async (req, res) => {
   try {
     const { username, password } = req.body;
     if (!username || !password) return res.status(400).json({ msg: 'عبي كل الحقول' });
     
-    let user = await User.findOne({ username });
-    if (user) return res.status(400).json({ msg: 'المستخدم موجود' });
+    if (await User.findOne({ username })) return res.status(400).json({ msg: 'اسم المستخدم موجود' });
 
     const hashedPassword = await bcrypt.hash(password, 10);
-    user = new User({ username, password: hashedPassword });
+    const user = new User({ username, password: hashedPassword });
     await user.save();
 
-    const payload = { user: { id: user.id } };
-    const token = jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: '7d' });
-
-    // رجع التوكن بالـ response بدل الكوكيز
-    res.json({ token, user: { id: user.id, username: user.username } });
+    const token = jwt.sign({ user: { id: user.id } }, process.env.JWT_SECRET, { expiresIn: '30d' });
+    res.json({ token, msg: 'تم التسجيل بنجاح' });
   } catch (err) {
-    console.error(err.message);
-    res.status(500).json({ msg: 'Server error' });
+    res.status(500).json({ msg: 'خطأ سيرفر: ' + err.message });
   }
 });
 
+// تسجيل دخول
 app.post('/api/auth/login', async (req, res) => {
   try {
     const { username, password } = req.body;
@@ -72,21 +66,24 @@ app.post('/api/auth/login', async (req, res) => {
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) return res.status(400).json({ msg: 'بيانات الدخول غلط' });
 
-    const payload = { user: { id: user.id } };
-    const token = jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: '7d' });
-
-    // رجع التوكن بالـ response
-    res.json({ token, user: { id: user.id, username: user.username } });
+    const token = jwt.sign({ user: { id: user.id } }, process.env.JWT_SECRET, { expiresIn: '30d' });
+    res.json({ token, msg: 'تم الدخول بنجاح' });
   } catch (err) {
-    res.status(500).json({ msg: 'Server error' });
+    res.status(500).json({ msg: 'خطأ سيرفر: ' + err.message });
   }
 });
 
-app.get('/api/auth/me', authMiddleware, async (req, res) => {
-  const user = await User.findById(req.user.id).select('-password');
-  res.json(user);
+// جلب بيانات المستخدم
+app.get('/api/auth/me', auth, async (req, res) => {
+  try {
+    const user = await User.findById(req.user.id).select('-password');
+    res.json(user);
+  } catch (err) {
+    res.status(500).json({ msg: 'خطأ سيرفر' });
+  }
 });
 
+// الصفحة الرئيسية
 app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'login.html'));
 });
