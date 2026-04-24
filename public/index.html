@@ -50,7 +50,6 @@
       border-radius: 8px;
       font-size: 16px;
       font-weight: bold;
-      transition: all 0.3s;
     }
     .tab.active {
       background: linear-gradient(135deg, #ff00ff 0%, #9d00ff 100%);
@@ -74,10 +73,6 @@
       outline: none;
     }
     input::placeholder { color: #666; }
-    input:focus {
-      border-color: #00ffff;
-      box-shadow: 0 0 10px rgba(0, 255, 255, 0.5);
-    }
     .btn {
       width: 100%;
       padding: 15px;
@@ -87,9 +82,7 @@
       font-weight: bold;
       cursor: pointer;
       margin-bottom: 12px;
-      transition: transform 0.2s;
     }
-    .btn:hover { transform: translateY(-2px); }
     .btn-primary {
       background: linear-gradient(135deg, #ff00ff 0%, #9d00ff 100%);
       color: white;
@@ -120,9 +113,9 @@
     <!-- تسجيل دخول -->
     <div id="loginForm">
       <div class="form-title">تسجيل الدخول</div>
-      <input type="email" id="loginEmail" placeholder="الإيميل" autocomplete="off" value="">
+      <input type="email" id="loginEmail" placeholder="الإيميل" autocomplete="off">
       <div class="password-wrapper">
-        <input type="password" id="loginPassword" placeholder="كلمة السر" autocomplete="new-password" value="">
+        <input type="password" id="loginPassword" placeholder="كلمة السر" autocomplete="new-password">
         <span class="eye-icon" onclick="togglePassword('loginPassword')">👁️</span>
       </div>
       <button class="btn btn-primary" onclick="login()">دخول</button>
@@ -133,10 +126,10 @@
     <!-- انشاء حساب -->
     <div id="registerForm" class="hidden">
       <div class="form-title">انشاء حساب</div>
-      <input type="text" id="regUsername" placeholder="اسم المستخدم" autocomplete="off" value="">
-      <input type="email" id="regEmail" placeholder="الإيميل" autocomplete="off" value="">
+      <input type="text" id="regUsername" placeholder="اسم المستخدم" autocomplete="off">
+      <input type="email" id="regEmail" placeholder="الإيميل" autocomplete="off">
       <div class="password-wrapper">
-        <input type="password" id="regPassword" placeholder="كلمة السر" autocomplete="new-password" value="">
+        <input type="password" id="regPassword" placeholder="كلمة السر" autocomplete="new-password">
         <span class="eye-icon" onclick="togglePassword('regPassword')">👁️</span>
       </div>
       <button class="btn btn-primary" onclick="register()">انشاء حساب</button>
@@ -144,6 +137,7 @@
   </div>
 
   <script>
+    // هون ربطناه بسيرفرك ✅
     const API_URL = 'https://game-server-ayham.onrender.com';
 
     function showLogin() {
@@ -165,18 +159,19 @@
       input.type = input.type === 'password' ? 'text' : 'password';
     }
 
+    // هون الربط مع السيرفر للتسجيل ✅
     async function login() {
       const email = document.getElementById('loginEmail').value;
       const password = document.getElementById('loginPassword').value;
       if (!email || !password) return alert('عبي كل الحقول');
       try {
-        const response = await fetch(`${API_URL}/api/login`, {
+        const res = await fetch(`${API_URL}/api/login`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ email, password })
         });
-        const data = await response.json();
-        if (response.ok) {
+        const data = await res.json();
+        if (res.ok) {
           localStorage.setItem('token', data.token);
           localStorage.setItem('username', data.username);
           window.location.href = '/profile';
@@ -184,10 +179,11 @@
           alert(data.message);
         }
       } catch (error) {
-        alert('خطأ بالسيرفر');
+        alert('السيرفر نايم، جرب بعد شوي');
       }
     }
 
+    // هون الربط مع السيرفر للإنشاء ✅
     async function register() {
       const username = document.getElementById('regUsername').value;
       const email = document.getElementById('regEmail').value;
@@ -195,13 +191,13 @@
       if (!username || !email || !password) return alert('عبي كل الحقول');
       if (password.length < 6) return alert('كلمة السر قصيرة');
       try {
-        const response = await fetch(`${API_URL}/api/register`, {
+        const res = await fetch(`${API_URL}/api/register`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ username, email, password })
         });
-        const data = await response.json();
-        if (response.ok) {
+        const data = await res.json();
+        if (res.ok) {
           localStorage.setItem('token', data.token);
           localStorage.setItem('username', data.username);
           window.location.href = '/profile';
@@ -209,11 +205,10 @@
           alert(data.message);
         }
       } catch (error) {
-        alert('خطأ بالسيرفر');
+        alert('السيرفر نايم، جرب بعد شوي');
       }
     }
 
-    // اذا مسجل دخول حوله عالبروفايل
     if (localStorage.getItem('token')) {
       window.location.href = '/profile';
     }
