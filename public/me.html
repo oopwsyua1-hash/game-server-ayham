@@ -1,8 +1,240 @@
-window.onload = async () => {
-    const token = localStorage.getItem('token');
-    if (!token) {
-        window.location.href = '/login.html';
-        return;
-    }
-    await loadProfile(); // الفنكشن اللي تجيب البيانات
-}
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>البروفايل - تطبيق السبع</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700;800&display=swap');
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { 
+            font-family: 'Tajawal', sans-serif; 
+            background: #0a0a14; 
+            color: #fff; 
+            min-height: 100vh;
+            background-image: 
+                radial-gradient(circle at 20% 50%, rgba(255, 0, 255, 0.15) 0%, transparent 50%),
+                radial-gradient(circle at 80% 80%, rgba(0, 255, 255, 0.15) 0%, transparent 50%);
+        }
+        #customAlert {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.85); backdrop-filter: blur(10px);
+            display: none; justify-content: center; align-items: center; z-index: 10000;
+        }
+       .alert-box {
+            background: rgba(20, 20, 40, 0.9); border: 2px solid #00ffff; border-radius: 20px; padding: 35px;
+            text-align: center; box-shadow: 0 0 40px rgba(0, 255, 255, 0.6), inset 0 0 20px rgba(0, 255, 255, 0.1);
+            animation: popIn 0.3s ease; max-width: 350px; margin: 20px;
+        }
+       .alert-box h3 { color: #00ffff; font-size: 24px; margin-bottom: 15px; font-weight: 700; }
+       .alert-box p { color: #fff; font-size: 16px; margin-bottom: 25px; line-height: 1.6; }
+       .alert-box button {
+            padding: 12px 35px; background: linear-gradient(135deg, #ff00ff, #9d00ff);
+            border: none; border-radius: 12px; color: white; font-size: 16px; font-weight: 700; cursor: pointer;
+            box-shadow: 0 5px 20px rgba(255, 0, 255, 0.4); transition: 0.3s;
+        }
+        @keyframes popIn { 0% { transform: scale(0.5); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
+        .container { max-width: 480px; margin: 0 auto; padding: 20px; }
+       .logo { 
+            text-align: center; font-size: 36px; font-weight: 800; margin: 25px 0; 
+            background: linear-gradient(90deg, #ff00ff, #00ffff); 
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+            filter: drop-shadow(0 0 20px rgba(255, 0, 255, 0.8));
+            letter-spacing: 2px;
+        }
+        .me-card {
+            background: rgba(20, 20, 40, 0.6);
+            backdrop-filter: blur(20px);
+            border: 2px solid rgba(255, 0, 255, 0.5);
+            border-radius: 25px;
+            padding: 25px;
+            box-shadow: 0 8px 32px rgba(255, 0, 255, 0.3), inset 0 0 20px rgba(255, 0, 255, 0.05);
+            margin-bottom: 20px;
+        }
+        .profile-header { display: flex; align-items: center; gap: 18px; margin-bottom: 25px; }
+        .avatar-small { 
+            width: 75px; height: 75px; border-radius: 50%; 
+            background: linear-gradient(135deg, #ff00ff, #00ffff); 
+            display: flex; align-items: center; justify-content: center; 
+            font-size: 32px; font-weight: 800; 
+            border: 3px solid rgba(255, 0, 255, 0.8);
+            box-shadow: 0 0 25px rgba(255, 0, 255, 0.6);
+            animation: pulse 2s ease-in-out infinite;
+        }
+        @keyframes pulse { 0%, 100% { box-shadow: 0 0 25px rgba(255, 0, 255, 0.6); } 50% { box-shadow: 0 0 35px rgba(255, 0, 255, 0.9); } }
+        .profile-info h3 { color: #00ffff; font-size: 22px; margin-bottom: 6px; font-weight: 700; }
+        .profile-info p { color: #aaa; font-size: 13px; }
+        .profile-info .vip-badge {
+            display: inline-block; background: linear-gradient(135deg, #ff00ff, #ff0066);
+            padding: 2px 10px; border-radius: 8px; font-size: 11px; font-weight: 700; margin-right: 8px;
+        }
+        .arrow-btn {
+            margin-right: auto; font-size: 28px; cursor: pointer; 
+            color: #ff00ff; transition: 0.3s;
+            width: 40px; height: 40px; display: flex; align-items: center; justify-content: center;
+            border-radius: 12px; background: rgba(255, 0, 255, 0.1);
+        }
+        .arrow-btn:hover { background: rgba(255, 0, 255, 0.2); transform: translateX(-5px); }
+        .stats-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin: 25px 0; }
+        .stat-item { 
+            background: rgba(26, 26, 46, 0.8); 
+            border: 2px solid rgba(255, 0, 255, 0.3); 
+            border-radius: 16px; padding: 15px; text-align: center;
+            transition: 0.3s; cursor: pointer;
+        }
+        .stat-item:hover { 
+            border-color: #00ffff; 
+            box-shadow: 0 0 20px rgba(0, 255, 255, 0.3);
+            transform: translateY(-3px);
+        }
+        .stat-value { 
+            color: #00ffff; font-size: 24px; font-weight: 800;
+            text-shadow: 0 0 15px rgba(0, 255, 255, 0.8);
+        }
+        .stat-label { color: #aaa; font-size: 12px; margin-top: 6px; font-weight: 500; }
+        .menu-list { 
+            background: rgba(26, 26, 46, 0.6); 
+            backdrop-filter: blur(20px);
+            border: 2px solid rgba(255, 0, 255, 0.4); 
+            border-radius: 20px; overflow: hidden;
+            box-shadow: 0 8px 32px rgba(255, 0, 255, 0.2);
+        }
+        .menu-item { 
+            padding: 18px 22px; border-bottom: 1px solid rgba(255, 0, 255, 0.1); 
+            display: flex; justify-content: space-between; align-items: center; 
+            cursor: pointer; transition: 0.3s; 
+        }
+        .menu-item:last-child { border-bottom: none; }
+        .menu-item:hover { 
+            background: rgba(255, 0, 255, 0.15); 
+            padding-right: 28px;
+        }
+        .menu-item-left { display: flex; align-items: center; gap: 15px; }
+        .menu-item-left i { font-size: 20px; width: 25px; text-align: center; }
+        .menu-item span { color: #fff; font-size: 16px; font-weight: 500; }
+        .menu-item .arrow { color: #ff00ff; font-size: 20px; transition: 0.3s; }
+        .menu-item:hover .arrow { transform: translateX(-5px); }
+        .page { display: block; }
+    </style>
+</head>
+<body>
+    <div id="customAlert">
+        <div class="alert-box">
+            <h3 id="alertTitle">تطبيق السبع</h3>
+            <p id="alertMsg"></p>
+            <button onclick="closeAlert()">حسناً</button>
+        </div>
+    </div>
+    <div class="container">
+        <div class="logo">CYBER CARDS</div>
+        <div id="mePage" class="page">
+            <div class="me-card">
+                <div class="profile-header">
+                    <div class="avatar-small" id="meAvatar">S</div>
+                    <div class="profile-info">
+                        <h3 id="meName">جاري التحميل...</h3>
+                        <p><span class="vip-badge">VIP 0</span> ID: <span id="meId">-</span></p>
+                    </div>
+                    <div class="arrow-btn" onclick="showAlert('قريباً', 'البروفايل الكامل')">
+                        <i class="fa-solid fa-chevron-left"></i>
+                    </div>
+                </div>
+                <div class="stats-grid">
+                    <div class="stat-item">
+                        <div class="stat-value" id="meFollowers">0</div>
+                        <div class="stat-label">متابعين</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value" id="meFollowing">0</div>
+                        <div class="stat-label">يتابع</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value" id="meFriends">0</div>
+                        <div class="stat-label">أصدقاء</div>
+                    </div>
+                </div>
+            </div>
+            <div class="menu-list">
+                <div class="menu-item" onclick="showAlert('قريباً', 'المحفظة')">
+                    <div class="menu-item-left">
+                        <i class="fa-solid fa-wallet" style="color: #ffd700;"></i>
+                        <span>المحفظة</span>
+                    </div>
+                    <i class="fa-solid fa-chevron-left arrow"></i>
+                </div>
+                <div class="menu-item" onclick="showAlert('قريباً', 'تعديل البروفايل')">
+                    <div class="menu-item-left">
+                        <i class="fa-solid fa-pen-to-square" style="color: #00ffff;"></i>
+                        <span>تعديل البروفايل</span>
+                    </div>
+                    <i class="fa-solid fa-chevron-left arrow"></i>
+                </div>
+                <div class="menu-item" onclick="showAlert('قريباً', 'ربط الحساب')">
+                    <div class="menu-item-left">
+                        <i class="fa-solid fa-link" style="color: #9d00ff;"></i>
+                        <span>ربط الحساب</span>
+                    </div>
+                    <i class="fa-solid fa-chevron-left arrow"></i>
+                </div>
+                <div class="menu-item" onclick="logout()">
+                    <div class="menu-item-left">
+                        <i class="fa-solid fa-right-from-bracket" style="color: #ff0040;"></i>
+                        <span>تسجيل خروج</span>
+                    </div>
+                    <i class="fa-solid fa-chevron-left arrow"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script>
+        const API_URL = window.location.origin;
+        
+        window.onload = async () => {
+            const token = localStorage.getItem('token');
+            if (!token) {
+                window.location.href = '/login.html';
+                return;
+            }
+            await loadProfile();
+        };
+
+        function showAlert(msg, title = 'تطبيق السبع') {
+            document.getElementById('alertTitle').textContent = title;
+            document.getElementById('alertMsg').textContent = msg;
+            document.getElementById('customAlert').style.display = 'flex';
+        }
+        function closeAlert() { document.getElementById('customAlert').style.display = 'none'; }
+
+        async function loadProfile() {
+            const token = localStorage.getItem('token');
+            try {
+                const res = await fetch(`${API_URL}/api/profile`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                const data = await res.json();
+                if (data.user) {
+                    const lastName = data.user.lastName || '';
+                    const fullName = `${data.user.username} ${lastName}`.trim();
+                    
+                    document.getElementById('meName').textContent = fullName;
+                    document.getElementById('meId').textContent = data.user._id.substring(0, 8);
+                    document.getElementById('meAvatar').textContent = data.user.username.charAt(0).toUpperCase();
+                } else {
+                    localStorage.removeItem('token');
+                    window.location.href = '/login.html';
+                }
+            } catch (error) {
+                localStorage.removeItem('token');
+                window.location.href = '/login.html';
+            }
+        }
+
+        function logout() {
+            localStorage.removeItem('token');
+            showAlert('تم تسجيل الخروج', 'تطبيق السبع');
+            setTimeout(() => window.location.href = '/login.html', 1000);
+        }
+    </script>
+</body>
+</html>
