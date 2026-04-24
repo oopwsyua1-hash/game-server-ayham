@@ -10,6 +10,9 @@ const app = express();
 // Middleware
 app.use(cors());
 app.use(express.json());
+app.get('/me.html', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'me.html'));
+});
 app.use(express.static('public'));
 
 // اتصال قاعدة البيانات
