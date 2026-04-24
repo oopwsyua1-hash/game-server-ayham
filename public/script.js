@@ -1,51 +1,38 @@
-// script.js - نسخة الفحص الكامل
+// script.js - نسخة كشف الغلط الحقيقي
 async function register() {
   const username = document.getElementById('username').value;
   const password = document.getElementById('password').value;
-  
-  // تأكد انو الحقول مو فاضية
-  if (!username || !password) {
-    alert('عبي الاسم وكلمة المرور');
-    return;
-  }
 
   try {
-    console.log('بداية الطلب...');
-    
-    const res = await fetch(`/api/auth/register`, {
+    // استخدم الرابط الكامل بدل النسبي عشان نلغي مشاكل الموبايل
+    const res = await fetch(`https://game-server-ayham.onrender.com/api/auth/register`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       credentials: 'include',
       body: JSON.stringify({ username, password })
     });
 
-    console.log('حالة الرد:', res.status);
     const data = await res.json();
-    console.log('الداتا:', data);
     
     if (res.ok) {
       alert('تم التسجيل بنجاح');
       window.location.href = '/profile.html';
     } else {
-      alert('خطأ من السيرفر: ' + data.msg);
+      alert('رد السيرفر: ' + data.msg); // رح يعطيك الغلط الحقيقي
     }
   } catch (err) {
-    console.error('الغلط الكامل:', err);
-    alert('خطأ بالاتصال. السبب: ' + err.message);
+    // هون رح نعرف الغلط الحقيقي
+    console.error('Fetch Error:', err);
+    alert('فشل الطلب. السبب: ' + err.message); 
   }
 }
 
 async function login() {
   const username = document.getElementById('username').value;
   const password = document.getElementById('password').value;
-  
-  if (!username || !password) {
-    alert('عبي الاسم وكلمة المرور');
-    return;
-  }
 
   try {
-    const res = await fetch(`/api/auth/login`, {
+    const res = await fetch(`https://game-server-ayham.onrender.com/api/auth/login`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       credentials: 'include',
@@ -58,11 +45,11 @@ async function login() {
       alert('تم الدخول');
       window.location.href = '/profile.html';
     } else {
-      alert('خطأ: ' + data.msg);
+      alert('رد السيرفر: ' + data.msg);
     }
   } catch (err) {
-    console.error('الغلط الكامل:', err);
-    alert('خطأ بالاتصال. السبب: ' + err.message);
+    console.error('Fetch Error:', err);
+    alert('فشل الطلب. السبب: ' + err.message);
   }
 }
 
