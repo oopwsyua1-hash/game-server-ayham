@@ -3,38 +3,229 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>الوكالة - السبع الحلبي</title>
+    <title>غرفة السبع</title>
     <script src="/socket.io/socket.io.js"></script>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Cairo', sans-serif; }
-        body { background: #0a0a0f; color: #fff; }
-       .room-header { background: #1a1a2e; padding: 15px; display: flex; justify-content: space-between; align-items: center; }
-       .room-info h2 { color: #a855f7; font-size: 18px; }
-       .room-id { color: #999; font-size: 12px; animation: colorPulse 3s infinite; }
-        @keyframes colorPulse { 0% { color: #ff00ff; } 33% { color: #00ffff; } 66% { color: #ffff00; } 100% { color: #ff00ff; } }
-       .room-settings { background: #a855f7; border: none; color: #fff; padding: 8px 15px; border-radius: 8px; }
-       .mics-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; padding: 15px; }
-       .mic { background: #1a1a2e; border-radius: 12px; padding: 8px; text-align: center; cursor: pointer; position: relative; min-height: 80px; }
-       .mic-occupied { background: #252542; border: 2px solid #a855f7; }
-       .mic-avatar { width: 40px; height: 40px; border-radius: 50%; margin: 0 auto 5px; background: #0a0a0f; }
-       .mic-avatar img { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; }
-       .mic-name { font-size: 10px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-       .mic-seat { position: absolute; top: 3px; left: 3px; background: #a855f7; color: #fff; font-size: 9px; padding: 2px 5px; border-radius: 5px; }
-       .mic-emoji { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 24px; animation: bounce 0.5s; }
-        @keyframes bounce { 0%,100% { transform: translate(-50%, -50%) scale(1); } 50% { transform: translate(-50%, -50%) scale(1.3); } }
-       .mic-muted { position: absolute; bottom: 3px; right: 3px; font-size: 12px; }
-       .chat-container { position: fixed; bottom: 0; left: 0; right: 0; background: #1a1a2e; height: 50%; display: flex; flex-direction: column; }
-       .chat-messages { flex: 1; overflow-y: auto; padding: 10px; }
-       .chat-msg { margin: 5px 0; font-size: 13px; }
-       .chat-username { color: #a855f7; font-weight: bold; }
-       .chat-input-area { display: flex; padding: 10px; gap: 5px; border-top: 1px solid #2a2a3e; }
-       .chat-input { flex: 1; padding: 10px; background: #0a0a0f; border: 1px solid #a855f7; border-radius: 8px; color: #fff; }
-       .emoji-btn { background: #a855f7; border: none; color: #fff; padding: 10px; border-radius: 8px; cursor: pointer; }
-       .emoji-panel { display: none; position: absolute; bottom: 60px; left: 10px; background: #1a1a2e; padding: 10px; border-radius: 10px; grid-template-columns: repeat(6, 1fr); gap: 5px; }
-       .emoji-panel.active { display: grid; }
-       .emoji-item { font-size: 24px; cursor: pointer; padding: 5px; }
-       .emoji-item:hover { background: #252542; border-radius: 5px; }
-       .user-menu { display: none; position: fixed; background: #1a1a2e; border-radius: 10px; padding: 10px; z-index: 999; }
-       .user-menu-item { padding: 10px; cursor: pointer; border-radius: 5px; }
-       .user-menu-item:hover { background: #252542; }
-       .settings-modal { display: none; position: fixed; top: 0; left: 0; width: 100
+        body { background: #0a0a0f; color: #fff; height: 100vh; display: flex; flex-direction: column; }
+        .room-header { background: linear-gradient(135deg, #a855f7, #3b82f6); padding: 15px; display: flex; justify-content: space-between; align-items: center; }
+        .room-info h2 { font-size: 18px; }
+        .room-id { font-size: 12px; opacity: 0.8; }
+        .room-actions button { background: rgba(0,0,0,0.3); border: none; color: #fff; padding: 8px 12px; border-radius: 8px; margin-right: 5px; cursor: pointer; }
+        .mics-container { flex: 1; padding: 15px; overflow-y: auto; display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
+        .mic { background: #1a1a2e; border-radius: 12px; padding: 10px; text-align: center; position: relative; min-height: 90px; display: flex; flex-direction: column; justify-content: center; align-items: center; cursor: pointer; border: 2px solid transparent; }
+        .mic.occupied { border-color: #a855f7; }
+        .mic.owner { border-color: #f59e0b; box-shadow: 0 0 15px rgba(245,158,11,0.5); }
+        .mic-avatar { width: 45px; height: 45px; border-radius: 50%; margin-bottom: 5px; background: #0a0a0f; }
+        .mic-avatar img { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; }
+        .mic-name { font-size: 11px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; width: 100%; }
+        .mic-emoji { position: absolute; top: -10px; right: -5px; font-size: 24px; animation: bounce 0.5s; }
+        @keyframes bounce { 0%,100% { transform: scale(1); } 50% { transform: scale(1.3); } }
+        .mic-empty { color: #666; font-size: 12px; }
+        .chat-section { height: 250px; background: #1a1a2e; border-top: 2px solid #2a2a3e; display: flex; flex-direction: column; }
+        .chat-messages { flex: 1; padding: 10px; overflow-y: auto; }
+        .msg { margin: 5px 0; font-size: 14px; }
+        .msg-name { color: #a855f7; font-weight: bold; }
+        .chat-input { display: flex; padding: 10px; gap: 5px; background: #0a0a0f; }
+        .chat-input input { flex: 1; padding: 10px; background: #1a1a2e; border: 1px solid #a855f7; border-radius: 8px; color: #fff; }
+        .chat-input button { padding: 10px 15px; background: #a855f7; border: none; border-radius: 8px; color: #fff; cursor: pointer; }
+        .emoji-bar { display: flex; gap: 5px; padding: 5px 10px; background: #0a0a0f; overflow-x: auto; }
+        .emoji-btn { font-size: 24px; cursor: pointer; padding: 5px; transition: 0.2s; }
+        .emoji-btn:hover { transform: scale(1.3); }
+        .user-menu { position: fixed; background: #1a1a2e; border: 2px solid #a855f7; border-radius: 10px; padding: 10px; display: none; z-index: 999; min-width: 150px; }
+        .user-menu button { width: 100%; padding: 10px; background: #0a0a0f; border: none; color: #fff; text-align: right; cursor: pointer; margin: 3px 0; border-radius: 5px; }
+        .user-menu button:hover { background: #a855f7; }
+    </style>
+</head>
+<body>
+    <div class="room-header">
+        <div class="room-info">
+            <h2 id="roomName">غرفة السبع</h2>
+            <div class="room-id">ID: <span id="roomIdText">0</span></div>
+        </div>
+        <div class="room-actions">
+            <button onclick="leaveRoom()">🚪 خروج</button>
+            <button onclick="showSettings()">⚙️ اعدادات</button>
+        </div>
+    </div>
+
+    <div class="mics-container" id="micsContainer"></div>
+
+    <div class="emoji-bar">
+        <div class="emoji-btn" onclick="sendEmoji('😂')">😂</div>
+        <div class="emoji-btn" onclick="sendEmoji('😍')">😍</div>
+        <div class="emoji-btn" onclick="sendEmoji('😭')">😭</div>
+        <div class="emoji-btn" onclick="sendEmoji('😡')">😡</div>
+        <div class="emoji-btn" onclick="sendEmoji('❤️')">❤️</div>
+        <div class="emoji-btn" onclick="sendEmoji('💋')">💋</div>
+        <div class="emoji-btn" onclick="sendEmoji('🚬')">🚬</div>
+        <div class="emoji-btn" onclick="sendEmoji('🤝')">🤝</div>
+        <div class="emoji-btn" onclick="sendEmoji('👏')">👏</div>
+        <div class="emoji-btn" onclick="sendEmoji('🔥')">🔥</div>
+    </div>
+
+    <div class="chat-section">
+        <div class="chat-messages" id="chatMessages"></div>
+        <div class="chat-input">
+            <input type="text" id="chatInput" placeholder="اكتب رسالة..." onkeypress="if(event.key==='Enter') sendMessage()">
+            <button onclick="sendMessage()">ارسال</button>
+        </div>
+    </div>
+
+    <div id="userMenu" class="user-menu"></div>
+
+    <script>
+        const socket = io();
+        const token = localStorage.getItem('token');
+        const roomId = window.location.pathname.split('/').pop();
+        let myUserId = null;
+        let roomData = null;
+        let myUserData = null;
+
+        if (!token) location.href = '/';
+
+        async function init() {
+            // جلب بياناتي
+            const meRes = await fetch('/api/me', { headers: { 'Authorization': `Bearer ${token}` } });
+            myUserData = await meRes.json();
+            myUserId = myUserData.userId;
+
+            // جلب بيانات الغرفة
+            const roomRes = await fetch(`/api/room/${roomId}`);
+            roomData = await roomRes.json();
+            document.getElementById('roomName').textContent = roomData.name;
+            document.getElementById('roomIdText').textContent = roomData.roomId;
+
+            // انشاء المايكات
+            renderMics(roomData.mics);
+
+            // دخول الغرفة
+            socket.emit('join-room', { roomId, userId: myUserId, token });
+        }
+
+        function renderMics(mics) {
+            const container = document.getElementById('micsContainer');
+            container.innerHTML = '';
+            mics.forEach(mic => {
+                const div = document.createElement('div');
+                div.className = 'mic';
+                if (mic.userId) div.classList.add('occupied');
+                if (mic.userId === roomData.ownerId) div.classList.add('owner');
+                
+                if (mic.userId) {
+                    div.innerHTML = `
+                        <div class="mic-avatar"><img src="${mic.avatar || 'https://ui-avatars.com/api/?name=' + mic.username}" alt=""></div>
+                        <div class="mic-name">${mic.username}</div>
+                        ${mic.emoji ? `<div class="mic-emoji">${mic.emoji}</div>` : ''}
+                    `;
+                    div.onclick = () => showUserMenu(mic.userId, event);
+                } else {
+                    div.innerHTML = `<div class="mic-empty">مايك ${mic.seat}<br>فارغ</div>`;
+                    div.onclick = () => sitOnMic(mic.seat);
+                }
+                container.appendChild(div);
+            });
+        }
+
+        function sitOnMic(seat) {
+            socket.emit('sit-mic', { roomId, seat, userId: myUserId });
+        }
+
+        function showUserMenu(userId, e) {
+            e.stopPropagation();
+            const menu = document.getElementById('userMenu');
+            const isOwner = roomData.ownerId === myUserId;
+            const isAdmin = roomData.admins.includes(myUserId);
+            const isMe = userId === myUserId;
+            const mic = roomData.mics.find(m => m.userId === userId);
+            const isOnMic = !!mic;
+
+            let html = '';
+            if (!isMe) {
+                html += `<button onclick="addFriend(${userId})">👥 اضافة صديق</button>`;
+                if ((isOwner || isAdmin) && isOnMic) {
+                    html += `<button onclick="kickUser(${userId})">🚫 طرد من المايك</button>`;
+                    html += `<button onclick="muteUser(${userId})">🔇 كتم الصوت</button>`;
+                }
+                if (isOwner && !isOnMic) {
+                    html += `<button onclick="inviteToMic(${userId})">⬆️ اصعاد للمايك</button>`;
+                }
+                if (isOwner) {
+                    html += `<button onclick="makeAdmin(${userId})">⭐ اضافة ادمن</button>`;
+                }
+            } else if (isOnMic) {
+                html += `<button onclick="leaveMic()">⬇️ نزول من المايك</button>`;
+            }
+            
+            menu.innerHTML = html;
+            menu.style.display = 'block';
+            menu.style.top = e.pageY + 'px';
+            menu.style.right = (window.innerWidth - e.pageX) + 'px';
+        }
+
+        document.addEventListener('click', () => {
+            document.getElementById('userMenu').style.display = 'none';
+        });
+
+        function sendEmoji(emoji) {
+            socket.emit('send-emoji', { roomId, userId: myUserId, emoji });
+        }
+
+        function sendMessage() {
+            const input = document.getElementById('chatInput');
+            const msg = input.value.trim();
+            if (msg) {
+                socket.emit('chat-message', { roomId, userId: myUserId, username: myUserData.username, message: msg });
+                input.value = '';
+            }
+        }
+
+        function leaveMic() {
+            socket.emit('leave-mic', { roomId, userId: myUserId });
+        }
+
+        function kickUser(userId) {
+            socket.emit('kick-user', { roomId, ownerId: myUserId, targetUserId: userId });
+        }
+
+        function leaveRoom() {
+            location.href = '/me';
+        }
+
+        function showSettings() {
+            if (roomData.ownerId === myUserId) {
+                alert('اعدادات الوكالة:\n1- تغيير صورة الوكالة\n2- تغيير صورة الغلاف\n3- اضافة ادمن\n4- طرد اعضاء\n\nقريباً التفاصيل');
+            } else {
+                alert('فقط صاحب الغرفة يقدر يفتح الاعدادات');
+            }
+        }
+
+        function addFriend(userId) { alert('تم ارسال طلب صداقة'); }
+        function inviteToMic(userId) { alert('تم دعوة المستخدم للمايك'); }
+        function makeAdmin(userId) { alert('تم تعيين ادمن'); }
+        function muteUser(userId) { alert('تم كتم المستخدم'); }
+
+        // Socket Events
+        socket.on('mic-updated', (mics) => {
+            roomData.mics = mics;
+            renderMics(mics);
+        });
+
+        socket.on('chat-message', (data) => {
+            const div = document.createElement('div');
+            div.className = 'msg';
+            div.innerHTML = `<span class="msg-name">${data.username}:</span> ${data.message}`;
+            document.getElementById('chatMessages').appendChild(div);
+            document.getElementById('chatMessages').scrollTop = document.getElementById('chatMessages').scrollHeight;
+        });
+
+        socket.on('user-kicked', (data) => {
+            if (data.userId === myUserId) {
+                alert('تم طردك من المايك');
+            }
+        });
+
+        init();
+    </script>
+</body>
+</html>
