@@ -6,18 +6,18 @@
     <title>ملفي</title>
     <style>
         body { font-family: 'Segoe UI', Tahoma; background: #f5f5f5; margin: 0; padding: 0; }
-      .cover { height: 200px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); position: relative; background-size: cover; background-position: center; }
-      .cover button { position: absolute; top: 15px; left: 15px; background: rgba(0,0,0,0.6); color: #fff; border: none; padding: 10px 15px; border-radius: 10px; cursor: pointer; backdrop-filter: blur(10px); }
-      .header { display: flex; justify-content: space-between; align-items: flex-start; padding: 15px; margin-top: -80px; position: relative; z-index: 5; }
+     .cover { height: 200px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); position: relative; background-size: cover; background-position: center; }
+     .cover button { position: absolute; top: 15px; left: 15px; background: rgba(0,0,0,0.6); color: #fff; border: none; padding: 10px 15px; border-radius: 10px; cursor: pointer; backdrop-filter: blur(10px); }
+     .header { display: flex; justify-content: space-between; align-items: flex-start; padding: 15px; margin-top: -80px; position: relative; z-index: 5; }
 
-      .profile-left {
+     .profile-left {
            display: flex;
            flex-direction: column;
            align-items: center;
            gap: 8px;
        }
 
-      .avatar {
+     .avatar {
             width: 140px;
             height: 140px;
             border-radius: 50%;
@@ -41,7 +41,7 @@
             50% { box-shadow: 0 8px 35px rgba(255,0,255,0.8), 0 0 40px rgba(0,255,255,0.5); }
         }
 
-       .avatar-inner {
+      .avatar-inner {
             width: 100%;
             height: 100%;
             border-radius: 50%;
@@ -56,7 +56,7 @@
             border: 3px solid #fff;
         }
 
-       .avatar input {
+      .avatar input {
             position: absolute;
             bottom: 0;
             right: 0;
@@ -67,7 +67,7 @@
             z-index: 10;
         }
 
-       .avatar::after {
+      .avatar::after {
             content: '📸';
             position: absolute;
             bottom: 8px;
@@ -87,7 +87,7 @@
             50% { transform: scale(1.1); }
         }
 
-       .username-display {
+      .username-display {
             text-align: center;
             font-size: 24px;
             font-weight: bold;
@@ -104,7 +104,7 @@
             50% { transform: scale(1.05); }
         }
 
-       .id-display {
+      .id-display {
             font-size: 14px;
             color: #666;
             font-weight: bold;
@@ -114,7 +114,7 @@
             box-shadow: 0 2px 8px rgba(0,0,0,0.1);
         }
 
-      .stats {
+     .stats {
            display: flex;
            gap: 12px;
            align-items: center;
@@ -124,12 +124,12 @@
            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
            margin-top: 30px;
        }
-      .stat { text-align: center; }
-      .stat-num { font-size: 16px; font-weight: bold; }
-      .stat-label { font-size: 11px; color: #666; }
-      .vip { background: #e0e0e0; padding: 4px 10px; border-radius: 15px; font-size: 12px; }
+     .stat { text-align: center; }
+     .stat-num { font-size: 16px; font-weight: bold; }
+     .stat-label { font-size: 11px; color: #666; }
+     .vip { background: #e0e0e0; padding: 4px 10px; border-radius: 15px; font-size: 12px; }
 
-      .random-banner {
+     .random-banner {
            background: linear-gradient(90deg,#c77700,#e89b00,#c77700);
            background-size: 200% 200%;
            padding: 18px;
@@ -146,28 +146,94 @@
            50% { transform: scale(1.02); box-shadow: 0 6px 30px rgba(199,119,0,0.6); }
        }
 
-      .random-banner h3 {
+     .random-banner h3 {
            margin: 0;
            font-size: 20px;
            text-shadow: 0 2px 10px rgba(0,0,0,0.3);
        }
 
-      .icons { display: grid; grid-template-columns: repeat(4,1fr); gap: 15px; text-align: center; margin: 20px 15px; }
-      .icon-box { font-size: 24px; }
-      .icon-label { font-size: 12px; margin-top: 5px; }
-      .balance { display: flex; justify-content: space-around; margin: 20px 15px; }
-      .balance-item { text-align: center; }
-      .balance-num { font-size: 24px; font-weight: bold; }
-      .cards { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 15px; padding-bottom: 80px; }
-      .card { background: #fff; padding: 15px; border-radius: 10px; text-align: center; cursor: pointer; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
-      .nav { position: fixed; bottom: 0; left: 0; right: 0; background: #fff; display: flex; justify-content: space-around; padding: 10px; border-top: 1px solid #ddd; z-index: 10; }
-      .nav-item { text-align: center; font-size: 12px; }
-      .nav-item.active { color: #4CAF50; }
-        #editModal { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); z-index: 100; }
-      .modal-content { background: #fff; margin: 50px 20px; padding: 20px; border-radius: 10px; }
-      .modal-content input,.modal-content select { width: 100%; padding: 10px; margin: 5px 0; border: 1px solid #ddd; border-radius: 5px; }
-      .modal-content button { padding: 10px 20px; margin: 5px; border: none; border-radius: 5px; }
-      .save-btn { background: #4CAF50; color: white; }
+     .icons { display: grid; grid-template-columns: repeat(4,1fr); gap: 15px; text-align: center; margin: 20px 15px; }
+     .icon-box { font-size: 24px; }
+     .icon-label { font-size: 12px; margin-top: 5px; }
+     .balance { display: flex; justify-content: space-around; margin: 20px 15px; }
+     .balance-item { text-align: center; }
+     .balance-num { font-size: 24px; font-weight: bold; }
+     .cards { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 15px; padding-bottom: 80px; }
+     .card { background: #fff; padding: 15px; border-radius: 10px; text-align: center; cursor: pointer; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+     .nav { position: fixed; bottom: 0; left: 0; right: 0; background: #fff; display: flex; justify-content: space-around; padding: 10px; border-top: 1px solid #ddd; z-index: 10; }
+     .nav-item { text-align: center; font-size: 12px; }
+     .nav-item.active { color: #4CAF50; }
+
+      #editModal, #agentModal { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); z-index: 100; overflow-y: auto; }
+     .modal-content { background: #fff; margin: 30px 20px; padding: 20px; border-radius: 15px; }
+     .modal-content input,.modal-content select { width: 100%; padding: 12px; margin: 8px 0; border: 2px solid #ddd; border-radius: 8px; box-sizing: border-box; }
+     .modal-content button { padding: 12px 25px; margin: 5px; border: none; border-radius: 8px; cursor: pointer; font-size: 15px; }
+     .save-btn { background: linear-gradient(90deg, #4CAF50, #45a049); color: white; }
+     .close-btn { background: #f44336; color: white; }
+
+     .agent-card { background: linear-gradient(135deg, #667eea, #764ba2); color: #fff; padding: 20px; border-radius: 15px; margin: 10px 0; cursor: pointer; box-shadow: 0 4px 15px rgba(0,0,0,0.2); }
+     .agent-card h3 { margin: 0 0 10px 0; font-size: 20px; }
+     .agent-card p { margin: 0; font-size: 14px; opacity: 0.9; }
+
+     .note-box {
+          background: linear-gradient(135deg, #ff00ff, #00ffff);
+          background-size: 400% 400%;
+          animation: gradientMove 3s ease infinite;
+          color: #fff;
+          padding: 15px;
+          border-radius: 12px;
+          margin: 15px 0;
+          text-align: center;
+          font-weight: bold;
+          box-shadow: 0 4px 15px rgba(255,0,255,0.4);
+      }
+
+      #customAlert {
+          display: none;
+          position: fixed;
+          top: 0; left: 0; right: 0; bottom: 0;
+          background: rgba(0,0,0,0.7);
+          z-index: 9999;
+          justify-content: center;
+          align-items: center;
+          backdrop-filter: blur(5px);
+      }
+
+     .alert-box {
+          background: linear-gradient(135deg, #ff00ff, #00ffff, #ff00ff);
+          background-size: 400% 400%;
+          padding: 30px 40px;
+          border-radius: 20px;
+          text-align: center;
+          box-shadow: 0 10px 40px rgba(255,0,255,0.6);
+          animation: gradientMove 2s ease infinite, popIn 0.3s ease;
+          border: 3px solid #fff;
+      }
+
+      @keyframes popIn {
+          0% { transform: scale(0.5); opacity: 0; }
+          100% { transform: scale(1); opacity: 1; }
+      }
+
+     .alert-box h3 {
+          color: #fff;
+          font-size: 24px;
+          margin: 0 0 15px 0;
+          text-shadow: 0 2px 10px rgba(0,0,0,0.5);
+          animation: textPulse 1s ease-in-out infinite;
+      }
+
+     .alert-box button {
+          background: #fff;
+          color: #ff00ff;
+          border: none;
+          padding: 12px 30px;
+          border-radius: 10px;
+          font-size: 16px;
+          font-weight: bold;
+          cursor: pointer;
+          box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+      }
     </style>
 </head>
 <body>
@@ -225,7 +291,7 @@
     </div>
 
     <div class="cards">
-        <div class="card" onclick="window.location.href='/agent'">👔 مركز الوكيل</div>
+        <div class="card" onclick="openAgent()">👔 مركز الوكالة</div>
         <div class="card">✅ مركز المهام</div>
         <div class="card">🪙 تاجر عملات</div>
         <div class="card">✉️ دعوة الأصدقاء</div>
@@ -250,7 +316,52 @@
                 <option value="أنثى">أنثى</option>
             </select>
             <button class="save-btn" onclick="saveEdit()">حفظ</button>
-            <button onclick="closeEdit()">اغلاق</button>
+            <button class="close-btn" onclick="closeEdit()">اغلاق</button>
+        </div>
+    </div>
+
+    <div id="agentModal">
+        <div class="modal-content">
+            <h2 style="text-align:center;color:#667eea">👔 مركز الوكالة</h2>
+
+            <div class="agent-card" onclick="showCustomAlert('قريباً...')">
+                <h3>انضم الئ وكالة 🏢</h3>
+                <p>انضم لوكالة موجودة وابدأ شغلك</p>
+            </div>
+
+            <div class="agent-card" onclick="showCustomAlert('قريباً...')">
+                <h3>كن وكيل</h3>
+                <p>افتح وكالتك الخاصة وكون مدير</p>
+            </div>
+
+            <div class="agent-card" onclick="showCustomAlert('قريباً...')">
+                <h3>بحث عن وكالة 🔍</h3>
+                <p>ابحث عن وكالة تناسبك</p>
+            </div>
+
+            <div class="agent-card" onclick="showCustomAlert('قريباً...')">
+                <h3>كون وكيل شحن 📦</h3>
+                <p>اشحن رصيد للمستخدمين</p>
+            </div>
+
+            <div class="agent-card" onclick="showCustomAlert('قريباً...')">
+                <h3>تقرير 📊</h3>
+                <p>شوف تقارير وكالتك وارباحك</p>
+            </div>
+
+            <div class="note-box">
+                ملاحظة من السبع الحلبي:<br>
+                اوجو من مستخدمين تطبيق السبع الحلبي ادخل المعلموات الصحيحة
+            </div>
+
+            <button class="close-btn" style="width:100%;margin-top:15px" onclick="closeAgent()">اغلاق</button>
+        </div>
+    </div>
+
+    <div id="customAlert">
+        <div class="alert-box">
+            <h3 id="alertMsg">تم التعديل بنجاح ✅</h3>
+            <button onclick="closeCustomAlert()">حسناً</button>
         </div>
     </div>
 
@@ -305,6 +416,14 @@ function closeEdit() {
   document.getElementById('editModal').style.display = 'none';
 }
 
+function openAgent() {
+  document.getElementById('agentModal').style.display = 'block';
+}
+
+function closeAgent() {
+  document.getElementById('agentModal').style.display = 'none';
+}
+
 async function saveEdit() {
   const token = localStorage.getItem('token');
   const res = await fetch('/api/profile', {
@@ -319,9 +438,24 @@ async function saveEdit() {
     })
   });
   const data = await res.json();
-  alert(data.msg || data.error);
+
+  if(data.success || data.msg){
+    showCustomAlert('تم التعديل بنجاح ✅');
+  } else {
+    showCustomAlert(data.error || 'صار خطأ');
+  }
+
   closeEdit();
   loadMyData();
+}
+
+function showCustomAlert(msg) {
+  document.getElementById('alertMsg').innerText = msg;
+  document.getElementById('customAlert').style.display = 'flex';
+}
+
+function closeCustomAlert() {
+  document.getElementById('customAlert').style.display = 'none';
 }
 
 document.getElementById('avatarInput').addEventListener('change', async (e) => {
@@ -336,8 +470,12 @@ document.getElementById('avatarInput').addEventListener('change', async (e) => {
     body: formData
   });
   const data = await res.json();
-  if (data.success) loadMyData();
-  else alert(data.error);
+  if (data.success) {
+    loadMyData();
+    showCustomAlert('تم تعديل الصورة بنجاح ✅');
+  } else {
+    showCustomAlert(data.error);
+  }
 });
 
 document.getElementById('coverInput').addEventListener('change', async (e) => {
@@ -352,8 +490,12 @@ document.getElementById('coverInput').addEventListener('change', async (e) => {
     body: formData
   });
   const data = await res.json();
-  if (data.success) loadMyData();
-  else alert(data.error);
+  if (data.success) {
+    loadMyData();
+    showCustomAlert('تم تعديل الغلاف بنجاح ✅');
+  } else {
+    showCustomAlert(data.error);
+  }
 });
 
 loadMyData();
