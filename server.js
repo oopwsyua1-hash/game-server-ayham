@@ -129,7 +129,8 @@ app.post('/api/room-settings', auth, async (req, res) => {
   const { roomId, micLayout } = req.body;
   const room = await Room.findOne({ roomId: Number(roomId) });
   const user = await User.findById(req.userId);
-  if (!room || room.ownerId!== user.userId) return res.status(403).json({ error: 'غير مصرح' });
+  if (!room) return res.status(404).json({ error: 'الغرفة مو موجودة' });
+  if (room.ownerId!== user.userId) return res.status(403).json({ error: 'غير مصرح' });
 
   room.micLayout = micLayout;
   const [cols, rows] = micLayout.split('*').map(Number);
@@ -161,7 +162,7 @@ io.on('connection', (socket) => {
       jwt.verify(token, JWT_SECRET);
       socket.join(`room-${roomId}`);
       socket.userId = userId;
-      socket.roomId = roomId;
+      socket.roomId = Number(roomId);
       const onlineCount = io.sockets.adapter.rooms.get(`room-${roomId}`)?.size || 0;
       io.to(`room-${roomId}`).emit('online-count', onlineCount);
     } catch (e) {}
@@ -170,6 +171,7 @@ io.on('connection', (socket) => {
   socket.on('sit-mic', async ({ roomId, seat, userId }) => {
     const room = await Room.findOne({ roomId: Number(roomId) });
     const user = await User.findOne({ userId });
+    if (!room ||!user) return;
     const mic = room.mics.find(m => m.seat === seat);
     if (mic &&!mic.userId &&!mic.locked) {
       mic.userId = user.userId;
@@ -182,6 +184,7 @@ io.on('connection', (socket) => {
 
   socket.on('leave-mic', async ({ roomId, userId }) => {
     const room = await Room.findOne({ roomId: Number(roomId) });
+    if (!room) return;
     const mic = room.mics.find(m => m.userId === userId);
     if (mic) {
       mic.userId = null; mic.username = null; mic.avatar = null; mic.emoji = ''; mic.muted = false;
@@ -192,6 +195,7 @@ io.on('connection', (socket) => {
 
   socket.on('send-emoji', async ({ roomId, userId, emoji }) => {
     const room = await Room.findOne({ roomId: Number(roomId) });
+    if (!room) return;
     const mic = room.mics.find(m => m.userId === userId);
     if (mic) {
       mic.emoji = emoji;
@@ -211,6 +215,7 @@ io.on('connection', (socket) => {
 
   socket.on('kick-user', async ({ roomId, ownerId, targetUserId }) => {
     const room = await Room.findOne({ roomId: Number(roomId) });
+    if (!room) return;
     if (room.ownerId === ownerId || room.admins.includes(ownerId)) {
       const mic = room.mics.find(m => m.userId === targetUserId);
       if (mic) {
@@ -224,6 +229,7 @@ io.on('connection', (socket) => {
 
   socket.on('lock-mic', async ({ roomId, seat, userId }) => {
     const room = await Room.findOne({ roomId: Number(roomId) });
+    if (!room) return;
     if (room.ownerId === userId || room.admins.includes(userId)) {
       const mic = room.mics.find(m => m.seat === seat);
       if (mic &&!mic.userId) {
@@ -236,6 +242,7 @@ io.on('connection', (socket) => {
 
   socket.on('mute-user', async ({ roomId, ownerId, targetUserId }) => {
     const room = await Room.findOne({ roomId: Number(roomId) });
+    if (!room) return;
     if (room.ownerId === ownerId || room.admins.includes(ownerId)) {
       const mic = room.mics.find(m => m.userId === targetUserId);
       if (mic) {
@@ -248,6 +255,7 @@ io.on('connection', (socket) => {
 
   socket.on('make-admin', async ({ roomId, ownerId, targetUserId }) => {
     const room = await Room.findOne({ roomId: Number(roomId) });
+    if (!room) return;
     if (room.ownerId === ownerId &&!room.admins.includes(targetUserId)) {
       room.admins.push(targetUserId);
       await room.save();
