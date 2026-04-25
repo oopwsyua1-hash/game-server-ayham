@@ -8,6 +8,9 @@ const fs = require('fs');
 const app = express();
 
 const JWT_SECRET = 'secret_key_12345';
+const PORT = process.env.PORT || 3000;
+// مهم: استخدم متغير البيئة تبع Render
+const MONGO_URI = process.env.MONGO_URI || 'mongodb://localhost:27017/mychat';
 
 app.use(express.json());
 app.use(express.static('public'));
@@ -15,9 +18,12 @@ app.use('/uploads', express.static('uploads'));
 
 if (!fs.existsSync('uploads')) fs.mkdirSync('uploads');
 
-mongoose.connect('mongodb://localhost:27017/mychat', {
-  useNewUrlParser: true,
-  useUnifiedTopology: true
+// شيلنا الخيارات القديمة اللي تسبب تحذير
+mongoose.connect(MONGO_URI).then(() => {
+  console.log('MongoDB Connected');
+}).catch(err => {
+  console.error('MongoDB connection error:', err);
+  process.exit(1);
 });
 
 const Counter = mongoose.model('Counter', new mongoose.Schema({
@@ -140,4 +146,4 @@ app.get('/api/random-user', async (req, res) => {
 app.get('/', (req, res) => res.sendFile(__dirname + '/public/login.html'));
 app.get('/me', (req, res) => res.sendFile(__dirname + '/public/me.html'));
 
-app.listen(3000, () => console.log('Server running on port 3000'));
+app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
