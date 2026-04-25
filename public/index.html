@@ -1,206 +1,673 @@
 <!DOCTYPE html>
-<html lang="ar" dir="rtl">
+<html dir="rtl" lang="ar">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>تطبيق السبع</title>
+    <title>ملفي</title>
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #0a0a14; color: #fff; min-height: 100vh; overflow-x: hidden; }
-        #welcomeScreen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #000; display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 9999; animation: fadeOut 1s ease-in-out 6s forwards; overflow: hidden; }
-        .welcome-text { font-size: 42px; font-weight: bold; text-align: center; background: linear-gradient(90deg, #ff00ff, #00ffff, #ff00ff); background-size: 200% 200%; -webkit-background-clip: text; -webkit-text-fill-color: transparent; animation: gradientMove 2s ease infinite, scaleIn 1s ease; margin-bottom: 30px; text-shadow: 0 0 30px rgba(255, 0, 255, 1), 0 0 60px rgba(0, 255, 255, 0.8); padding: 0 20px; z-index: 2; position: absolute; top: 8%; }
-        .dance-video { width: 100%; height: 100%; object-fit: cover; position: absolute; top: 0; left: 0; z-index: 1; filter: brightness(0.7); }
-        #welcomeScreen::after { content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.3); z-index: 1; }
-        @keyframes gradientMove { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
-        @keyframes scaleIn { 0% { transform: scale(0); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
-        @keyframes fadeOut { to { opacity: 0; visibility: hidden; } }
-        #customAlert { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); display: none; justify-content: center; align-items: center; z-index: 10000; }
-        .alert-box { background: #141428; border: 2px solid #00ffff; border-radius: 15px; padding: 30px; text-align: center; box-shadow: 0 0 30px rgba(0, 255, 255, 0.5); animation: popIn 0.3s ease; max-width: 350px; margin: 20px; }
-        .alert-box h3 { color: #00ffff; font-size: 22px; margin-bottom: 15px; }
-        .alert-box p { color: #fff; font-size: 16px; margin-bottom: 20px; }
-        .alert-box button { padding: 10px 30px; background: linear-gradient(90deg, #ff00ff, #9d00ff); border: none; border-radius: 8px; color: white; font-size: 16px; font-weight: bold; cursor: pointer; }
-        @keyframes popIn { 0% { transform: scale(0.5); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
-        .container { max-width: 450px; margin: 0 auto; padding: 20px; opacity: 0; animation: fadeIn 1s ease 6.5s forwards; }
-        @keyframes fadeIn { to { opacity: 1; } }
-        .logo { text-align: center; font-size: 32px; font-weight: bold; margin: 20px 0; background: linear-gradient(90deg, #ff00ff, #00ffff); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
-        .form-box { background: #141428; border: 2px solid #ff00ff; border-radius: 15px; padding: 25px; box-shadow: 0 0 20px rgba(255, 0, 255, 0.3); }
-        input, select { width: 100%; padding: 12px; margin: 8px 0; border: 2px solid #ff00ff; border-radius: 8px; background: #0f0f1e; color: white; font-size: 16px; outline: none; }
-        input:focus, select:focus { border-color: #00ffff; box-shadow: 0 0 10px rgba(0, 255, 255, 0.5); }
-        input:read-only { background: #1a1a2e; cursor: not-allowed; }
-        label { color: #ff00ff; font-size: 14px; display: block; margin-top: 10px; margin-bottom: -5px; }
-        button { width: 100%; padding: 14px; margin-top: 15px; background: linear-gradient(90deg, #ff00ff, #9d00ff); border: none; border-radius: 8px; color: white; font-size: 18px; font-weight: bold; cursor: pointer; transition: 0.3s; }
-        button:hover { transform: scale(1.03); box-shadow: 0 0 15px rgba(255, 0, 255, 0.6); }
-        .switch { text-align: center; margin-top: 15px; color: #aaa; }
-        .switch span { color: #00ffff; cursor: pointer; font-weight: bold; }
-        h2 { color: #ff00ff; text-align: center; margin-bottom: 20px; }
-        #loginForm { display: block; }
-        #registerForm { display: none; }
+        body { font-family: 'Segoe UI', Tahoma; background: #f5f5f5; margin: 0; padding: 0; }
+ .cover { height: 200px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); position: relative; background-size: cover; background-position: center; }
+ .cover button { position: absolute; top: 15px; left: 15px; background: rgba(0,0,0,0.6); color: #fff; border: none; padding: 10px 15px; border-radius: 10px; cursor: pointer; backdrop-filter: blur(10px); }
+ .header { display: flex; justify-content: space-between; align-items: flex-start; padding: 15px; margin-top: -80px; position: relative; z-index: 5; }
+
+ .profile-left {
+           display: flex;
+           flex-direction: column;
+           align-items: center;
+           gap: 8px;
+       }
+
+ .avatar {
+            width: 140px;
+            height: 140px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #ff00ff, #00ffff, #ff00ff, #9d00ff);
+            background-size: 400% 400%;
+            padding: 6px;
+            position: relative;
+            cursor: pointer;
+            box-shadow: 0 8px 25px rgba(255,0,255,0.5);
+            animation: gradientMove 3s ease infinite, pulseGlow 2s ease-in-out infinite;
+        }
+
+        @keyframes gradientMove {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        @keyframes pulseGlow {
+            0%, 100% { box-shadow: 0 8px 25px rgba(255,0,255,0.5), 0 0 20px rgba(255,0,255,0.3); }
+            50% { box-shadow: 0 8px 35px rgba(255,0,255,0.8), 0 0 40px rgba(0,255,255,0.5); }
+        }
+
+  .avatar-inner {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            background: #eee;
+            background-size: cover;
+            background-position: center;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 55px;
+            color: #999;
+            border: 3px solid #fff;
+        }
+
+  .avatar input {
+            position: absolute;
+            bottom: 0;
+            right: 0;
+            width: 45px;
+            height: 45px;
+            opacity: 0;
+            cursor: pointer;
+            z-index: 10;
+        }
+
+  .avatar::after {
+            content: '📸';
+            position: absolute;
+            bottom: 8px;
+            right: 8px;
+            background: linear-gradient(135deg, #ff00ff, #9d00ff);
+            border-radius: 50%;
+            padding: 10px;
+            font-size: 22px;
+            border: 3px solid #fff;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.4);
+            pointer-events: none;
+            animation: pulseIcon 1.5s ease-in-out infinite;
+        }
+
+        @keyframes pulseIcon {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+
+  .username-display {
+            text-align: center;
+            font-size: 24px;
+            font-weight: bold;
+            background: linear-gradient(90deg, #ff00ff, #00ffff, #ff00ff);
+            background-size: 200% 200%;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            animation: gradientMove 2s ease infinite, textPulse 2s ease-in-out infinite;
+            text-shadow: 0 0 20px rgba(255,0,255,0.5);
+        }
+
+        @keyframes textPulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+
+  .info-badges {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            align-items: center;
+            width: 100%;
+        }
+
+  .id-container {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: #fff;
+            padding: 4px 12px;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+  .id-display {
+            font-size: 14px;
+            color: #666;
+            font-weight: bold;
+        }
+
+  .copy-btn {
+            background: linear-gradient(135deg, #ff00ff, #9d00ff);
+            color: #fff;
+            border: none;
+            padding: 4px 8px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            box-shadow: 0 2px 8px rgba(255,0,255,0.3);
+            transition: transform 0.2s;
+        }
+
+  .copy-btn:active {
+            transform: scale(0.9);
+        }
+
+  .agency-badge {
+            background: linear-gradient(135deg, #ffd700, #ff8c00);
+            color: #fff;
+            padding: 6px 14px;
+            border-radius: 12px;
+            font-size: 13px;
+            font-weight: bold;
+            box-shadow: 0 2px 10px rgba(255,140,0,0.4);
+            display: none;
+            animation: textPulse 2s ease-in-out infinite;
+        }
+
+  .agency-badge.owner {
+            background: linear-gradient(135deg, #ff00ff, #9d00ff);
+            box-shadow: 0 2px 10px rgba(255,0,255,0.4);
+        }
+
+ .stats {
+           display: flex;
+           gap: 12px;
+           align-items: center;
+           background: #fff;
+           padding: 12px 15px;
+           border-radius: 15px;
+           box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+           margin-top: 30px;
+       }
+ .stat { text-align: center; }
+ .stat-num { font-size: 16px; font-weight: bold; }
+ .stat-label { font-size: 11px; color: #666; }
+ .vip { background: #e0e0e0; padding: 4px 10px; border-radius: 15px; font-size: 12px; }
+
+ .bio-container {
+          margin: 15px;
+          background: #fff;
+          border-radius: 12px;
+          padding: 10px 15px;
+          box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+          overflow: hidden;
+          white-space: nowrap;
+          position: relative;
+      }
+
+ .bio-text {
+          display: inline-block;
+          font-size: 16px;
+          color: #333;
+          font-weight: 500;
+          animation: marquee 10s linear infinite;
+          padding-right: 100%;
+      }
+
+      @keyframes marquee {
+          0% { transform: translateX(-100%); }
+          100% { transform: translateX(100%); }
+      }
+
+ .random-banner {
+           background: linear-gradient(90deg,#c77700,#e89b00,#c77700);
+           background-size: 200% 200%;
+           padding: 18px;
+           border-radius: 15px;
+           margin: 15px;
+           color: #fff;
+           text-align: center;
+           box-shadow: 0 4px 20px rgba(199,119,0,0.4);
+           animation: gradientMove 3s ease infinite, bannerPulse 2s ease-in-out infinite;
+       }
+
+       @keyframes bannerPulse {
+           0%, 100% { transform: scale(1); box-shadow: 0 4px 20px rgba(199,119,0,0.4); }
+           50% { transform: scale(1.02); box-shadow: 0 6px 30px rgba(199,119,0,0.6); }
+       }
+
+ .random-banner h3 {
+           margin: 0;
+           font-size: 20px;
+           text-shadow: 0 2px 10px rgba(0,0,0,0.3);
+       }
+
+ .icons { display: grid; grid-template-columns: repeat(4,1fr); gap: 15px; text-align: center; margin: 20px 15px; }
+ .icon-box { font-size: 24px; }
+ .icon-label { font-size: 12px; margin-top: 5px; }
+ .balance { display: flex; justify-content: space-around; margin: 20px 15px; }
+ .balance-item { text-align: center; }
+ .balance-num { font-size: 24px; font-weight: bold; }
+ .cards { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 15px; padding-bottom: 80px; }
+ .card { background: #fff; padding: 15px; border-radius: 10px; text-align: center; cursor: pointer; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+ .nav { position: fixed; bottom: 0; left: 0; right: 0; background: #fff; display: flex; justify-content: space-around; padding: 10px; border-top: 1px solid #ddd; z-index: 10; }
+ .nav-item { text-align: center; font-size: 12px; }
+ .nav-item.active { color: #4CAF50; }
+
+      #editModal, #agentModal, #createAgencyModal { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); z-index: 100; overflow-y: auto; }
+ .modal-content { background: #fff; margin: 30px 20px; padding: 20px; border-radius: 15px; }
+ .modal-content input,.modal-content select,.modal-content textarea { width: 100%; padding: 12px; margin: 8px 0; border: 2px solid #ddd; border-radius: 8px; box-sizing: border-box; font-family: inherit; }
+ .modal-content button { padding: 12px 25px; margin: 5px; border: none; border-radius: 8px; cursor: pointer; font-size: 15px; }
+ .save-btn { background: linear-gradient(90deg, #4CAF50, #45a049); color: white; }
+ .close-btn { background: #f44336; color: white; }
+ .char-count { text-align: left; font-size: 12px; color: #999; margin-top: -5px; margin-bottom: 10px; }
+
+ .agent-card { background: linear-gradient(135deg, #667eea, #764ba2); color: #fff; padding: 20px; border-radius: 15px; margin: 10px 0; cursor: pointer; box-shadow: 0 4px 15px rgba(0,0,0,0.2); }
+ .agent-card h3 { margin: 0 0 10px 0; font-size: 20px; }
+ .agent-card p { margin: 0; font-size: 14px; opacity: 0.9; }
+
+ .note-box {
+          background: linear-gradient(135deg, #ff00ff, #00ffff);
+          background-size: 400% 400%;
+          animation: gradientMove 3s ease infinite;
+          color: #fff;
+          padding: 15px;
+          border-radius: 12px;
+          margin: 15px 0;
+          text-align: center;
+          font-weight: bold;
+          box-shadow: 0 4px 15px rgba(255,0,255,0.4);
+      }
+
+      #customAlert {
+          display: none;
+          position: fixed;
+          top: 0; left: 0; right: 0; bottom: 0;
+          background: rgba(0,0,0,0.7);
+          z-index: 9999;
+          justify-content: center;
+          align-items: center;
+          backdrop-filter: blur(5px);
+      }
+
+ .alert-box {
+          background: linear-gradient(135deg, #ff00ff, #00ffff, #ff00ff);
+          background-size: 400% 400%;
+          padding: 30px 40px;
+          border-radius: 20px;
+          text-align: center;
+          box-shadow: 0 10px 40px rgba(255,0,255,0.6);
+          animation: gradientMove 2s ease infinite, popIn 0.3s ease;
+          border: 3px solid #fff;
+      }
+
+      @keyframes popIn {
+          0% { transform: scale(0.5); opacity: 0; }
+          100% { transform: scale(1); opacity: 1; }
+      }
+
+ .alert-box h3 {
+          color: #fff;
+          font-size: 24px;
+          margin: 0 0 15px 0;
+          text-shadow: 0 2px 10px rgba(0,0,0,0.5);
+          animation: textPulse 1s ease-in-out infinite;
+      }
+
+ .alert-box button {
+          background: #fff;
+          color: #ff00ff;
+          border: none;
+          padding: 12px 30px;
+          border-radius: 10px;
+          font-size: 16px;
+          font-weight: bold;
+          cursor: pointer;
+          box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+      }
     </style>
 </head>
 <body>
-    <div id="welcomeScreen">
-        <div class="welcome-text">السبع الحلبي يرحب بكم</div>
-        <video class="dance-video" autoplay muted loop playsinline>
-            <source src="https://assets.mixkit.co/videos/8713/8713-720.mp4" type="video/mp4">
-        </video>
+    <div class="cover" id="coverDiv">
+        <button onclick="document.getElementById('coverInput').click()">تغيير الغلاف</button>
+        <input type="file" id="coverInput" accept="image/*" style="display:none">
     </div>
+
+    <div class="header">
+        <div class="stats">
+            <div class="stat"><div class="stat-num">0</div><div class="stat-label">الأصدقاء</div></div>
+            <div class="stat"><div class="stat-num">0</div><div class="stat-label">التالية</div></div>
+            <div class="stat"><div class="stat-num">0</div><div class="stat-label">أتابع</div></div>
+            <div class="stat"><div class="stat-num">0</div><div class="stat-label">زائر</div></div>
+            <div class="vip">VIP 0</div>
+        </div>
+
+        <div class="profile-left">
+            <div class="avatar" id="avatarDiv">
+                <div class="avatar-inner" id="avatarInner">👤</div>
+                <input type="file" id="avatarInput" accept="image/*">
+            </div>
+            <div class="username-display" id="usernameDisplay">...</div>
+            <div class="info-badges">
+                <div class="id-container">
+                    <div class="id-display" id="userIdText">ID:...</div>
+                    <button class="copy-btn" onclick="copyId()" title="نسخ الايدي">📋</button>
+                </div>
+                <div class="agency-badge" id="agencyBadge"></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="bio-container" id="bioContainer" style="display:none">
+        <div class="bio-text" id="bioText"></div>
+    </div>
+
+    <div style="text-align:center;margin:10px">
+        <button onclick="openEdit()" style="background:linear-gradient(90deg, #ff00ff, #9d00ff);color:#fff;padding:12px 25px;border:none;border-radius:10px;font-size:16px;box-shadow:0 4px 15px rgba(255,0,255,0.4)">✏️ تعديل الملف</button>
+    </div>
+
+    <div class="random-banner">
+        <h3 id="randomUsername">جاري التحميل...</h3>
+        <p style="margin:5px 0 0;font-size:13px">مستخدم مميز</p>
+    </div>
+
+    <div class="icons">
+        <div><div class="icon-box">👑</div><div class="icon-label">مستواي</div></div>
+        <div><div class="icon-box">🏪</div><div class="icon-label">المتجر</div></div>
+        <div><div class="icon-box">⭐</div><div class="icon-label">شارة</div></div>
+        <div><div class="icon-box">🛡️</div><div class="icon-label">عائلة</div></div>
+    </div>
+
+    <div class="balance">
+        <div class="balance-item">
+            <div class="balance-num" id="coinsNum">0</div>
+            <div>💰 كونز</div>
+            <div style="font-size:11px;color:#999">المحفظة</div>
+        </div>
+        <div class="balance-item">
+            <div class="balance-num">0</div>
+            <div>🫘 فول</div>
+            <div style="font-size:11px;color:#999">المصروفات</div>
+        </div>
+    </div>
+
+    <div class="cards">
+        <div class="card" onclick="openAgent()">👔 مركز الوكالة</div>
+        <div class="card">✅ مركز المهام</div>
+        <div class="card">🪙 تاجر عملات</div>
+        <div class="card">✉️ دعوة الأصدقاء</div>
+    </div>
+
+    <div class="nav">
+        <div class="nav-item">🏠<br>حفلة</div>
+        <div class="nav-item">🎯<br>لقاء</div>
+        <div class="nav-item">📦<br>صندوق الوارد</div>
+        <div class="nav-item active">👤<br>أنا</div>
+    </div>
+
+    <div id="editModal">
+        <div class="modal-content">
+            <h3>تعديل الملف</h3>
+            <input id="editUsername" placeholder="اسم المستخدم">
+            <input id="editLastName" placeholder="الكنية">
+            <input id="editCountry" placeholder="الدولة">
+            <input id="editBirthDate" type="date" placeholder="تاريخ الميلاد">
+            <select id="editGender">
+                <option value="ذكر">ذكر</option>
+                <option value="أنثى">أنثى</option>
+            </select>
+            <textarea id="editBio" placeholder="السيرة الذاتية (60 حرف فقط)" maxlength="60" rows="2"></textarea>
+            <div class="char-count"><span id="bioCount">0</span>/60</div>
+            <button class="save-btn" onclick="saveEdit()">حفظ</button>
+            <button class="close-btn" onclick="closeEdit()">اغلاق</button>
+        </div>
+    </div>
+
+    <div id="agentModal">
+        <div class="modal-content">
+            <h2 style="text-align:center;color:#667eea">👔 مركز الوكالة</h2>
+
+            <div class="agent-card" onclick="showCustomAlert('قريباً...')">
+                <h3>انضم الئ وكالة 🏢</h3>
+                <p>انضم لوكالة موجودة وابدأ شغلك</p>
+            </div>
+
+            <div class="agent-card" onclick="openCreateAgency()">
+                <h3>كن وكيل</h3>
+                <p>افتح وكالتك الخاصة وكون مدير</p>
+            </div>
+
+            <div class="agent-card" onclick="showCustomAlert('قريباً...')">
+                <h3>بحث عن وكالة 🔍</h3>
+                <p>ابحث عن وكالة تناسبك</p>
+            </div>
+
+            <div class="agent-card" onclick="showCustomAlert('قريباً...')">
+                <h3>كون وكيل شحن 📦</h3>
+                <p>اشحن رصيد للمستخدمين</p>
+            </div>
+
+            <div class="agent-card" onclick="showCustomAlert('قريباً...')">
+                <h3>تقرير 📊</h3>
+                <p>شوف تقارير وكالتك وارباحك</p>
+            </div>
+
+            <div class="note-box">
+                ملاحظة من السبع الحلبي:<br>
+                اوجو من مستخدمين تطبيق السبع الحلبي ادخل المعلموات الصحيحة
+            </div>
+
+            <button class="close-btn" style="width:100%;margin-top:15px" onclick="closeAgent()">اغلاق</button>
+        </div>
+    </div>
+
+    <div id="createAgencyModal">
+        <div class="modal-content">
+            <h3>انشاء وكالة جديدة 🏢</h3>
+            <input id="agencyName" placeholder="اسم الوكالة" maxlength="30">
+            <button class="save-btn" onclick="createAgency()">انشاء</button>
+            <button class="close-btn" onclick="closeCreateAgency()">اغلاق</button>
+        </div>
+    </div>
+
     <div id="customAlert">
         <div class="alert-box">
-            <h3 id="alertTitle">تطبيق السبع</h3>
-            <p id="alertMsg"></p>
-            <button onclick="closeAlert()">حسناً</button>
+            <h3 id="alertMsg">تم التعديل بنجاح ✅</h3>
+            <button onclick="closeCustomAlert()">حسناً</button>
         </div>
     </div>
-    <div class="container">
-        <div class="logo">CYBER CARDS</div>
-        <div class="form-box">
-            <div id="loginForm">
-                <h2>تسجيل الدخول</h2>
-                <input type="email" id="loginEmail" placeholder="الإيميل">
-                <input type="password" id="loginPassword" placeholder="كلمة السر">
-                <button onclick="login()">دخول</button>
-                <div class="switch">ما عندك حساب؟ <span onclick="showRegister()">انشاء حساب</span></div>
-            </div>
-            <div id="registerForm">
-                <h2>انشاء حساب</h2>
-                <input type="text" id="regUsername" placeholder="اسم المستخدم">
-                <input type="text" id="regLastName" placeholder="الكنية">
-                <input type="email" id="regEmail" placeholder="الإيميل">
-                <input type="password" id="regPassword" placeholder="كلمة السر">
-                <label>الدولة:</label>
-                <select id="regCountry">
-                    <option value="">اختر دولتك</option>
-                    <option value="سوريا">سوريا</option>
-                    <option value="السعودية">السعودية</option>
-                    <option value="الإمارات">الإمارات</option>
-                    <option value="مصر">مصر</option>
-                    <option value="العراق">العراق</option>
-                    <option value="الأردن">الأردن</option>
-                    <option value="لبنان">لبنان</option>
-                    <option value="فلسطين">فلسطين</option>
-                    <option value="الكويت">الكويت</option>
-                    <option value="قطر">قطر</option>
-                    <option value="البحرين">البحرين</option>
-                    <option value="عمان">عمان</option>
-                    <option value="اليمن">اليمن</option>
-                    <option value="ليبيا">ليبيا</option>
-                    <option value="تونس">تونس</option>
-                    <option value="الجزائر">الجزائر</option>
-                    <option value="المغرب">المغرب</option>
-                    <option value="السودان">السودان</option>
-                    <option value="تركيا">تركيا</option>
-                    <option value="امريكا">امريكا</option>
-                    <option value="بريطانيا">بريطانيا</option>
-                    <option value="المانيا">المانيا</option>
-                    <option value="فرنسا">فرنسا</option>
-                    <option value="روسيا">روسيا</option>
-                    <option value="الصين">الصين</option>
-                    <option value="اليابان">اليابان</option>
-                    <option value="الهند">الهند</option>
-                    <option value="اخرى">اخرى</option>
-                </select>
-                <label>تاريخ الميلاد:</label>
-                <input type="date" id="regBirthDate" onchange="calculateAge()">
-                <input type="text" id="regAge" placeholder="العمر" readonly>
-                <label>الجنس:</label>
-                <select id="regGender">
-                    <option value="">اختر الجنس</option>
-                    <option value="ذكر">ذكر</option>
-                    <option value="أنثى">أنثى</option>
-                </select>
-                <button onclick="register()">انشاء حساب</button>
-                <div class="switch">عندك حساب؟ <span onclick="showLogin()">تسجيل دخول</span></div>
-            </div>
-        </div>
-    </div>
-    <script>
-        function showAlert(msg, title = 'تطبيق السبع') {
-            document.getElementById('alertTitle').textContent = title;
-            document.getElementById('alertMsg').textContent = msg;
-            document.getElementById('customAlert').style.display = 'flex';
+
+<script>
+let currentUser = {};
+
+async function loadMyData() {
+  const token = localStorage.getItem('token');
+  if (!token) return window.location.href = '/';
+  const res = await fetch('/api/profile', { headers: { 'Authorization': 'Bearer ' + token } });
+  const data = await res.json();
+  if (data.user) {
+    currentUser = data.user;
+    document.getElementById('userIdText').innerText = 'ID: ' + (data.user.userId || 'غير متوفر');
+    document.getElementById('usernameDisplay').innerText = data.user.username;
+    document.getElementById('coinsNum').innerText = data.user.coins || 0;
+
+    const agencyBadge = document.getElementById('agencyBadge');
+    if (data.user.agencyName) {
+        if (data.user.isAgencyOwner) {
+            agencyBadge.innerText = '👑 وكيل: ' + data.user.agencyName;
+            agencyBadge.classList.add('owner');
+        } else {
+            agencyBadge.innerText = '🏢 ' + data.user.agencyName;
+            agencyBadge.classList.remove('owner');
         }
-        function closeAlert() {
-            document.getElementById('customAlert').style.display = 'none';
-        }
-        function showRegister() {
-            document.getElementById('loginForm').style.display = 'none';
-            document.getElementById('registerForm').style.display = 'block';
-        }
-        function showLogin() {
-            document.getElementById('registerForm').style.display = 'none';
-            document.getElementById('loginForm').style.display = 'block';
-        }
-        function calculateAge() {
-            const birthDate = document.getElementById('regBirthDate').value;
-            if (birthDate) {
-                const today = new Date();
-                const birth = new Date(birthDate);
-                let age = today.getFullYear() - birth.getFullYear();
-                const monthDiff = today.getMonth() - birth.getMonth();
-                if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birth.getDate())) {
-                    age--;
-                }
-                document.getElementById('regAge').value = age + ' سنة';
-            } else {
-                document.getElementById('regAge').value = '';
-            }
-        }
-        async function register() {
-            const username = document.getElementById('regUsername').value.trim();
-            const lastName = document.getElementById('regLastName').value.trim();
-            const email = document.getElementById('regEmail').value.trim();
-            const password = document.getElementById('regPassword').value;
-            const country = document.getElementById('regCountry').value;
-            const birthDate = document.getElementById('regBirthDate').value;
-            const age = document.getElementById('regAge').value.replace(' سنة', '');
-            const gender = document.getElementById('regGender').value;
-            if (!username || !lastName || !email || !password || !country || !birthDate || !gender) {
-                showAlert('عبي كل الحقول يا وحش', 'تنبيه');
-                return;
-            }
-            try {
-                const res = await fetch('/api/register', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ username, lastName, email, password, country, birthDate, age: parseInt(age), gender })
-                });
-                const data = await res.json();
-                if (data.token) {
-                    localStorage.setItem('token', data.token);
-                    showAlert('تم تسجيل الدخول بنجاح', 'تطبيق السبع');
-                    setTimeout(() => window.location.href = '/me', 1500);
-                } else {
-                    showAlert(data.error || 'صار خطأ', 'خطأ');
-                }
-            } catch (error) {
-                showAlert('خطأ بالاتصال بالسيرفر', 'خطأ');
-            }
-        }
-        async function login() {
-            const email = document.getElementById('loginEmail').value.trim();
-            const password = document.getElementById('loginPassword').value;
-            if (!email || !password) {
-                showAlert('عبي الإيميل وكلمة السر', 'تنبيه');
-                return;
-            }
-            try {
-                const res = await fetch('/api/login', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ email, password })
-                });
-                const data = await res.json();
-                if (data.token) {
-                    localStorage.setItem('token', data.token);
-                    showAlert('تم تسجيل الدخول إلى تطبيق السبع', 'أهلاً وسهلاً');
-                    setTimeout(() => window.location.href = '/me', 1500);
-                } else {
-                    showAlert(data.error || 'الإيميل او كلمة السر غلط', 'خطأ');
-                }
-            } catch (error) {
-                showAlert('خطأ بالاتصال بالسيرفر', 'خطأ');
-            }
-        }
-    </script>
+        agencyBadge.style.display = 'block';
+    } else {
+        agencyBadge.style.display = 'none';
+    }
+
+    if (data.user.bio && data.user.bio.trim()!== '') {
+        document.getElementById('bioText').innerText = data.user.bio;
+        document.getElementById('bioContainer').style.display = 'block';
+    } else {
+        document.getElementById('bioContainer').style.display = 'none';
+    }
+
+    if (data.user.avatar) {
+        document.getElementById('avatarInner').style.backgroundImage = `url(${data.user.avatar})`;
+        document.getElementById('avatarInner').innerText = '';
+    } else {
+        document.getElementById('avatarInner').innerText = '👤';
+    }
+    if (data.user.cover) document.getElementById('coverDiv').style.backgroundImage = `url(${data.user.cover})`;
+  }
+}
+
+function copyId() {
+  const idText = currentUser.userId || '';
+  if (!idText) {
+    showCustomAlert('لا يوجد ID لنسخه');
+    return;
+  }
+  navigator.clipboard.writeText(idText.toString()).then(() => {
+    showCustomAlert('تم نسخ الايدي ✅');
+  }).catch(() => {
+    showCustomAlert('فشل النسخ');
+  });
+}
+
+async function loadRandomUser() {
+  const saved = localStorage.getItem('randomUser');
+  const savedTime = localStorage.getItem('randomUserTime');
+  const now = new Date().getTime();
+  if (!saved ||!savedTime || now - savedTime > 12 * 60 * 60 * 1000) {
+    const res = await fetch('/api/random-user');
+    const data = await res.json();
+    localStorage.setItem('randomUser', data.username);
+    localStorage.setItem('randomUserTime', now);
+    document.getElementById('randomUsername').innerText = data.username;
+  } else {
+    document.getElementById('randomUsername').innerText = saved;
+  }
+}
+
+function openEdit() {
+  document.getElementById('editUsername').value = currentUser.username || '';
+  document.getElementById('editLastName').value = currentUser.lastName || '';
+  document.getElementById('editCountry').value = currentUser.country || '';
+  document.getElementById('editBirthDate').value = currentUser.birthDate || '';
+  document.getElementById('editGender').value = currentUser.gender || 'ذكر';
+  document.getElementById('editBio').value = currentUser.bio || '';
+  document.getElementById('bioCount').innerText = (currentUser.bio || '').length;
+  document.getElementById('editModal').style.display = 'block';
+}
+
+function closeEdit() {
+  document.getElementById('editModal').style.display = 'none';
+}
+
+function openAgent() {
+  document.getElementById('agentModal').style.display = 'block';
+}
+
+function closeAgent() {
+  document.getElementById('agentModal').style.display = 'none';
+}
+
+function openCreateAgency() {
+  closeAgent();
+  document.getElementById('agencyName').value = '';
+  document.getElementById('createAgencyModal').style.display = 'block';
+}
+
+function closeCreateAgency() {
+  document.getElementById('createAgencyModal').style.display = 'none';
+}
+
+async function createAgency() {
+  const agencyName = document.getElementById('agencyName').value.trim();
+  if (!agencyName) {
+    showCustomAlert('ادخل اسم الوكالة');
+    return;
+  }
+  const token = localStorage.getItem('token');
+  const res = await fetch('/api/create-agency', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+    body: JSON.stringify({ agencyName })
+  });
+  const data = await res.json();
+  if(data.success){
+    showCustomAlert('تم انشاء الوكالة بنجاح ✅');
+    closeCreateAgency();
+    loadMyData();
+  } else {
+    showCustomAlert(data.error || 'صار خطأ');
+  }
+}
+
+document.getElementById('editBio').addEventListener('input', (e) => {
+  document.getElementById('bioCount').innerText = e.target.value.length;
+});
+
+async function saveEdit() {
+  const token = localStorage.getItem('token');
+  const res = await fetch('/api/profile', {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+    body: JSON.stringify({
+      username: document.getElementById('editUsername').value,
+      lastName: document.getElementById('editLastName').value,
+      country: document.getElementById('editCountry').value,
+      birthDate: document.getElementById('editBirthDate').value,
+      gender: document.getElementById('editGender').value,
+      bio: document.getElementById('editBio').value
+    })
+  });
+  const data = await res.json();
+
+  if(data.success || data.msg){
+    showCustomAlert('تم التعديل بنجاح ✅');
+  } else {
+    showCustomAlert(data.error || 'صار خطأ');
+  }
+
+  closeEdit();
+  loadMyData();
+}
+
+function showCustomAlert(msg) {
+  document.getElementById('alertMsg').innerText = msg;
+  document.getElementById('customAlert').style.display = 'flex';
+}
+
+function closeCustomAlert() {
+  document.getElementById('customAlert').style.display = 'none';
+}
+
+document.getElementById('avatarInput').addEventListener('change', async (e) => {
+  const file = e.target.files[0];
+  if (!file) return;
+  const formData = new FormData();
+  formData.append('avatar', file);
+  const token = localStorage.getItem('token');
+  const res = await fetch('/api/upload-avatar', {
+    method: 'POST',
+    headers: { 'Authorization': 'Bearer ' + token },
+    body: formData
+  });
+  const data = await res.json();
+  if (data.success) {
+    loadMyData();
+    showCustomAlert('تم تعديل الصورة بنجاح ✅');
+  } else {
+    showCustomAlert(data.error);
+  }
+});
+
+document.getElementById('coverInput').addEventListener('change', async (e) => {
+  const file = e.target.files[0];
+  if (!file) return;
+  const formData = new FormData();
+  formData.append('cover', file);
+  const token = localStorage.getItem('token');
+  const res = await fetch('/api/upload-cover', {
+    method: 'POST',
+    headers: { 'Authorization': 'Bearer ' + token },
+    body: formData
+  });
+  const data = await res.json();
+  if (data.success) {
+    loadMyData();
+    showCustomAlert('تم تعديل الغلاف بنجاح ✅');
+  } else {
+    showCustomAlert(data.error);
+  }
+});
+
+loadMyData();
+loadRandomUser();
+</script>
 </body>
 </html>
