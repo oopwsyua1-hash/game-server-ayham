@@ -8,7 +8,7 @@
         body { font-family: 'Segoe UI', Tahoma; background: #f5f5f5; margin: 0; padding: 0; }
 .cover { height: 200px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); position: relative; background-size: cover; background-position: center; }
 .cover button { position: absolute; top: 15px; left: 15px; background: rgba(0,0,0,0.6); color: #fff; border: none; padding: 10px 15px; border-radius: 10px; cursor: pointer; backdrop-filter: blur(10px); z-index: 6; }
-.logout-top { position: absolute; top: 15px; right: 15px; background: #ff0000; color: #fff; border: none; padding: 12px 18px; border-radius: 10px; cursor: pointer; font-weight: bold; z-index: 6; font-size: 16px; box-shadow: 0 4px 15px rgba(255,0,0,0.5); }
+.logout-top { position: absolute; top: 15px; right: 15px; background: #ff0000; color: #fff; border: none; padding: 12px 18px; border-radius: 10px; cursor: pointer; font-weight: bold; z-index: 999; font-size: 16px; box-shadow: 0 4px 15px rgba(255,0,0,0.5); }
 .header { display: flex; justify-content: space-between; align-items: flex-start; padding: 15px; margin-top: -80px; position: relative; z-index: 5; }
 .profile-left { display: flex; flex-direction: column; align-items: center; gap: 8px; }
 .avatar { width: 140px; height: 140px; border-radius: 50%; background: linear-gradient(135deg, #ff00ff, #00ffff, #ff00ff, #9d00ff); background-size: 400% 400%; padding: 6px; position: relative; cursor: pointer; box-shadow: 0 8px 25px rgba(255,0,255,0.5); animation: gradientMove 3s ease infinite, pulseGlow 2s ease-in-out infinite; }
@@ -219,7 +219,7 @@ let currentUser = {};
 document.addEventListener('DOMContentLoaded', async () => {
   const token = localStorage.getItem('token');
   if (!token) {
-    window.location.href = '/';
+    window.location.replace('/');
     return;
   }
   await loadMyData();
@@ -232,10 +232,9 @@ async function loadMyData() {
   try {
     const res = await fetch('/api/profile', { headers: { 'Authorization': 'Bearer ' + token } });
     if (res.status === 401) {
-      localStorage.removeItem('token');
-      localStorage.removeItem('randomUser');
-      localStorage.removeItem('randomUserTime');
-      window.location.href = '/';
+      localStorage.clear();
+      sessionStorage.clear();
+      window.location.replace('/');
       return;
     }
     const data = await res.json();
@@ -273,8 +272,9 @@ async function loadMyData() {
     }
   } catch (err) {
     console.error(err);
-    localStorage.removeItem('token');
-    window.location.href = '/';
+    localStorage.clear();
+    sessionStorage.clear();
+    window.location.replace('/');
   }
 }
 
@@ -327,7 +327,8 @@ function closeEdit() {
 
 function logout() {
   localStorage.clear();
-  window.location.href = '/';
+  sessionStorage.clear();
+  window.location.replace('/?t=' + Date.now());
 }
 
 function openAgent() {
