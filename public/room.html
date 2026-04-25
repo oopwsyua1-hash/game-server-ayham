@@ -142,7 +142,7 @@
     <script>
         const socket = io();
         const token = localStorage.getItem('token');
-        const roomId = window.location.pathname.split('/').pop();
+        const roomId = Number(window.location.pathname.split('/').pop());
         let myUserId = null, myUserData = null, roomData = null, isOwner = false, isAdmin = false;
 
         if (!token) location.href = '/';
@@ -166,6 +166,7 @@
         }
 
         function renderMics(mics, layout) {
+            console.log('renderMics', layout, mics.length);
             const grid = document.getElementById('micsGrid');
             grid.setAttribute('data-layout', layout || '4*3');
             grid.innerHTML = '';
@@ -173,7 +174,7 @@
                 const seat = document.createElement('div');
                 seat.className = 'mic-seat';
                 let ringContent = mic.userId
-                ? `<img src="${mic.avatar || 'https://ui-avatars.com/api/?name=' + encodeURIComponent(mic.username)}" class="mic-avatar">`
+                 ? `<img src="${mic.avatar || 'https://ui-avatars.com/api/?name=' + encodeURIComponent(mic.username)}" class="mic-avatar">`
                     : mic.locked? `<div class="mic-icon">🔒</div>` : `<div class="mic-icon">+</div>`;
                 seat.innerHTML = `
                     <div class="mic-bg">
@@ -256,20 +257,24 @@
         }
         async function saveMicLayout() {
             const layout = document.getElementById('micLayoutSelect').value;
-            await fetch('/api/room-settings', {
+            const res = await fetch('/api/room-settings', {
                 method: 'POST',
                 headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
                 body: JSON.stringify({ roomId: Number(roomId), micLayout: layout })
             });
+            const data = await res.json();
+            console.log('saveMicLayout response:', data);
             closeMicSettings();
         }
 
         socket.on('mic-updated', (mics) => {
+            console.log('mic-updated received');
             roomData.mics = mics;
             renderMics(mics, roomData.micLayout);
         });
 
         socket.on('room-updated', (newRoom) => {
+            console.log('room-updated received', newRoom.micLayout);
             roomData = newRoom;
             renderMics(newRoom.mics, newRoom.micLayout);
         });
