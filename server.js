@@ -17,7 +17,6 @@ const io = new Server(server, { cors: { origin: "*" } });
 app.use(cors());
 app.use(express.json());
 
-// منع الكاش عشان التحديثات توصل فوراً
 app.use((req, res, next) => {
   res.set('Cache-Control', 'no-store, no-cache, must-revalidate, private');
   next();
@@ -25,11 +24,9 @@ app.use((req, res, next) => {
 
 app.use(express.static('public'));
 app.use('/uploads', express.static('uploads'));
-
 if (!fs.existsSync('uploads')) fs.mkdirSync('uploads');
 
 const JWT_SECRET = process.env.JWT_SECRET || 'al-sabe7-secret-2026';
-
 mongoose.connect(process.env.MONGO_URI || 'mongodb://localhost:27017/sabe7')
 .then(() => console.log('MongoDB متصل'))
 .catch(err => console.log('MongoDB Error:', err));
@@ -57,6 +54,10 @@ const RoomSchema = new mongoose.Schema({
   name: String,
   avatar: { type: String, default: '' },
   cover: { type: String, default: '' },
+  agencyName: { type: String, default: 'وكالة السبع' },
+  showAgency: { type: Boolean, default: true },
+  background: { type: String, default: 'neon' },
+  password: { type: String, default: '' },
   admins: [Number],
   banned: [Number],
   micLayout: { type: String, default: '4*3' },
@@ -66,6 +67,7 @@ const RoomSchema = new mongoose.Schema({
     locked: { type: Boolean, default: false },
     emoji: { type: String, default: '' }
   }],
+  gifts: [{ from: Number, to: Number, type: String, createdAt: { type: Date, default: Date.now } }],
   createdAt: { type: Date, default: Date.now }
 });
 
@@ -84,6 +86,7 @@ const auth = async (req, res, next) => {
   }
 };
 
+// Routes
 app.post('/api/register', async (req, res) => {
   try {
     const { username, lastName, email, password, country, birthDate, age, gender } = req.body;
@@ -133,21 +136,28 @@ app.post('/api/create-room', auth, async (req, res) => {
 });
 
 app.post('/api/room-settings', auth, async (req, res) => {
-  const { roomId, micLayout } = req.body;
+  const { roomId, micLayout, agencyName, showAgency, background, password } = req.body;
   const room = await Room.findOne({ roomId: Number(roomId) });
   const user = await User.findById(req.userId);
   if (!room) return res.status(404).json({ error: 'الغرفة مو موجودة' });
   if (room.ownerId!== user.userId) return res.status(403).json({ error: 'غير مصرح' });
 
-  room.micLayout = micLayout;
-  const [cols, rows] = micLayout.split('*').map(Number);
-  const totalMics = cols * rows;
-  const newMics = [];
-  for (let i = 1; i <= totalMics; i++) {
-    const oldMic = room.mics.find(m => m.seat === i);
-    newMics.push(oldMic || { seat: i, userId: null, username: null, avatar: null, muted: false, locked: false, emoji: '' });
+  if (micLayout) {
+    room.micLayout = micLayout;
+    const [cols, rows] = micLayout.split('*').map(Number);
+    const totalMics = cols * rows;
+    const newMics = [];
+    for (let i = 1; i <= totalMics; i++) {
+      const oldMic = room.mics.find(m => m.seat === i);
+      newMics.push(oldMic || { seat: i, userId: null, username: null, avatar: null, muted: false, locked: false, emoji: '' });
+    }
+    room.mics = newMics;
   }
-  room.mics = newMics;
+  if (agencyName!== undefined) room.agencyName = agencyName;
+  if (showAgency!== undefined) room.showAgency = showAgency;
+  if (background!== undefined) room.background = background;
+  if (password!== undefined) room.password = password;
+
   await room.save();
   io.to(`room-${roomId}`).emit('room-updated', room);
   res.json({ success: true });
@@ -171,19 +181,46 @@ app.get('/api/room/:id', async (req, res) => {
   res.json(room);
 });
 
+app.get('/api/room-users/:id', async (req, res) => {
+  const sockets = await io.in(`room-${req.params.id}`).fetchSockets();
+  const userIds = sockets.map(s => s.userId).filter(Boolean);
+  const users = await User.find({ userId: { $in: userIds } }).select('userId username avatar vip wealthLevel');
+  res.json(users);
+});
+
 app.get('/', (req, res) => res.sendFile(path.join(__dirname, 'public', 'index.html')));
 app.get('/me', (req, res) => res.sendFile(path.join(__dirname, 'public', 'me.html')));
 app.get('/room/:id', (req, res) => res.sendFile(path.join(__dirname, 'public', 'room.html')));
 
+// Socket.IO
+const roomUsers = {}; // roomId -> Set of userIds
+const userSockets = {}; // userId -> socketId
+
 io.on('connection', (socket) => {
-  socket.on('join-room', async ({ roomId, userId, token }) => {
+
+  socket.on('join-room', async ({ roomId, userId, token, roomPassword }) => {
     try {
       jwt.verify(token, JWT_SECRET);
+      const room = await Room.findOne({ roomId: Number(roomId) });
+      if (!room) return;
+
+      if (room.password && room.password!== roomPassword && room.ownerId!== userId &&!room.admins.includes(userId)) {
+        socket.emit('room-error', 'كلمة السر غلط');
+        return;
+      }
+
       socket.join(`room-${roomId}`);
       socket.userId = userId;
       socket.roomId = Number(roomId);
-      const onlineCount = io.sockets.adapter.rooms.get(`room-${roomId}`)?.size || 0;
-      io.to(`room-${roomId}`).emit('online-count', onlineCount);
+      userSockets[userId] = socket.id;
+
+      if (!roomUsers[roomId]) roomUsers[roomId] = new Set();
+      roomUsers[roomId].add(userId);
+
+      const user = await User.findOne({ userId });
+      io.to(`room-${roomId}`).emit('user-joined', { userId, username: user.username });
+      io.to(`room-${roomId}`).emit('online-count', roomUsers[roomId].size);
+      io.to(`room-${roomId}`).emit('chat-message', { system: true, message: `${user.username} دخل الغرفة` });
     } catch (e) {}
   });
 
@@ -191,6 +228,13 @@ io.on('connection', (socket) => {
     const room = await Room.findOne({ roomId: Number(roomId) });
     const user = await User.findOne({ userId });
     if (!room ||!user) return;
+
+    // نزل من الكرسي القديم اول
+    const oldMic = room.mics.find(m => m.userId === userId);
+    if (oldMic) {
+      oldMic.userId = null; oldMic.username = null; oldMic.avatar = null; oldMic.emoji = ''; oldMic.muted = false;
+    }
+
     const mic = room.mics.find(m => m.seat === seat);
     if (mic &&!mic.userId &&!mic.locked) {
       mic.userId = user.userId;
@@ -270,6 +314,14 @@ io.on('connection', (socket) => {
     }
   });
 
+  socket.on('mute-all', async ({ roomId, ownerId }) => {
+    const room = await Room.findOne({ roomId: Number(roomId) });
+    if (!room || room.ownerId!== ownerId) return;
+    room.mics.forEach(m => { if (m.userId && m.userId!== ownerId) m.muted = true; });
+    await room.save();
+    io.to(`room-${roomId}`).emit('mic-updated', room.mics);
+  });
+
   socket.on('make-admin', async ({ roomId, ownerId, targetUserId }) => {
     const room = await Room.findOne({ roomId: Number(roomId) });
     if (!room) return;
@@ -280,14 +332,71 @@ io.on('connection', (socket) => {
     }
   });
 
-  socket.on('chat-message', async ({ roomId, userId, username, message }) => {
-    io.to(`room-${roomId}`).emit('chat-message', { userId, username, message });
+  socket.on('send-gift', async ({ roomId, fromUserId, toUserId, giftType }) => {
+    const room = await Room.findOne({ roomId: Number(roomId) });
+    if (!room) return;
+    room.gifts.push({ from: fromUserId, to: toUserId, type: giftType });
+    await room.save();
+    const fromUser = await User.findOne({ userId: fromUserId });
+    const toUser = await User.findOne({ userId: toUserId });
+    io.to(`room-${roomId}`).emit('gift-received', {
+      from: fromUser.username,
+      to: toUser?.username || 'الغرفة',
+      giftType,
+      animation: giftType
+    });
   });
 
-  socket.on('disconnect', () => {
-    if (socket.roomId) {
-      const onlineCount = io.sockets.adapter.rooms.get(`room-${socket.roomId}`)?.size || 0;
-      io.to(`room-${socket.roomId}`).emit('online-count', onlineCount);
+  socket.on('chat-message', async ({ roomId, userId, username, message, toUserId }) => {
+    if (toUserId) {
+      // رسالة خاصة
+      const targetSocket = userSockets[toUserId];
+      if (targetSocket) {
+        io.to(targetSocket).emit('private-message', { fromUserId: userId, fromUsername: username, message });
+        socket.emit('private-message', { fromUserId: userId, fromUsername: username, message, self: true });
+      }
+    } else {
+      io.to(`room-${roomId}`).emit('chat-message', { userId, username, message });
+    }
+  });
+
+  // WebRTC Signaling
+  socket.on('webrtc-offer', ({ roomId, targetUserId, offer }) => {
+    const targetSocket = userSockets[targetUserId];
+    if (targetSocket) io.to(targetSocket).emit('webrtc-offer', { fromUserId: socket.userId, offer });
+  });
+
+  socket.on('webrtc-answer', ({ targetUserId, answer }) => {
+    const targetSocket = userSockets[targetUserId];
+    if (targetSocket) io.to(targetSocket).emit('webrtc-answer', { fromUserId: socket.userId, answer });
+  });
+
+  socket.on('webrtc-ice', ({ targetUserId, candidate }) => {
+    const targetSocket = userSockets[targetUserId];
+    if (targetSocket) io.to(targetSocket).emit('webrtc-ice', { fromUserId: socket.userId, candidate });
+  });
+
+  socket.on('disconnect', async () => {
+    if (socket.roomId && socket.userId) {
+      if (roomUsers[socket.roomId]) {
+        roomUsers[socket.roomId].delete(socket.userId);
+        io.to(`room-${socket.roomId}`).emit('online-count', roomUsers[socket.roomId].size);
+
+        const user = await User.findOne({ userId: socket.userId });
+        io.to(`room-${socket.roomId}`).emit('chat-message', { system: true, message: `${user.username} طلع من الغرفة` });
+
+        // نزل من المايك اذا كان طالع
+        const room = await Room.findOne({ roomId: socket.roomId });
+        if (room) {
+          const mic = room.mics.find(m => m.userId === socket.userId);
+          if (mic) {
+            mic.userId = null; mic.username = null; mic.avatar = null; mic.emoji = ''; mic.muted = false;
+            await room.save();
+            io.to(`room-${socket.roomId}`).emit('mic-updated', room.mics);
+          }
+        }
+      }
+      delete userSockets[socket.userId];
     }
   });
 });
