@@ -3,163 +3,149 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CYBER CARDS - تسجيل الدخول</title>
+    <title>تسجيل الدخول</title>
     <style>
         body { 
             font-family: 'Segoe UI', Tahoma; 
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); 
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             margin: 0; 
-            padding: 0; 
-            display: flex; 
-            justify-content: center; 
-            align-items: center; 
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
             min-height: 100vh;
         }
-        .container { 
-            background: rgba(0,0,0,0.7); 
-            padding: 30px; 
-            border-radius: 15px; 
-            width: 90%; 
+        .container {
+            background: #fff;
+            padding: 40px;
+            border-radius: 20px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+            width: 90%;
             max-width: 400px;
-            backdrop-filter: blur(10px);
         }
-        h1 { color: #fff; text-align: center; margin-bottom: 30px; }
-        input { 
-            width: 100%; 
-            padding: 12px; 
-            margin: 10px 0; 
-            border: none; 
-            border-radius: 8px; 
-            background: rgba(255,255,255,0.1); 
-            color: #fff; 
+        h2 { 
+            text-align: center; 
+            color: #667eea;
+            margin-bottom: 30px;
+        }
+        input {
+            width: 100%;
+            padding: 15px;
+            margin: 10px 0;
+            border: 2px solid #ddd;
+            border-radius: 10px;
             box-sizing: border-box;
+            font-size: 16px;
         }
-        input::placeholder { color: #ccc; }
-        button { 
-            width: 100%; 
-            padding: 12px; 
-            margin: 10px 0; 
-            border: none; 
-            border-radius: 8px; 
-            background: #5B63F5; 
-            color: #fff; 
-            font-size: 16px; 
+        button {
+            width: 100%;
+            padding: 15px;
+            margin: 10px 0;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+        button:active { transform: scale(0.95); }
+        .login-btn {
+            background: linear-gradient(90deg, #4CAF50, #45a049);
+            color: white;
+        }
+        .register-btn {
+            background: linear-gradient(90deg, #ff00ff, #9d00ff);
+            color: white;
+        }
+        .toggle {
+            text-align: center;
+            margin-top: 15px;
+            color: #666;
             cursor: pointer;
         }
-        button:hover { background: #4a52d4; }
-        .error { color: #ff6b6b; text-align: center; margin: 10px 0; }
-        .success { color: #51cf66; text-align: center; margin: 10px 0; }
-        .switch { color: #ccc; text-align: center; margin-top: 15px; cursor: pointer; }
+        .error {
+            background: #ffebee;
+            color: #c62828;
+            padding: 10px;
+            border-radius: 8px;
+            margin: 10px 0;
+            display: none;
+        }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1 id="formTitle">تسجيل الدخول</h1>
-        <div id="message"></div>
-        
-        <!-- فورم تسجيل الدخول -->
-        <div id="loginForm">
-            <input type="email" id="loginEmail" placeholder="الايميل">
-            <input type="password" id="loginPassword" placeholder="كلمة المرور">
-            <button onclick="login()">دخول</button>
-            <div class="switch" onclick="showRegister()">ما عندك حساب؟ انشاء حساب</div>
-        </div>
-
-        <!-- فورم التسجيل -->
-        <div id="registerForm" style="display:none">
-            <input type="text" id="regUsername" placeholder="اسم المستخدم">
-            <input type="text" id="regLastName" placeholder="الكنية">
-            <input type="email" id="regEmail" placeholder="الايميل">
-            <input type="password" id="regPassword" placeholder="كلمة المرور">
-            <input type="text" id="regCountry" placeholder="الدولة">
-            <input type="date" id="regBirthDate" placeholder="تاريخ الميلاد">
-            <select id="regGender" style="width:100%;padding:12px;margin:10px 0;border:none;border-radius:8px;background:rgba(255,255,255,0.1);color:#fff">
-                <option value="">الجنس</option>
-                <option value="ذكر">ذكر</option>
-                <option value="أنثى">أنثى</option>
-            </select>
-            <button onclick="register()">انشاء حساب</button>
-            <div class="switch" onclick="showLogin()">عندك حساب؟ تسجيل دخول</div>
+        <h2 id="title">تسجيل الدخول</h2>
+        <div class="error" id="error"></div>
+        <input type="text" id="username" placeholder="اسم المستخدم">
+        <input type="password" id="password" placeholder="كلمة المرور">
+        <button class="login-btn" id="submitBtn" onclick="submitForm()">دخول</button>
+        <div class="toggle" onclick="toggleMode()">
+            <span id="toggleText">ما عندك حساب؟ سجل الآن</span>
         </div>
     </div>
 
 <script>
-function showRegister() {
-    document.getElementById('loginForm').style.display = 'none';
-    document.getElementById('registerForm').style.display = 'block';
-    document.getElementById('formTitle').innerText = 'انشاء حساب';
-    document.getElementById('message').innerText = '';
+let isLogin = true;
+
+function toggleMode() {
+    isLogin = !isLogin;
+    document.getElementById('title').innerText = isLogin ? 'تسجيل الدخول' : 'انشاء حساب';
+    document.getElementById('submitBtn').innerText = isLogin ? 'دخول' : 'تسجيل';
+    document.getElementById('toggleText').innerText = isLogin ? 'ما عندك حساب؟ سجل الآن' : 'عندك حساب؟ سجل دخول';
 }
 
-function showLogin() {
-    document.getElementById('registerForm').style.display = 'none';
-    document.getElementById('loginForm').style.display = 'block';
-    document.getElementById('formTitle').innerText = 'تسجيل الدخول';
-    document.getElementById('message').innerText = '';
-}
-
-async function login() {
-    const email = document.getElementById('loginEmail').value;
-    const password = document.getElementById('loginPassword').value;
-    const msg = document.getElementById('message');
+async function submitForm() {
+    const username = document.getElementById('username').value.trim();
+    const password = document.getElementById('password').value.trim();
+    const errorDiv = document.getElementById('error');
     
+    if (!username || !password) {
+        errorDiv.innerText = 'ادخل الاسم وكلمة المرور';
+        errorDiv.style.display = 'block';
+        return;
+    }
+    
+    const endpoint = isLogin ? '/api/login' : '/api/register';
     try {
-        const res = await fetch('/api/login', {
+        const res = await fetch(endpoint, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ email, password })
+            body: JSON.stringify({ username, password })
         });
         const data = await res.json();
         
         if (data.success) {
             localStorage.setItem('token', data.token);
-            msg.className = 'success';
-            msg.innerText = data.msg;
-            setTimeout(() => window.location.href = '/me', 1000);
+            window.location.href = '/me';
         } else {
-            msg.className = 'error';
-            msg.innerText = data.error;
+            errorDiv.innerText = data.error || 'صار خطأ';
+            errorDiv.style.display = 'block';
         }
-    } catch (error) {
-        msg.className = 'error';
-        msg.innerText = 'فشل الاتصال بالسيرفر';
+    } catch (err) {
+        errorDiv.innerText = 'خطأ في الاتصال';
+        errorDiv.style.display = 'block';
     }
 }
 
-async function register() {
-    const msg = document.getElementById('message');
-    const body = {
-        username: document.getElementById('regUsername').value,
-        lastName: document.getElementById('regLastName').value,
-        email: document.getElementById('regEmail').value,
-        password: document.getElementById('regPassword').value,
-        country: document.getElementById('regCountry').value,
-        birthDate: document.getElementById('regBirthDate').value,
-        gender: document.getElementById('regGender').value
-    };
-    
-    try {
-        const res = await fetch('/api/register', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(body)
-        });
-        const data = await res.json();
-        
-        if (data.success) {
-            localStorage.setItem('token', data.token);
-            msg.className = 'success';
-            msg.innerText = data.msg;
-            setTimeout(() => window.location.href = '/me', 1000);
-        } else {
-            msg.className = 'error';
-            msg.innerText = data.error;
+// لو عندك توكن صالح روح للملف مباشرة
+window.addEventListener('load', async () => {
+    const token = localStorage.getItem('token');
+    if (token) {
+        try {
+            const res = await fetch('/api/profile', { 
+                headers: { 'Authorization': 'Bearer ' + token } 
+            });
+            if (res.ok) {
+                window.location.href = '/me';
+            } else {
+                localStorage.removeItem('token');
+            }
+        } catch {
+            localStorage.removeItem('token');
         }
-    } catch (error) {
-        msg.className = 'error';
-        msg.innerText = 'فشل الاتصال بالسيرفر';
     }
-}
+});
 </script>
 </body>
 </html>
