@@ -77,7 +77,7 @@ function authenticate(req, res, next) {
 
 app.post('/api/register', async (req, res) => {
   const { username, password } = req.body;
-  if (!username ||!password) return res.status(400).json({ error: 'مطلوب اسم وكلمة مرور' });
+  if (!username || !password) return res.status(400).json({ error: 'مطلوب اسم وكلمة مرور' });
   if (await User.findOne({ username })) return res.status(400).json({ error: 'الاسم موجود' });
   const hashed = await bcrypt.hash(password, 10);
   const userId = await getNextUserId();
@@ -90,7 +90,7 @@ app.post('/api/register', async (req, res) => {
 app.post('/api/login', async (req, res) => {
   const { username, password } = req.body;
   const user = await User.findOne({ username });
-  if (!user ||!(await bcrypt.compare(password, user.password))) {
+  if (!user || !(await bcrypt.compare(password, user.password))) {
     return res.status(401).json({ error: 'بيانات خاطئة' });
   }
   if (!user.userId) {
@@ -111,12 +111,54 @@ app.put('/api/profile', authenticate, async (req, res) => {
   try {
     const user = await User.findById(req.userId);
     if (username) user.username = username;
-    if (lastName!== undefined) user.lastName = lastName;
-    if (country!== undefined) user.country = country;
-    if (birthDate!== undefined) user.birthDate = birthDate;
-    if (gender!== undefined) user.gender = gender;
-    if (bio!== undefined) user.bio = bio.substring(0, 60);
+    if (lastName !== undefined) user.lastName = lastName;
+    if (country !== undefined) user.country = country;
+    if (birthDate !== undefined) user.birthDate = birthDate;
+    if (gender !== undefined) user.gender = gender;
+    if (bio !== undefined) user.bio = bio.substring(0, 60);
     await user.save();
     res.json({ success: true, msg: 'تم التعديل بنجاح' });
   } catch (err) {
-    res.status(500).json({ error: 'خطأ في التحد
+    res.status(500).json({ error: 'خطأ في التحديث' });
+  }
+});
+
+app.post('/api/create-agency', authenticate, async (req, res) => {
+  const { agencyName } = req.body;
+  if (!agencyName) return res.status(400).json({ error: 'ادخل اسم الوكالة' });
+  try {
+    const user = await User.findById(req.userId);
+    if (user.agencyName) return res.status(400).json({ error: 'انت منضم لوكالة بالفعل' });
+    user.agencyName = agencyName;
+    user.isAgencyOwner = true;
+    await user.save();
+    res.json({ success: true, msg: 'تم انشاء الوكالة بنجاح' });
+  } catch (err) {
+    res.status(500).json({ error: 'خطأ في انشاء الوكالة' });
+  }
+});
+
+app.post('/api/upload-avatar', authenticate, upload.single('avatar'), async (req, res) => {
+  const user = await User.findById(req.userId);
+  user.avatar = '/uploads/' + req.file.filename;
+  await user.save();
+  res.json({ success: true, avatar: user.avatar });
+});
+
+app.post('/api/upload-cover', authenticate, upload.single('cover'), async (req, res) => {
+  const user = await User.findById(req.userId);
+  user.cover = '/uploads/' + req.file.filename;
+  await user.save();
+  res.json({ success: true, cover: user.cover });
+});
+
+app.get('/api/random-user', async (req, res) => {
+  const users = await User.find({ username: { $ne: 'admin' } });
+  const random = users[Math.floor(Math.random() * users.length)];
+  res.json({ username: random?.username || 'مستخدم جديد' });
+});
+
+app.get('/', (req, res) => res.sendFile(__dirname + '/public/login.html'));
+app.get('/me', (req, res) => res.sendFile(__dirname + '/public/me.html'));
+
+app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
