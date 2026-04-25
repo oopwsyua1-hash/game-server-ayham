@@ -4,12 +4,22 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const cors = require('cors');
 const path = require('path');
+const http = require('http');
+const { Server } = require('socket.io');
+const multer = require('multer');
+const fs = require('fs');
 require('dotenv').config();
 
 const app = express();
+const server = http.createServer(app);
+const io = new Server(server, { cors: { origin: "*" } });
+
 app.use(cors());
 app.use(express.json());
 app.use(express.static('public'));
+app.use('/uploads', express.static('uploads'));
+
+if (!fs.existsSync('uploads')) fs.mkdirSync('uploads');
 
 const JWT_SECRET = process.env.JWT_SECRET || 'al-sabe7-secret-2026';
 
@@ -17,44 +27,58 @@ mongoose.connect(process.env.MONGO_URI || 'mongodb://localhost:27017/sabe7')
 .then(() => console.log('MongoDB متصل'))
 .catch(err => console.log('MongoDB Error:', err));
 
+const storage = multer.diskStorage({
+  destination: 'uploads/',
+  filename: (req, file, cb) => cb(null, Date.now() + '-' + file.originalname)
+});
+const upload = multer({ storage });
+
 const UserSchema = new mongoose.Schema({
-  username: String,
-  lastName: String,
-  email: { type: String, unique: true },
-  password: String,
-  country: String,
-  birthDate: String,
-  age: Number,
-  gender: String,
-  userId: { type: Number, unique: true },
-  avatar: { type: String, default: '' },
-  cover: { type: String, default: '' },
-  bio: { type: String, default: 'اهلا بالعالم' },
-  vip: { type: Number, default: 0 },
-  followers: { type: Number, default: 0 },
-  following: { type: Number, default: 0 },
-  friends: { type: Number, default: 0 },
-  wealthLevel: { type: Number, default: 0 },
-  popularity: { type: Number, default: 0 },
-  coins: { type: Number, default: 1000 },
+  username: String, lastName: String, email: { type: String, unique: true }, password: String,
+  country: String, birthDate: String, age: Number, gender: String, userId: { type: Number, unique: true },
+  avatar: { type: String, default: '' }, cover: { type: String, default: '' },
+  bio: { type: String, default: 'اهلا بالعالم' }, vip: { type: Number, default: 0 },
+  followers: { type: Number, default: 0 }, following: { type: Number, default: 0 },
+  friends: { type: Number, default: 0 }, wealthLevel: { type: Number, default: 0 },
+  popularity: { type: Number, default: 0 }, coins: { type: Number, default: 0 },
+  createdAt: { type: Date, default: Date.now }
+});
+
+const RoomSchema = new mongoose.Schema({
+  roomId: { type: Number, unique: true }, ownerId: Number, name: String,
+  avatar: { type: String, default: '' }, cover: { type: String, default: '' },
+  admins: [Number], banned: [Number],
+  mics: [{
+    seat: Number, userId: Number, username: String, avatar: String,
+    muted: { type: Boolean, default: false }, emoji: { type: String, default: '' }
+  }],
   createdAt: { type: Date, default: Date.now }
 });
 
 const User = mongoose.model('User', UserSchema);
+const Room = mongoose.model('Room', RoomSchema);
 
-// تسجيل حساب جديد
+const auth = async (req, res, next) => {
+  try {
+    const token = req.headers.authorization?.split(' ')[1];
+    if (!token) return res.status(401).json({ error: 'غير مصرح' });
+    const decoded = jwt.verify(token, JWT_SECRET);
+    req.userId = decoded.id;
+    next();
+  } catch (err) {
+    res.status(401).json({ error: 'توكن غير صالح' });
+  }
+};
+
 app.post('/api/register', async (req, res) => {
   try {
     const { username, lastName, email, password, country, birthDate, age, gender } = req.body;
     const existingUser = await User.findOne({ email });
     if (existingUser) return res.status(400).json({ error: 'الايميل مستخدم من قبل' });
-
     const hashedPassword = await bcrypt.hash(password, 10);
     const userId = Math.floor(100000 + Math.random() * 900000);
-
     const user = new User({ username, lastName, email, password: hashedPassword, country, birthDate, age, gender, userId });
     await user.save();
-
     const token = jwt.sign({ id: user._id }, JWT_SECRET);
     res.json({ token, user: { username, lastName, userId } });
   } catch (err) {
@@ -62,16 +86,13 @@ app.post('/api/register', async (req, res) => {
   }
 });
 
-// تسجيل دخول
 app.post('/api/login', async (req, res) => {
   try {
     const { email, password } = req.body;
     const user = await User.findOne({ email });
     if (!user) return res.status(400).json({ error: 'الايميل او كلمة السر غلط' });
-
     const validPass = await bcrypt.compare(password, user.password);
     if (!validPass) return res.status(400).json({ error: 'الايميل او كلمة السر غلط' });
-
     const token = jwt.sign({ id: user._id }, JWT_SECRET);
     res.json({ token, user: { username: user.username, lastName: user.lastName, userId: user.userId } });
   } catch (err) {
@@ -79,28 +100,134 @@ app.post('/api/login', async (req, res) => {
   }
 });
 
-// جلب بيانات المستخدم
-app.get('/api/me', async (req, res) => {
-  try {
-    const token = req.headers.authorization?.split(' ')[1];
-    if (!token) return res.status(401).json({ error: 'غير مصرح' });
+app.get('/api/me', auth, async (req, res) => {
+  const user = await User.findById(req.userId).select('-password');
+  res.json(user);
+});
 
+app.post('/api/update-profile', auth, upload.fields([{ name: 'avatar' }, { name: 'cover' }]), async (req, res) => {
+  const { bio } = req.body;
+  const updateData = { bio };
+  if (req.files.avatar) updateData.avatar = '/uploads/' + req.files.avatar[0].filename;
+  if (req.files.cover) updateData.cover = '/uploads/' + req.files.cover[0].filename;
+  await User.findByIdAndUpdate(req.userId, updateData);
+  res.json({ success: true });
+});
+
+app.post('/api/create-room', auth, async (req, res) => {
+  const user = await User.findById(req.userId);
+  const roomId = Math.floor(100000 + Math.random() * 900000);
+  const mics = Array.from({ length: 20 }, (_, i) => ({ seat: i + 1, userId: null, username: null, avatar: null, muted: false, emoji: '' }));
+  const room = new Room({ roomId, ownerId: user.userId, name: `وكالة ${user.username}`, admins: [user.userId], mics });
+  await room.save();
+  res.json({ roomId });
+});
+
+app.get('/api/room/:id', async (req, res) => {
+  const room = await Room.findOne({ roomId: req.params.id });
+  if (!room) return res.status(404).json({ error: 'الغرفة مو موجودة' });
+  res.json(room);
+});
+
+app.post('/api/update-room', auth, upload.fields([{ name: 'avatar' }, { name: 'cover' }]), async (req, res) => {
+  const { roomId, name } = req.body;
+  const room = await Room.findOne({ roomId });
+  const user = await User.findById(req.userId);
+  if (room.ownerId!== user.userId) return res.status(403).json({ error: 'مو انت صاحب الوكالة' });
+  const updateData = { name };
+  if (req.files.avatar) updateData.avatar = '/uploads/' + req.files.avatar[0].filename;
+  if (req.files.cover) updateData.cover = '/uploads/' + req.files.cover[0].filename;
+  await Room.updateOne({ roomId }, updateData);
+  res.json({ success: true });
+});
+
+app.get('/', (req, res) => res.sendFile(path.join(__dirname, 'public', 'index.html')));
+app.get('/me', (req, res) => res.sendFile(path.join(__dirname, 'public', 'me.html')));
+app.get('/room/:id', (req, res) => res.sendFile(path.join(__dirname, 'public', 'room.html')));
+
+io.on('connection', (socket) => {
+  socket.on('join-room', async ({ roomId, token }) => {
+    try {
+      const decoded = jwt.verify(token, JWT_SECRET);
+      const user = await User.findById(decoded.id);
+      socket.join(`room-${roomId}`);
+      socket.userId = user.userId;
+      socket.roomId = roomId;
+      io.to(`room-${roomId}`).emit('user-joined', { userId: user.userId, username: user.username });
+    } catch (e) {}
+  });
+
+  socket.on('sit-mic', async ({ roomId, seat, token }) => {
     const decoded = jwt.verify(token, JWT_SECRET);
-    const user = await User.findById(decoded.id).select('-password');
-    res.json(user);
-  } catch (err) {
-    res.status(401).json({ error: 'توكن غير صالح' });
-  }
-});
+    const user = await User.findById(decoded.id);
+    const room = await Room.findOne({ roomId });
+    if (room.ownerId!== user.userId &&!room.admins.includes(user.userId)) return;
+    const mic = room.mics.find(m => m.seat === seat);
+    if (mic &&!mic.userId) {
+      mic.userId = user.userId; mic.username = user.username; mic.avatar = user.avatar;
+      await room.save();
+      io.to(`room-${roomId}`).emit('mic-updated', room.mics);
+    }
+  });
 
-// الصفحات
-app.get('/', (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'index.html'));
-});
+  socket.on('leave-mic', async ({ roomId, userId }) => {
+    const room = await Room.findOne({ roomId });
+    const mic = room.mics.find(m => m.userId === userId);
+    if (mic) {
+      mic.userId = null; mic.username = null; mic.avatar = null; mic.emoji = '';
+      await room.save();
+      io.to(`room-${roomId}`).emit('mic-updated', room.mics);
+    }
+  });
 
-app.get('/me', (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'me.html'));
+  socket.on('send-emoji', async ({ roomId, userId, emoji }) => {
+    const room = await Room.findOne({ roomId });
+    const mic = room.mics.find(m => m.userId === userId);
+    if (mic) {
+      mic.emoji = emoji;
+      await room.save();
+      io.to(`room-${roomId}`).emit('mic-updated', room.mics);
+      setTimeout(async () => {
+        mic.emoji = '';
+        await room.save();
+        io.to(`room-${roomId}`).emit('mic-updated', room.mics);
+      }, 3000);
+    }
+  });
+
+  socket.on('chat-message', ({ roomId, userId, username, message }) => {
+    io.to(`room-${roomId}`).emit('chat-message', { userId, username, message, time: Date.now() });
+  });
+
+  socket.on('kick-user', async ({ roomId, token, targetUserId }) => {
+    const decoded = jwt.verify(token, JWT_SECRET);
+    const user = await User.findById(decoded.id);
+    const room = await Room.findOne({ roomId });
+    if (room.ownerId === user.userId || room.admins.includes(user.userId)) {
+      const mic = room.mics.find(m => m.userId === targetUserId);
+      if (mic) {
+        mic.userId = null; mic.username = null; mic.avatar = null;
+        await room.save();
+        io.to(`room-${roomId}`).emit('mic-updated', room.mics);
+        io.to(`room-${roomId}`).emit('user-kicked', { userId: targetUserId });
+      }
+    }
+  });
+
+  socket.on('mute-user', async ({ roomId, token, targetUserId }) => {
+    const decoded = jwt.verify(token, JWT_SECRET);
+    const user = await User.findById(decoded.id);
+    const room = await Room.findOne({ roomId });
+    if (room.ownerId === user.userId || room.admins.includes(user.userId)) {
+      const mic = room.mics.find(m => m.userId === targetUserId);
+      if (mic) {
+        mic.muted =!mic.muted;
+        await room.save();
+        io.to(`room-${roomId}`).emit('mic-updated', room.mics);
+      }
+    }
+  });
 });
 
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => console.log(`السبع شغال على ${PORT}`));
+server.listen(PORT, () => console.log(`السبع شغال على ${PORT}`));
