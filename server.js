@@ -1,185 +1,143 @@
 const express = require('express');
-const path = require('path');
-const bcrypt = require('bcrypt');
+const mongoose = require('mongoose');
+const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
-const { MongoClient } = require('mongodb');
 const multer = require('multer');
-const { v2: cloudinary } = require('cloudinary');
+const path = require('path');
+const { Server } = require('socket.io');
+const http = require('http');
+const cors = require('cors');
+require('dotenv').config();
 
 const app = express();
+const server = http.createServer(app);
+const io = new Server(server, { cors: { origin: "*" } });
+
+app.use(cors());
 app.use(express.json());
 app.use(express.static('public'));
+app.use('/uploads', express.static('uploads'));
 
-// Cloudinary config
-cloudinary.config({
-  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
-  api_key: process.env.CLOUDINARY_API_KEY,
-  api_secret: process.env.CLOUDINARY_API_SECRET
+mongoose.connect(process.env.MONGO_URI || 'mongodb://localhost:27017/alsebaa');
+
+const UserSchema = new mongoose.Schema({
+    userId: { type: Number, unique: true },
+    username: String,
+    lastName: String,
+    email: { type: String, unique: true },
+    password: String,
+    country: String,
+    birthDate: Date,
+    age: Number,
+    gender: String,
+    bio: { type: String, default: '', maxlength: 60 },
+    avatar: { type: String, default: '' },
+    cover: { type: String, default: '' },
+    coins: { type: Number, default: 0 },
+    followers: { type: Number, default: 0 },
+    following: { type: Number, default: 0 },
+    friends: { type: Number, default: 0 },
+    vip: { type: Number, default: 0 },
+    wealthLevel: { type: Number, default: 0 },
+    popularity: { type: Number, default: 0 },
+    gmailLinked: { type: Boolean, default: false }
 });
 
-// Multer config
-const storage = multer.memoryStorage();
+const CounterSchema = new mongoose.Schema({
+    _id: String,
+    seq: Number
+});
+
+const User = mongoose.model('User', UserSchema);
+const Counter = mongoose.model('Counter', CounterSchema);
+
+async function getNextUserId() {
+    const counter = await Counter.findByIdAndUpdate(
+        'userId',
+        { $inc: { seq: 1 } },
+        { new: true, upsert: true }
+    );
+    return 100000 + counter.seq;
+}
+
+const storage = multer.diskStorage({
+    destination: 'uploads/',
+    filename: (req, file, cb) => cb(null, Date.now() + path.extname(file.originalname))
+});
 const upload = multer({ storage });
 
-// MongoDB
-const client = new MongoClient(process.env.MONGODB_URI);
-let db;
-client.connect().then(() => {
-  db = client.db('gameDB');
-  console.log('MongoDB connected');
-});
-
-// JWT Secret
-const JWT_SECRET = process.env.JWT_SECRET || 'secret123';
-
-// Middleware للتحقق من التوكن
 const auth = async (req, res, next) => {
-  try {
-    const token = req.headers.authorization?.split(' ')[1];
-    if (!token) return res.status(401).json({ error: 'مطلوب تسجيل دخول' });
-    const decoded = jwt.verify(token, JWT_SECRET);
-    req.userId = decoded.userId;
-    next();
-  } catch {
-    res.status(401).json({ error: 'توكن غير صالح' });
-  }
+    try {
+        const token = req.headers.authorization?.split(' ')[1];
+        if (!token) return res.status(401).json({ error: 'ممنوع' });
+        const decoded = jwt.verify(token, process.env.JWT_SECRET || 'secret123');
+        req.user = await User.findById(decoded.id);
+        next();
+    } catch {
+        res.status(401).json({ error: 'توكن غلط' });
+    }
 };
 
-// Routes
-app.get('/', (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'login.html'));
-});
-
-app.get('/me', (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'me.html'));
-});
-
-// تسجيل حساب جديد
 app.post('/api/register', async (req, res) => {
-  try {
-    const { username, password, email } = req.body;
-    const exists = await db.collection('users').findOne({ username });
-    if (exists) return res.status(400).json({ error: 'اسم المستخدم موجود' });
-
-    const hashed = await bcrypt.hash(password, 10);
-    const userId = Date.now().toString().slice(-7);
-    const user = {
-      username,
-      password: hashed,
-      email,
-      userId,
-      coins: 0,
-      createdAt: new Date()
-    };
-
-    await db.collection('users').insertOne(user);
-    const token = jwt.sign({ userId: user.userId }, JWT_SECRET);
-    res.json({ success: true, token, user: { username, userId, coins: 0 } });
-  } catch (err) {
-    res.status(500).json({ error: 'خطأ بالسيرفر' });
-  }
+    try {
+        const { username, lastName, email, password, country, birthDate, age, gender } = req.body;
+        if (await User.findOne({ email })) return res.status(400).json({ error: 'الايميل مستخدم' });
+        
+        const userId = await getNextUserId();
+        const hashed = await bcrypt.hash(password, 10);
+        
+        const user = await User.create({
+            userId, username, lastName, email, password: hashed,
+            country, birthDate, age, gender
+        });
+        
+        const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET || 'secret123');
+        res.json({ token, user });
+    } catch (e) {
+        res.status(500).json({ error: 'خطأ بالسيرفر' });
+    }
 });
 
-// تسجيل دخول
 app.post('/api/login', async (req, res) => {
-  try {
-    const { username, password } = req.body;
-    const user = await db.collection('users').findOne({ username });
-    if (!user) return res.status(400).json({ error: 'المستخدم غير موجود' });
-
-    const valid = await bcrypt.compare(password, user.password);
-    if (!valid) return res.status(400).json({ error: 'كلمة السر غلط' });
-
-    const token = jwt.sign({ userId: user.userId }, JWT_SECRET);
-    res.json({ success: true, token, user: { username: user.username, userId: user.userId, coins: user.coins } });
-  } catch (err) {
-    res.status(500).json({ error: 'خطأ بالسيرفر' });
-  }
+    try {
+        const { email, password } = req.body;
+        const user = await User.findOne({ email });
+        if (!user || !await bcrypt.compare(password, user.password)) {
+            return res.status(400).json({ error: 'الايميل او كلمة السر غلط' });
+        }
+        const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET || 'secret123');
+        res.json({ token, user });
+    } catch {
+        res.status(500).json({ error: 'خطأ بالسيرفر' });
+    }
 });
 
-// جلب بيانات البروفايل
-app.get('/api/profile', auth, async (req, res) => {
-  try {
-    const user = await db.collection('users').findOne({ userId: req.userId });
-    if (!user) return res.status(404).json({ error: 'مستخدم غير موجود' });
-    delete user.password;
-    res.json({ user });
-  } catch (err) {
-    res.status(500).json({ error: 'خطأ بالسيرفر' });
-  }
+app.get('/api/me', auth, (req, res) => {
+    res.json(req.user);
 });
 
-// تعديل البروفايل
-app.put('/api/profile', auth, async (req, res) => {
-  try {
+app.put('/api/me', auth, async (req, res) => {
     const { username, lastName, country, birthDate, gender, bio } = req.body;
-    await db.collection('users').updateOne(
-      { userId: req.userId },
-      { $set: { username, lastName, country, birthDate, gender, bio } }
+    const user = await User.findByIdAndUpdate(
+        req.user._id,
+        { username, lastName, country, birthDate, gender, bio },
+        { new: true }
     );
-    res.json({ success: true, msg: 'تم التحديث' });
-  } catch (err) {
-    res.status(500).json({ error: 'خطأ بالسيرفر' });
-  }
+    res.json(user);
 });
 
-// رفع صورة البروفايل
-app.post('/api/upload-avatar', auth, upload.single('avatar'), async (req, res) => {
-  try {
-    const result = await new Promise((resolve, reject) => {
-      cloudinary.uploader.upload_stream({ folder: 'avatars' }, (err, result) => {
-        if (err) reject(err);
-        else resolve(result);
-      }).end(req.file.buffer);
-    });
-    await db.collection('users').updateOne({ userId: req.userId }, { $set: { avatar: result.secure_url } });
-    res.json({ success: true, url: result.secure_url });
-  } catch (err) {
-    res.status(500).json({ error: 'فشل الرفع' });
-  }
+app.post('/api/upload/avatar', auth, upload.single('file'), async (req, res) => {
+    const user = await User.findByIdAndUpdate(req.user._id, { avatar: `/uploads/${req.file.filename}` }, { new: true });
+    res.json(user);
 });
 
-// رفع صورة الغلاف
-app.post('/api/upload-cover', auth, upload.single('cover'), async (req, res) => {
-  try {
-    const result = await new Promise((resolve, reject) => {
-      cloudinary.uploader.upload_stream({ folder: 'covers' }, (err, result) => {
-        if (err) reject(err);
-        else resolve(result);
-      }).end(req.file.buffer);
-    });
-    await db.collection('users').updateOne({ userId: req.userId }, { $set: { cover: result.secure_url } });
-    res.json({ success: true, url: result.secure_url });
-  } catch (err) {
-    res.status(500).json({ error: 'فشل الرفع' });
-  }
+app.post('/api/upload/cover', auth, upload.single('file'), async (req, res) => {
+    const user = await User.findByIdAndUpdate(req.user._id, { cover: `/uploads/${req.file.filename}` }, { new: true });
+    res.json(user);
 });
 
-// مستخدم عشوائي
-app.get('/api/random-user', async (req, res) => {
-  try {
-    const count = await db.collection('users').countDocuments();
-    const random = Math.floor(Math.random() * count);
-    const user = await db.collection('users').findOne({}, { skip: random });
-    res.json({ username: user?.username || 'مستخدم مميز' });
-  } catch {
-    res.json({ username: 'مستخدم مميز' });
-  }
-});
-
-// انشاء وكالة
-app.post('/api/create-agency', auth, async (req, res) => {
-  try {
-    const { agencyName } = req.body;
-    await db.collection('users').updateOne(
-      { userId: req.userId },
-      { $set: { agencyName, isAgencyOwner: true } }
-    );
-    res.json({ success: true });
-  } catch (err) {
-    res.status(500).json({ error: 'خطأ بالسيرفر' });
-  }
-});
+app.get('/', (req, res) => res.sendFile(path.join(__dirname, 'public', 'login.html')));
+app.get('/me', (req, res) => res.sendFile(path.join(__dirname, 'public', 'me.html')));
 
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => console.log(`Server running on ${PORT}`));
+server.listen(PORT, () => console.log(`السبع شغال على ${PORT}`));
