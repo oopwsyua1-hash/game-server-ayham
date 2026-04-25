@@ -16,6 +16,13 @@ const io = new Server(server, { cors: { origin: "*" } });
 
 app.use(cors());
 app.use(express.json());
+
+// منع الكاش للمتصفح عشان التحديثات توصل فوراً
+app.use((req, res, next) => {
+  res.set('Cache-Control', 'no-store, no-cache, must-revalidate, private');
+  next();
+});
+
 app.use(express.static('public'));
 app.use('/uploads', express.static('uploads'));
 
