@@ -17,7 +17,7 @@ const io = new Server(server, { cors: { origin: "*" } });
 app.use(cors());
 app.use(express.json());
 
-// منع الكاش للمتصفح عشان التحديثات توصل فوراً
+// منع الكاش عشان التحديثات توصل فوراً
 app.use((req, res, next) => {
   res.set('Cache-Control', 'no-store, no-cache, must-revalidate, private');
   next();
@@ -153,6 +153,18 @@ app.post('/api/room-settings', auth, async (req, res) => {
   res.json({ success: true });
 });
 
+app.post('/api/room-rename', auth, async (req, res) => {
+  const { roomId, name } = req.body;
+  const room = await Room.findOne({ roomId: Number(roomId) });
+  const user = await User.findById(req.userId);
+  if (!room) return res.status(404).json({ error: 'الغرفة مو موجودة' });
+  if (room.ownerId!== user.userId) return res.status(403).json({ error: 'فقط صاحب الغرفة' });
+  room.name = name;
+  await room.save();
+  io.to(`room-${roomId}`).emit('room-updated', room);
+  res.json({ success: true });
+});
+
 app.get('/api/room/:id', async (req, res) => {
   const room = await Room.findOne({ roomId: Number(req.params.id) });
   if (!room) return res.status(404).json({ error: 'الغرفة مو موجودة' });
@@ -250,13 +262,11 @@ io.on('connection', (socket) => {
   socket.on('mute-user', async ({ roomId, ownerId, targetUserId }) => {
     const room = await Room.findOne({ roomId: Number(roomId) });
     if (!room) return;
-    if (room.ownerId === ownerId || room.admins.includes(ownerId)) {
-      const mic = room.mics.find(m => m.userId === targetUserId);
-      if (mic) {
-        mic.muted =!mic.muted;
-        await room.save();
-        io.to(`room-${roomId}`).emit('mic-updated', room.mics);
-      }
+    const mic = room.mics.find(m => m.userId === targetUserId);
+    if (mic && (room.ownerId === ownerId || room.admins.includes(ownerId) || targetUserId === ownerId)) {
+      mic.muted =!mic.muted;
+      await room.save();
+      io.to(`room-${roomId}`).emit('mic-updated', room.mics);
     }
   });
 
