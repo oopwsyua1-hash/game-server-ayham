@@ -9,7 +9,6 @@ const app = express();
 
 const JWT_SECRET = 'secret_key_12345';
 const PORT = process.env.PORT || 3000;
-// مهم: استخدم متغير البيئة تبع Render
 const MONGO_URI = process.env.MONGO_URI || 'mongodb://localhost:27017/mychat';
 
 app.use(express.json());
@@ -18,7 +17,6 @@ app.use('/uploads', express.static('uploads'));
 
 if (!fs.existsSync('uploads')) fs.mkdirSync('uploads');
 
-// شيلنا الخيارات القديمة اللي تسبب تحذير
 mongoose.connect(MONGO_URI).then(() => {
   console.log('MongoDB Connected');
 }).catch(err => {
@@ -52,7 +50,9 @@ const userSchema = new mongoose.Schema({
   gender: String,
   userId: { type: Number, unique: true },
   coins: { type: Number, default: 0 },
-  isAdmin: { type: Boolean, default: false }
+  isAdmin: { type: Boolean, default: false },
+  agencyName: String,
+  isAgencyOwner: { type: Boolean, default: false }
 });
 
 const User = mongoose.model('User', userSchema);
@@ -119,31 +119,4 @@ app.put('/api/profile', authenticate, async (req, res) => {
     await user.save();
     res.json({ success: true, msg: 'تم التعديل بنجاح' });
   } catch (err) {
-    res.status(500).json({ error: 'خطأ في التحديث' });
-  }
-});
-
-app.post('/api/upload-avatar', authenticate, upload.single('avatar'), async (req, res) => {
-  const user = await User.findById(req.userId);
-  user.avatar = '/uploads/' + req.file.filename;
-  await user.save();
-  res.json({ success: true, avatar: user.avatar });
-});
-
-app.post('/api/upload-cover', authenticate, upload.single('cover'), async (req, res) => {
-  const user = await User.findById(req.userId);
-  user.cover = '/uploads/' + req.file.filename;
-  await user.save();
-  res.json({ success: true, cover: user.cover });
-});
-
-app.get('/api/random-user', async (req, res) => {
-  const users = await User.find({ username: { $ne: 'admin' } });
-  const random = users[Math.floor(Math.random() * users.length)];
-  res.json({ username: random?.username || 'مستخدم جديد' });
-});
-
-app.get('/', (req, res) => res.sendFile(__dirname + '/public/login.html'));
-app.get('/me', (req, res) => res.sendFile(__dirname + '/public/me.html'));
-
-app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+    res.status(500).json({ error: 'خطأ في التحد
