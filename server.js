@@ -279,5 +279,5 @@ io.on('connection', (socket) => {
   });
 });
 
-const PORT = process.env.PORT || 3000;
-server.listen(PORT, () => console.log(`السبع شغال على ${PORT}`));
+const PORT = process.env.PORT || 10000;
+server.listen(PORT, () => console.log(`السيرفر شغال على ${PORT}`));
