@@ -328,7 +328,7 @@ function closeEdit() {
 function logout() {
   localStorage.clear();
   sessionStorage.clear();
-  window.location.replace('/?t=' + Date.now());
+  window.location.replace('/');
 }
 
 function openAgent() {
@@ -381,72 +381,4 @@ async function saveEdit() {
     method: 'PUT',
     headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
     body: JSON.stringify({
-      username: document.getElementById('editUsername').value,
-      lastName: document.getElementById('editLastName').value,
-      country: document.getElementById('editCountry').value,
-      birthDate: document.getElementById('editBirthDate').value,
-      gender: document.getElementById('editGender').value,
-      bio: document.getElementById('editBio').value
-    })
-  });
-  const data = await res.json();
-  if(data.success || data.msg){
-    showCustomAlert('تم التعديل بنجاح ✅');
-  } else {
-    showCustomAlert(data.error || 'صار خطأ');
-  }
-  closeEdit();
-  loadMyData();
-}
-
-function showCustomAlert(msg) {
-  document.getElementById('alertMsg').innerText = msg;
-  document.getElementById('customAlert').style.display = 'flex';
-}
-
-function closeCustomAlert() {
-  document.getElementById('customAlert').style.display = 'none';
-}
-
-document.getElementById('avatarInput').addEventListener('change', async (e) => {
-  const file = e.target.files[0];
-  if (!file) return;
-  const formData = new FormData();
-  formData.append('avatar', file);
-  const token = localStorage.getItem('token');
-  const res = await fetch('/api/upload-avatar', {
-    method: 'POST',
-    headers: { 'Authorization': 'Bearer ' + token },
-    body: formData
-  });
-  const data = await res.json();
-  if (data.success) {
-    loadMyData();
-    showCustomAlert('تم تعديل الصورة بنجاح ✅');
-  } else {
-    showCustomAlert(data.error);
-  }
-});
-
-document.getElementById('coverInput').addEventListener('change', async (e) => {
-  const file = e.target.files[0];
-  if (!file) return;
-  const formData = new FormData();
-  formData.append('cover', file);
-  const token = localStorage.getItem('token');
-  const res = await fetch('/api/upload-cover', {
-    method: 'POST',
-    headers: { 'Authorization': 'Bearer ' + token },
-    body: formData
-  });
-  const data = await res.json();
-  if (data.success) {
-    loadMyData();
-    showCustomAlert('تم تعديل الغلاف بنجاح ✅');
-  } else {
-    showCustomAlert(data.error);
-  }
-});
-</script>
-</body>
-</html>
+      username: document.getElementById('
