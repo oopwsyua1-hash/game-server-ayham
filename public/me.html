@@ -8,6 +8,7 @@
         body { font-family: 'Segoe UI', Tahoma; background: #f5f5f5; margin: 0; padding: 0; }
 .cover { height: 200px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); position: relative; background-size: cover; background-position: center; }
 .cover button { position: absolute; top: 15px; left: 15px; background: rgba(0,0,0,0.6); color: #fff; border: none; padding: 10px 15px; border-radius: 10px; cursor: pointer; backdrop-filter: blur(10px); z-index: 6; }
+.logout-top { position: absolute; top: 15px; right: 15px; background: #ff4444; color: #fff; border: none; padding: 10px 15px; border-radius: 10px; cursor: pointer; font-weight: bold; z-index: 6; }
 .header { display: flex; justify-content: space-between; align-items: flex-start; padding: 15px; margin-top: -80px; position: relative; z-index: 5; }
 
 .profile-left {
@@ -327,6 +328,7 @@
 
     <div class="cover" id="coverDiv">
         <button onclick="document.getElementById('coverInput').click()">تغيير الغلاف</button>
+        <button class="logout-top" onclick="logout()">🚪 خروج</button>
         <input type="file" id="coverInput" accept="image/*" style="display:none">
     </div>
 
