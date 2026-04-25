@@ -8,223 +8,36 @@
         body { font-family: 'Segoe UI', Tahoma; background: #f5f5f5; margin: 0; padding: 0; }
 .cover { height: 200px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); position: relative; background-size: cover; background-position: center; }
 .cover button { position: absolute; top: 15px; left: 15px; background: rgba(0,0,0,0.6); color: #fff; border: none; padding: 10px 15px; border-radius: 10px; cursor: pointer; backdrop-filter: blur(10px); z-index: 6; }
-.logout-top { position: absolute; top: 15px; right: 15px; background: #ff4444; color: #fff; border: none; padding: 10px 15px; border-radius: 10px; cursor: pointer; font-weight: bold; z-index: 6; }
+.logout-top { position: absolute; top: 15px; right: 15px; background: #ff0000; color: #fff; border: none; padding: 12px 18px; border-radius: 10px; cursor: pointer; font-weight: bold; z-index: 6; font-size: 16px; box-shadow: 0 4px 15px rgba(255,0,0,0.5); }
 .header { display: flex; justify-content: space-between; align-items: flex-start; padding: 15px; margin-top: -80px; position: relative; z-index: 5; }
-
-.profile-left {
-           display: flex;
-           flex-direction: column;
-           align-items: center;
-           gap: 8px;
-       }
-
-.avatar {
-            width: 140px;
-            height: 140px;
-            border-radius: 50%;
-            background: linear-gradient(135deg, #ff00ff, #00ffff, #ff00ff, #9d00ff);
-            background-size: 400% 400%;
-            padding: 6px;
-            position: relative;
-            cursor: pointer;
-            box-shadow: 0 8px 25px rgba(255,0,255,0.5);
-            animation: gradientMove 3s ease infinite, pulseGlow 2s ease-in-out infinite;
-        }
-
-        @keyframes gradientMove {
-            0% { background-position: 0% 50%; }
-            50% { background-position: 100% 50%; }
-            100% { background-position: 0% 50%; }
-        }
-
-        @keyframes pulseGlow {
-            0%, 100% { box-shadow: 0 8px 25px rgba(255,0,255,0.5), 0 0 20px rgba(255,0,255,0.3); }
-            50% { box-shadow: 0 8px 35px rgba(255,0,255,0.8), 0 0 40px rgba(0,255,255,0.5); }
-        }
-
-.avatar-inner {
-            width: 100%;
-            height: 100%;
-            border-radius: 50%;
-            background: #eee;
-            background-size: cover;
-            background-position: center;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 55px;
-            color: #999;
-            border: 3px solid #fff;
-        }
-
-.avatar input {
-            position: absolute;
-            bottom: 0;
-            right: 0;
-            width: 45px;
-            height: 45px;
-            opacity: 0;
-            cursor: pointer;
-            z-index: 10;
-        }
-
-.avatar::after {
-            content: '📸';
-            position: absolute;
-            bottom: 8px;
-            right: 8px;
-            background: linear-gradient(135deg, #ff00ff, #9d00ff);
-            border-radius: 50%;
-            padding: 10px;
-            font-size: 22px;
-            border: 3px solid #fff;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.4);
-            pointer-events: none;
-            animation: pulseIcon 1.5s ease-in-out infinite;
-        }
-
-        @keyframes pulseIcon {
-            0%, 100% { transform: scale(1); }
-            50% { transform: scale(1.1); }
-        }
-
-.username-display {
-            text-align: center;
-            font-size: 24px;
-            font-weight: bold;
-            background: linear-gradient(90deg, #ff00ff, #00ffff, #ff00ff);
-            background-size: 200% 200%;
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            animation: gradientMove 2s ease infinite, textPulse 2s ease-in-out infinite;
-            text-shadow: 0 0 20px rgba(255,0,255,0.5);
-        }
-
-        @keyframes textPulse {
-            0%, 100% { transform: scale(1); }
-            50% { transform: scale(1.05); }
-        }
-
-.info-badges {
-            display: flex;
-            flex-direction: column;
-            gap: 6px;
-            align-items: center;
-            width: 100%;
-        }
-
-.id-container {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            background: #fff;
-            padding: 4px 12px;
-            border-radius: 12px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-        }
-
-.id-display {
-            font-size: 14px;
-            color: #666;
-            font-weight: bold;
-        }
-
-.copy-btn {
-            background: linear-gradient(135deg, #ff00ff, #9d00ff);
-            color: #fff;
-            border: none;
-            padding: 4px 8px;
-            border-radius: 8px;
-            cursor: pointer;
-            font-size: 16px;
-            box-shadow: 0 2px 8px rgba(255,0,255,0.3);
-            transition: transform 0.2s;
-        }
-
-.copy-btn:active {
-            transform: scale(0.9);
-        }
-
-.agency-badge {
-            background: linear-gradient(135deg, #ffd700, #ff8c00);
-            color: #fff;
-            padding: 6px 14px;
-            border-radius: 12px;
-            font-size: 13px;
-            font-weight: bold;
-            box-shadow: 0 2px 10px rgba(255,140,0,0.4);
-            display: none;
-            animation: textPulse 2s ease-in-out infinite;
-        }
-
-.agency-badge.owner {
-            background: linear-gradient(135deg, #ff00ff, #9d00ff);
-            box-shadow: 0 2px 10px rgba(255,0,255,0.4);
-        }
-
-.stats {
-           display: flex;
-           gap: 12px;
-           align-items: center;
-           background: #fff;
-           padding: 12px 15px;
-           border-radius: 15px;
-           box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-           margin-top: 30px;
-       }
+.profile-left { display: flex; flex-direction: column; align-items: center; gap: 8px; }
+.avatar { width: 140px; height: 140px; border-radius: 50%; background: linear-gradient(135deg, #ff00ff, #00ffff, #ff00ff, #9d00ff); background-size: 400% 400%; padding: 6px; position: relative; cursor: pointer; box-shadow: 0 8px 25px rgba(255,0,255,0.5); animation: gradientMove 3s ease infinite, pulseGlow 2s ease-in-out infinite; }
+@keyframes gradientMove { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
+@keyframes pulseGlow { 0%, 100% { box-shadow: 0 8px 25px rgba(255,0,255,0.5), 0 0 20px rgba(255,0,255,0.3); } 50% { box-shadow: 0 8px 35px rgba(255,0,255,0.8), 0 0 40px rgba(0,255,255,0.5); } }
+.avatar-inner { width: 100%; height: 100%; border-radius: 50%; background: #eee; background-size: cover; background-position: center; display: flex; align-items: center; justify-content: center; font-size: 55px; color: #999; border: 3px solid #fff; }
+.avatar input { position: absolute; bottom: 0; right: 0; width: 45px; height: 45px; opacity: 0; cursor: pointer; z-index: 10; }
+.avatar::after { content: '📸'; position: absolute; bottom: 8px; right: 8px; background: linear-gradient(135deg, #ff00ff, #9d00ff); border-radius: 50%; padding: 10px; font-size: 22px; border: 3px solid #fff; box-shadow: 0 4px 15px rgba(0,0,0,0.4); pointer-events: none; animation: pulseIcon 1.5s ease-in-out infinite; }
+@keyframes pulseIcon { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.1); } }
+.username-display { text-align: center; font-size: 24px; font-weight: bold; background: linear-gradient(90deg, #ff00ff, #00ffff, #ff00ff); background-size: 200% 200%; -webkit-background-clip: text; -webkit-text-fill-color: transparent; animation: gradientMove 2s ease infinite, textPulse 2s ease-in-out infinite; text-shadow: 0 0 20px rgba(255,0,255,0.5); }
+@keyframes textPulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.05); } }
+.info-badges { display: flex; flex-direction: column; gap: 6px; align-items: center; width: 100%; }
+.id-container { display: flex; align-items: center; gap: 8px; background: #fff; padding: 4px 12px; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+.id-display { font-size: 14px; color: #666; font-weight: bold; }
+.copy-btn { background: linear-gradient(135deg, #ff00ff, #9d00ff); color: #fff; border: none; padding: 4px 8px; border-radius: 8px; cursor: pointer; font-size: 16px; box-shadow: 0 2px 8px rgba(255,0,255,0.3); transition: transform 0.2s; }
+.copy-btn:active { transform: scale(0.9); }
+.agency-badge { background: linear-gradient(135deg, #ffd700, #ff8c00); color: #fff; padding: 6px 14px; border-radius: 12px; font-size: 13px; font-weight: bold; box-shadow: 0 2px 10px rgba(255,140,0,0.4); display: none; animation: textPulse 2s ease-in-out infinite; }
+.agency-badge.owner { background: linear-gradient(135deg, #ff00ff, #9d00ff); box-shadow: 0 2px 10px rgba(255,0,255,0.4); }
+.stats { display: flex; gap: 12px; align-items: center; background: #fff; padding: 12px 15px; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); margin-top: 30px; }
 .stat { text-align: center; }
 .stat-num { font-size: 16px; font-weight: bold; }
 .stat-label { font-size: 11px; color: #666; }
 .vip { background: #e0e0e0; padding: 4px 10px; border-radius: 15px; font-size: 12px; }
-
-.bio-container {
-          margin: 15px;
-          background: #fff;
-          border-radius: 12px;
-          padding: 10px 15px;
-          box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-          overflow: hidden;
-          white-space: nowrap;
-          position: relative;
-      }
-
-.bio-text {
-          display: inline-block;
-          font-size: 16px;
-          color: #333;
-          font-weight: 500;
-          animation: marquee 10s linear infinite;
-          padding-right: 100%;
-      }
-
-      @keyframes marquee {
-          0% { transform: translateX(-100%); }
-          100% { transform: translateX(100%); }
-      }
-
-.random-banner {
-           background: linear-gradient(90deg,#c77700,#e89b00,#c77700);
-           background-size: 200% 200%;
-           padding: 18px;
-           border-radius: 15px;
-           margin: 15px;
-           color: #fff;
-           text-align: center;
-           box-shadow: 0 4px 20px rgba(199,119,0,0.4);
-           animation: gradientMove 3s ease infinite, bannerPulse 2s ease-in-out infinite;
-       }
-
-       @keyframes bannerPulse {
-           0%, 100% { transform: scale(1); box-shadow: 0 4px 20px rgba(199,119,0,0.4); }
-           50% { transform: scale(1.02); box-shadow: 0 6px 30px rgba(199,119,0,0.6); }
-       }
-
-.random-banner h3 {
-           margin: 0;
-           font-size: 20px;
-           text-shadow: 0 2px 10px rgba(0,0,0,0.3);
-       }
-
+.bio-container { margin: 15px; background: #fff; border-radius: 12px; padding: 10px 15px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); overflow: hidden; white-space: nowrap; position: relative; }
+.bio-text { display: inline-block; font-size: 16px; color: #333; font-weight: 500; animation: marquee 10s linear infinite; padding-right: 100%; }
+@keyframes marquee { 0% { transform: translateX(-100%); } 100% { transform: translateX(100%); } }
+.random-banner { background: linear-gradient(90deg,#c77700,#e89b00,#c77700); background-size: 200% 200%; padding: 18px; border-radius: 15px; margin: 15px; color: #fff; text-align: center; box-shadow: 0 4px 20px rgba(199,119,0,0.4); animation: gradientMove 3s ease infinite, bannerPulse 2s ease-in-out infinite; }
+@keyframes bannerPulse { 0%, 100% { transform: scale(1); box-shadow: 0 4px 20px rgba(199,119,0,0.4); } 50% { transform: scale(1.02); box-shadow: 0 6px 30px rgba(199,119,0,0.6); } }
+.random-banner h3 { margin: 0; font-size: 20px; text-shadow: 0 2px 10px rgba(0,0,0,0.3); }
 .icons { display: grid; grid-template-columns: repeat(4,1fr); gap: 15px; text-align: center; margin: 20px 15px; }
 .icon-box { font-size: 24px; }
 .icon-label { font-size: 12px; margin-top: 5px; }
@@ -236,91 +49,23 @@
 .nav { position: fixed; bottom: 0; left: 0; right: 0; background: #fff; display: flex; justify-content: space-around; padding: 10px; border-top: 1px solid #ddd; z-index: 10; }
 .nav-item { text-align: center; font-size: 12px; }
 .nav-item.active { color: #4CAF50; }
-
-      #editModal, #agentModal, #createAgencyModal { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); z-index: 100; overflow-y: auto; }
+#editModal, #agentModal, #createAgencyModal { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); z-index: 100; overflow-y: auto; }
 .modal-content { background: #fff; margin: 30px 20px; padding: 20px; border-radius: 15px; }
 .modal-content input,.modal-content select,.modal-content textarea { width: 100%; padding: 12px; margin: 8px 0; border: 2px solid #ddd; border-radius: 8px; box-sizing: border-box; font-family: inherit; }
 .modal-content button { padding: 12px 25px; margin: 5px; border: none; border-radius: 8px; cursor: pointer; font-size: 15px; }
 .save-btn { background: linear-gradient(90deg, #4CAF50, #45a049); color: white; }
 .close-btn { background: #f44336; color: white; }
-.logout-btn { background: linear-gradient(90deg, #ff6b6b, #ee5a24); color: white; width: 100%; margin-top: 15px; font-weight: bold; }
 .char-count { text-align: left; font-size: 12px; color: #999; margin-top: -5px; margin-bottom: 10px; }
-
 .agent-card { background: linear-gradient(135deg, #667eea, #764ba2); color: #fff; padding: 20px; border-radius: 15px; margin: 10px 0; cursor: pointer; box-shadow: 0 4px 15px rgba(0,0,0,0.2); }
 .agent-card h3 { margin: 0 0 10px 0; font-size: 20px; }
 .agent-card p { margin: 0; font-size: 14px; opacity: 0.9; }
-
-.note-box {
-          background: linear-gradient(135deg, #ff00ff, #00ffff);
-          background-size: 400% 400%;
-          animation: gradientMove 3s ease infinite;
-          color: #fff;
-          padding: 15px;
-          border-radius: 12px;
-          margin: 15px 0;
-          text-align: center;
-          font-weight: bold;
-          box-shadow: 0 4px 15px rgba(255,0,255,0.4);
-      }
-
-      #customAlert {
-          display: none;
-          position: fixed;
-          top: 0; left: 0; right: 0; bottom: 0;
-          background: rgba(0,0,0,0.7);
-          z-index: 9999;
-          justify-content: center;
-          align-items: center;
-          backdrop-filter: blur(5px);
-      }
-
-.alert-box {
-          background: linear-gradient(135deg, #ff00ff, #00ffff, #ff00ff);
-          background-size: 400% 400%;
-          padding: 30px 40px;
-          border-radius: 20px;
-          text-align: center;
-          box-shadow: 0 10px 40px rgba(255,0,255,0.6);
-          animation: gradientMove 2s ease infinite, popIn 0.3s ease;
-          border: 3px solid #fff;
-      }
-
-      @keyframes popIn {
-          0% { transform: scale(0.5); opacity: 0; }
-          100% { transform: scale(1); opacity: 1; }
-      }
-
-.alert-box h3 {
-          color: #fff;
-          font-size: 24px;
-          margin: 0 0 15px 0;
-          text-shadow: 0 2px 10px rgba(0,0,0,0.5);
-          animation: textPulse 1s ease-in-out infinite;
-      }
-
-.alert-box button {
-          background: #fff;
-          color: #ff00ff;
-          border: none;
-          padding: 12px 30px;
-          border-radius: 10px;
-          font-size: 16px;
-          font-weight: bold;
-          cursor: pointer;
-          box-shadow: 0 4px 15px rgba(0,0,0,0.3);
-      }
-
-      #loadingScreen {
-          position: fixed;
-          top: 0; left: 0; right: 0; bottom: 0;
-          background: #f5f5f5;
-          display: flex;
-          justify-content: center;
-          align-items: center;
-          z-index: 9998;
-          font-size: 20px;
-          color: #666;
-      }
+.note-box { background: linear-gradient(135deg, #ff00ff, #00ffff); background-size: 400% 400%; animation: gradientMove 3s ease infinite; color: #fff; padding: 15px; border-radius: 12px; margin: 15px 0; text-align: center; font-weight: bold; box-shadow: 0 4px 15px rgba(255,0,255,0.4); }
+#customAlert { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.7); z-index: 9999; justify-content: center; align-items: center; backdrop-filter: blur(5px); }
+.alert-box { background: linear-gradient(135deg, #ff00ff, #00ffff, #ff00ff); background-size: 400% 400%; padding: 30px 40px; border-radius: 20px; text-align: center; box-shadow: 0 10px 40px rgba(255,0,255,0.6); animation: gradientMove 2s ease infinite, popIn 0.3s ease; border: 3px solid #fff; }
+@keyframes popIn { 0% { transform: scale(0.5); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
+.alert-box h3 { color: #fff; font-size: 24px; margin: 0 0 15px 0; text-shadow: 0 2px 10px rgba(0,0,0,0.5); animation: textPulse 1s ease-in-out infinite; }
+.alert-box button { background: #fff; color: #ff00ff; border: none; padding: 12px 30px; border-radius: 10px; font-size: 16px; font-weight: bold; cursor: pointer; box-shadow: 0 4px 15px rgba(0,0,0,0.3); }
+#loadingScreen { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: #f5f5f5; display: flex; justify-content: center; align-items: center; z-index: 9998; font-size: 20px; color: #666; }
     </style>
 </head>
 <body>
@@ -419,44 +164,36 @@
             <div class="char-count"><span id="bioCount">0</span>/60</div>
             <button class="save-btn" onclick="saveEdit()">حفظ</button>
             <button class="close-btn" onclick="closeEdit()">اغلاق</button>
-            <button class="logout-btn" onclick="logout()">🚪 تسجيل خروج</button>
         </div>
     </div>
 
     <div id="agentModal">
         <div class="modal-content">
             <h2 style="text-align:center;color:#667eea">👔 مركز الوكالة</h2>
-
             <div class="agent-card" onclick="showCustomAlert('قريباً...')">
                 <h3>انضم الئ وكالة 🏢</h3>
                 <p>انضم لوكالة موجودة وابدأ شغلك</p>
             </div>
-
             <div class="agent-card" onclick="openCreateAgency()">
                 <h3>كن وكيل</h3>
                 <p>افتح وكالتك الخاصة وكون مدير</p>
             </div>
-
             <div class="agent-card" onclick="showCustomAlert('قريباً...')">
                 <h3>بحث عن وكالة 🔍</h3>
                 <p>ابحث عن وكالة تناسبك</p>
             </div>
-
             <div class="agent-card" onclick="showCustomAlert('قريباً...')">
                 <h3>كون وكيل شحن 📦</h3>
                 <p>اشحن رصيد للمستخدمين</p>
             </div>
-
             <div class="agent-card" onclick="showCustomAlert('قريباً...')">
                 <h3>تقرير 📊</h3>
                 <p>شوف تقارير وكالتك وارباحك</p>
             </div>
-
             <div class="note-box">
                 ملاحظة من السبع الحلبي:<br>
                 اوجو من مستخدمين تطبيق السبع الحلبي ادخل المعلموات الصحيحة
             </div>
-
             <button class="close-btn" style="width:100%;margin-top:15px" onclick="closeAgent()">اغلاق</button>
         </div>
     </div>
@@ -479,14 +216,12 @@
 
 <script>
 let currentUser = {};
-
 document.addEventListener('DOMContentLoaded', async () => {
   const token = localStorage.getItem('token');
   if (!token) {
     window.location.href = '/';
     return;
   }
-
   await loadMyData();
   await loadRandomUser();
   document.getElementById('loadingScreen').style.display = 'none';
@@ -509,7 +244,6 @@ async function loadMyData() {
       document.getElementById('userIdText').innerText = 'ID: ' + (data.user.userId || 'غير متوفر');
       document.getElementById('usernameDisplay').innerText = data.user.username;
       document.getElementById('coinsNum').innerText = data.user.coins || 0;
-
       const agencyBadge = document.getElementById('agencyBadge');
       if (data.user.agencyName) {
           if (data.user.isAgencyOwner) {
@@ -523,14 +257,12 @@ async function loadMyData() {
       } else {
           agencyBadge.style.display = 'none';
       }
-
       if (data.user.bio && data.user.bio.trim()!== '') {
           document.getElementById('bioText').innerText = data.user.bio;
           document.getElementById('bioContainer').style.display = 'block';
       } else {
           document.getElementById('bioContainer').style.display = 'none';
       }
-
       if (data.user.avatar) {
           document.getElementById('avatarInner').style.backgroundImage = `url(${data.user.avatar})`;
           document.getElementById('avatarInner').innerText = '';
@@ -594,13 +326,8 @@ function closeEdit() {
 }
 
 function logout() {
-  localStorage.removeItem('token');
-  localStorage.removeItem('randomUser');
-  localStorage.removeItem('randomUserTime');
-  showCustomAlert('تم تسجيل الخروج ✅');
-  setTimeout(() => {
-    window.location.href = '/';
-  }, 1000);
+  localStorage.clear();
+  window.location.href = '/';
 }
 
 function openAgent() {
@@ -662,13 +389,11 @@ async function saveEdit() {
     })
   });
   const data = await res.json();
-
   if(data.success || data.msg){
     showCustomAlert('تم التعديل بنجاح ✅');
   } else {
     showCustomAlert(data.error || 'صار خطأ');
   }
-
   closeEdit();
   loadMyData();
 }
