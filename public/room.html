@@ -173,7 +173,7 @@
                 const seat = document.createElement('div');
                 seat.className = 'mic-seat';
                 let ringContent = mic.userId
-                 ? `<img src="${mic.avatar || 'https://ui-avatars.com/api/?name=' + encodeURIComponent(mic.username)}" class="mic-avatar">`
+                ? `<img src="${mic.avatar || 'https://ui-avatars.com/api/?name=' + encodeURIComponent(mic.username)}" class="mic-avatar">`
                     : mic.locked? `<div class="mic-icon">🔒</div>` : `<div class="mic-icon">+</div>`;
                 seat.innerHTML = `
                     <div class="mic-bg">
