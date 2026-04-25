@@ -8,110 +8,111 @@
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Cairo', sans-serif; }
         body { background: #0a0a0f; color: #fff; height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
-        body[data-bg="stars"] { background: #0a0a0f url('https://i.imgur.com/7bQYV7a.gif') center/cover; }
+        body[data-bg="stars"] { background: #0a0a0f url('https://i.imgur.com/7bVQV7a.gif') center/cover; }
         body[data-bg="neon"] { background: linear-gradient(135deg, #0a0a0f 0%, #1a0a2e 100%); }
-       .room-header { background: linear-gradient(135deg, #a855f7, #3b82f6); padding: 10px 15px; display: flex; justify-content: space-between; align-items: center; z-index: 100; }
-       .room-info h2 { font-size: 16px; margin-bottom: 3px; cursor: pointer; }
-       .room-info h2:hover { text-decoration: underline; }
-       .room-id-box { display: flex; align-items: center; gap: 6px; background: rgba(0,0,0,0.3); padding: 3px 8px; border-radius: 8px; }
-       .room-id { font-size: 13px; font-weight: bold; }
-       .copy-id { background: rgba(255,255,255,0.2); border: none; color: #fff; padding: 2px 6px; border-radius: 5px; cursor: pointer; font-size: 11px; }
-       .header-actions { display: flex; gap: 5px; }
-       .header-btn { background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.2); color: #fff; padding: 6px 10px; border-radius: 8px; cursor: pointer; font-size: 12px; }
-       .agency-bar { display: flex; justify-content: space-between; align-items: center; padding: 8px 15px; background: rgba(0,0,0,0.4); font-size: 12px; transition: 0.3s; }
-       .agency-bar.hidden { height: 0; padding: 0; overflow: hidden; }
-       .agency-left { display: flex; align-items: center; gap: 8px; }
-       .agency-avatar { width: 32px; height: 32px; border-radius: 6px; border: 2px solid gold; object-fit: cover; }
-       .lv-badge { background: linear-gradient(45deg, #fbbf24, #f59e0b); padding: 2px 8px; border-radius: 10px; font-size: 10px; font-weight: bold; }
-       .mics-wrapper { flex: 1; padding: 12px; overflow-y: auto; position: relative; }
-       .mics-grid { display: grid; gap: 10px; justify-items: center; }
-       .mics-grid[data-layout="4*1"] { grid-template-columns: repeat(4, 1fr); }
-       .mics-grid[data-layout="4*2"] { grid-template-columns: repeat(4, 1fr); }
-       .mics-grid[data-layout="4*3"] { grid-template-columns: repeat(4, 1fr); }
-       .mics-grid[data-layout="4*4"] { grid-template-columns: repeat(4, 1fr); }
-       .mics-grid[data-layout="4*5"] { grid-template-columns: repeat(4, 1fr); }
-       .mics-grid[data-layout="6*1"] { grid-template-columns: repeat(6, 1fr); }
-       .mics-grid[data-layout="6*2"] { grid-template-columns: repeat(6, 1fr); }
-       .mics-grid[data-layout="6*3"] { grid-template-columns: repeat(6, 1fr); }
-       .mic-seat { position: relative; width: 100%; max-width: 75px; aspect-ratio: 1; cursor: pointer; }
-       .mic-ring { width: 100%; height: 100%; border-radius: 50%; background: linear-gradient(135deg, #1a1a2e, #0a0a0f); padding: 3px; position: relative; box-shadow: 0 0 20px rgba(168,85,247,0.3); transition: 0.3s; }
-       .mic-ring::before { content: ''; position: absolute; inset: 0; border-radius: 50%; padding: 3px; background: linear-gradient(135deg, #ff00ff, #00ffff, #ff00ff); -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0); -webkit-mask-composite: xor; mask-composite: exclude; animation: rotate 3s linear infinite; }
+        .room-header { background: linear-gradient(135deg, #a855f7, #3b82f6); padding: 10px 15px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 4px 20px rgba(168,85,247,0.4); }
+        .room-info h2 { font-size: 16px; margin-bottom: 3px; cursor: pointer; }
+        .room-info h2:hover { text-decoration: underline; }
+        .room-id-box { display: flex; align-items: center; gap: 6px; background: rgba(0,0,0,0.3); padding: 3px 8px; border-radius: 8px; }
+        .room-id { font-size: 13px; font-weight: bold; }
+        .copy-id { background: rgba(255,255,255,0.2); border: none; color: #fff; padding: 2px 6px; border-radius: 5px; cursor: pointer; }
+        .header-actions { display: flex; gap: 5px; }
+        .header-btn { background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.2); color: #fff; padding: 6px 10px; border-radius: 8px; cursor: pointer; font-size: 12px; }
+        .agency-bar { display: flex; justify-content: space-between; align-items: center; padding: 8px 15px; background: linear-gradient(90deg, #1a1a2e, #0a0a0f); border-bottom: 1px solid #a855f7; }
+        .agency-bar.hidden { height: 0; padding: 0; overflow: hidden; }
+        .agency-left { display: flex; align-items: center; gap: 8px; }
+        .agency-avatar { width: 32px; height: 32px; border-radius: 6px; border: 2px solid gold; object-fit: cover; }
+        .lv-badge { background: linear-gradient(45deg, #fbbf24, #f59e0b); padding: 2px 8px; border-radius: 10px; font-size: 11px; font-weight: bold; color: #000; }
+        .mics-wrapper { flex: 1; padding: 12px; overflow-y: auto; position: relative; }
+        .mics-grid { display: grid; gap: 10px; justify-items: center; }
+        .mics-grid[data-layout="4*1"] { grid-template-columns: repeat(4, 1fr); }
+        .mics-grid[data-layout="4*2"] { grid-template-columns: repeat(4, 1fr); }
+        .mics-grid[data-layout="4*3"] { grid-template-columns: repeat(4, 1fr); }
+        .mics-grid[data-layout="4*4"] { grid-template-columns: repeat(4, 1fr); }
+        .mics-grid[data-layout="4*5"] { grid-template-columns: repeat(4, 1fr); }
+        .mics-grid[data-layout="6*1"] { grid-template-columns: repeat(6, 1fr); }
+        .mics-grid[data-layout="6*2"] { grid-template-columns: repeat(6, 1fr); }
+        .mics-grid[data-layout="6*3"] { grid-template-columns: repeat(6, 1fr); }
+        .mic-seat { position: relative; width: 100%; max-width: 75px; aspect-ratio: 1; cursor: pointer; }
+        .mic-ring { width: 100%; height: 100%; border-radius: 50%; background: linear-gradient(135deg, #1a1a2e, #0a0a0f); border: 2px solid #2a2a3e; display: flex; align-items: center; justify-content: center; position: relative; transition: all 0.3s; }
+        .mic-ring::before { content: ''; position: absolute; inset: 0; border-radius: 50%; padding: 3px; background: linear-gradient(135deg, #a855f7, #3b82f6, #a855f7); -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0); -webkit-mask-composite: xor; mask-composite: exclude; animation: rotate 3s linear infinite; }
         @keyframes rotate { to { transform: rotate(360deg); } }
-       .mic-ring.locked::before { background: linear-gradient(135deg, #555, #888); animation: none; }
-       .mic-ring.muted { opacity: 0.5; }
-       .mic-ring.speaking { box-shadow: 0 0 30px rgba(168,85,247,0.8), 0 0 60px rgba(168,85,247,0.4); animation: speakPulse 0.5s infinite; }
+        .mic-ring.locked::before { background: linear-gradient(135deg, #555, #888); animation: none; }
+        .mic-ring.muted { opacity: 0.5; }
+        .mic-ring.speaking { box-shadow: 0 0 30px rgba(168,85,247,0.8), 0 0 60px rgba(168,85,247,0.4); animation: speakPulse 0.5s infinite; }
         @keyframes speakPulse { 0%,100% { transform: scale(1); } 50% { transform: scale(1.05); } }
-       .mic-ring-inner { width: 100%; height: 100%; border-radius: 50%; background: #0a0a0f; display: flex; align-items: center; justify-content: center; position: relative; z-index: 1; }
-       .mic-avatar { width: 85%; height: 85%; border-radius: 50%; object-fit: cover; border: 2px solid rgba(168,85,247,0.5); }
-       .mic-icon { font-size: 28px; color: #a855f7; }
-       .mic-emoji { position: absolute; top: -5px; right: -5px; font-size: 24px; animation: emojiBounce 0.5s; filter: drop-shadow(0 0 6px #000); z-index: 10; }
+        .mic-ring-inner { width: 100%; height: 100%; border-radius: 50%; background: #0a0a0f; display: flex; align-items: center; justify-content: center; overflow: hidden; }
+        .mic-avatar { width: 85%; height: 85%; border-radius: 50%; object-fit: cover; border: 2px solid rgba(168,85,247,0.5); }
+        .mic-icon { font-size: 28px; color: #a855f7; }
+        .mic-emoji { position: absolute; top: -5px; right: -5px; font-size: 24px; animation: emojiBounce 0.5s; filter: drop-shadow(0 0 5px #fff); }
         @keyframes emojiBounce { 0%,100% { transform: scale(1) translateY(0); } 50% { transform: scale(1.4) translateY(-10px); } }
-       .mic-name { position: absolute; bottom: -8px; left: 50%; transform: translateX(-50%); font-size: 10px; background: rgba(0,0,0,0.8); padding: 2px 8px; border-radius: 10px; white-space: nowrap; max-width: 100%; overflow: hidden; text-overflow: ellipsis; border: 1px solid rgba(168,85,247,0.3); }
-       .mic-number { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 20px; color: rgba(168,85,247,0.3); font-weight: bold; z-index: 0; }
-       .mute-icon { position: absolute; top: 5px; left: 5px; font-size: 16px; z-index: 5; }
-       .bottom-panel { background: rgba(10,10,15,0.98); border-top: 2px solid #2a2a3e; }
-       .stats-row { display: flex; justify-content: space-between; padding: 8px 15px; font-size: 12px; align-items: center; }
-       .online-badge { background: linear-gradient(45deg, #ff00ff, #00ffff); padding: 4px 12px; border-radius: 20px; font-weight: bold; cursor: pointer; }
-       .control-btn { background: linear-gradient(135deg, #1a1a2e, #0a0a0f); border: 2px solid #a855f7; border-radius: 10px; color: #fff; padding: 8px 16px; cursor: pointer; font-size: 14px; font-weight: bold; transition: 0.2s; }
-       .control-btn:hover { background: #a855f7; transform: scale(1.05); }
-       .chat-container { display: none; flex-direction: column; max-height: 200px; border-top: 1px solid #2a2a3e; }
-       .chat-container.show { display: flex; }
-       .chat-box { flex: 1; overflow-y: auto; padding: 8px 15px; font-size: 13px; }
-       .chat-msg { margin: 5px 0; padding: 5px 8px; border-radius: 8px; background: rgba(26,26,46,0.5); }
-       .chat-msg.system { background: rgba(168,85,247,0.2); text-align: center; font-size: 11px; color: #a855f7; }
-       .chat-msg.private { background: rgba(59,130,246,0.2); border-left: 3px solid #3b82f6; }
-       .chat-name { color: #a855f7; font-weight: bold; cursor: pointer; }
-       .chat-name:hover { text-decoration: underline; }
-       .chat-input-row { display: flex; gap: 5px; padding: 8px 10px; border-top: 1px solid #2a2a3e; }
-       .chat-input-row input { flex: 1; padding: 10px; background: #1a1a2e; border: 1px solid #a855f7; border-radius: 8px; color: #fff; font-size: 13px; }
-       .chat-input-row button { padding: 10px 18px; background: linear-gradient(135deg, #a855f7, #3b82f6); border: none; border-radius: 8px; color: #fff; cursor: pointer; font-weight: bold; }
-       .control-menu { display: none; position: fixed; bottom: 10px; left: 50%; transform: translateX(-50%); background: rgba(26,26,46,0.98); border: 2px solid #a855f7; border-radius: 20px; padding: 15px; z-index: 999; width: 95%; max-width: 450px; box-shadow: 0 0 40px rgba(168,85,247,0.6); backdrop-filter: blur(10px); }
-       .control-menu.show { display: block; animation: slideUp 0.3s; }
+        .mic-name { position: absolute; bottom: -8px; left: 50%; transform: translateX(-50%); font-size: 10px; background: rgba(0,0,0,0.8); padding: 2px 6px; border-radius: 8px; white-space: nowrap; }
+        .mic-number { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 20px; color: #2a2a3e; font-weight: bold; }
+        .mute-icon { position: absolute; top: 5px; left: 5px; font-size: 16px; z-index: 5; }
+        .bottom-panel { background: rgba(10,10,15,0.98); border-top: 2px solid #2a2a3e; }
+        .stats-row { display: flex; justify-content: space-between; padding: 8px 15px; font-size: 12px; align-items: center; }
+        .online-badge { background: linear-gradient(45deg, #ff00ff, #00ffff); padding: 4px 12px; border-radius: 20px; font-weight: bold; cursor: pointer; }
+        .control-btn { background: linear-gradient(135deg, #1a1a2e, #0a0a0f); border: 2px solid #a855f7; border-radius: 15px; padding: 8px 16px; color: #fff; cursor: pointer; font-weight: bold; }
+        .control-btn:hover { background: #a855f7; transform: scale(1.05); }
+        .chat-container { display: none; flex-direction: column; max-height: 200px; border-top: 1px solid #2a2a3e; }
+        .chat-container.show { display: flex; }
+        .chat-box { flex: 1; overflow-y: auto; padding: 8px 15px; font-size: 13px; }
+        .chat-msg { margin: 5px 0; padding: 5px 8px; border-radius: 8px; background: rgba(26,26,46,0.5); }
+        .chat-msg.system { background: rgba(168,85,247,0.2); text-align: center; font-size: 11px; color: #a855f7; }
+        .chat-msg.private { background: rgba(59,130,246,0.2); border-left: 3px solid #3b82f6; }
+        .chat-name { color: #a855f7; font-weight: bold; cursor: pointer; }
+        .chat-name:hover { text-decoration: underline; }
+        .chat-input-row { display: flex; gap: 5px; padding: 8px 10px; border-top: 1px solid #2a2a3e; }
+        .chat-input-row input { flex: 1; padding: 10px; background: #1a1a2e; border: 1px solid #a855f7; border-radius: 8px; color: #fff; }
+        .chat-input-row button { padding: 10px 18px; background: linear-gradient(135deg, #a855f7, #3b82f6); border: none; border-radius: 8px; color: #fff; cursor: pointer; font-weight: bold; }
+        .control-menu { display: none; position: fixed; bottom: 10px; left: 50%; transform: translateX(-50%); background: rgba(10,10,15,0.98); border: 2px solid #a855f7; border-radius: 20px; padding: 15px; z-index: 1000; box-shadow: 0 0 40px rgba(168,85,247,0.6); }
+        .control-menu.show { display: block; animation: slideUp 0.3s; }
         @keyframes slideUp { from { transform: translateX(-50%) translateY(100%); opacity: 0; } to { transform: translateX(-50%) translateY(0); opacity: 1; } }
-       .menu-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
-       .menu-item { background: linear-gradient(135deg, #0a0a0f, #1a1a2e); border: 1px solid rgba(168,85,247,0.3); border-radius: 12px; padding: 12px 5px; text-align: center; cursor: pointer; transition: 0.2s; }
-       .menu-item:hover { background: linear-gradient(135deg, #a855f7, #3b82f6); transform: scale(1.08); box-shadow: 0 0 20px rgba(168,85,247,0.5); }
-       .menu-item.active { background: linear-gradient(135deg, #ef4444, #dc2626); border-color: #ef4444; }
-       .menu-item-icon { font-size: 28px; display: block; margin-bottom: 5px; }
-       .menu-item-text { font-size: 11px; font-weight: bold; }
-       .user-menu { position: fixed; background: rgba(26,26,46,0.98); border: 2px solid #a855f7; border-radius: 15px; padding: 10px; display: none; z-index: 9999; min-width: 180px; box-shadow: 0 0 30px rgba(168,85,247,0.7); backdrop-filter: blur(10px); }
-       .user-menu button { width: 100%; padding: 12px; background: #0a0a0f; border: 1px solid rgba(168,85,247,0.3); color: #fff; text-align: right; cursor: pointer; margin: 4px 0; border-radius: 10px; font-size: 13px; transition: 0.2s; }
-       .user-menu button:hover { background: #a855f7; transform: translateX(-5px); }
-       .user-menu button.danger { background: linear-gradient(135deg, #ef4444, #dc2626); border-color: #ef4444; }
-       .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); z-index: 9999; overflow-y: auto; backdrop-filter: blur(5px); }
-       .modal.show { display: block; }
-       .modal-content { background: linear-gradient(135deg, #1a1a2e, #0a0a0f); margin: 20px; padding: 25px; border-radius: 20px; border: 2px solid #a855f7; box-shadow: 0 0 40px rgba(168,85,247,0.5); }
-       .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; font-size: 20px; font-weight: bold; }
-       .close-btn { background: linear-gradient(135deg, #ef4444, #dc2626); border: none; color: #fff; width: 35px; height: 35px; border-radius: 50%; cursor: pointer; font-size: 20px; transition: 0.2s; }
-       .close-btn:hover { transform: rotate(90deg); }
-       .setting-group { margin: 20px 0; padding: 18px; background: rgba(10,10,15,0.6); border-radius: 12px; border: 1px solid rgba(168,85,247,0.2); }
-       .setting-group label { display: block; margin-bottom: 8px; font-size: 13px; color: #a855f7; font-weight: bold; }
-       .setting-group input,.setting-group select { width: 100%; padding: 12px; background: #0a0a0f; color: #fff; border: 2px solid #a855f7; border-radius: 10px; font-size: 14px; }
-       .save-btn { width: 100%; padding: 15px; background: linear-gradient(135deg, #ff00ff, #00ffff); border: none; border-radius: 12px; color: #fff; font-size: 16px; font-weight: bold; cursor: pointer; margin-top: 20px; transition: 0.2s; }
-       .save-btn:hover { transform: scale(1.02); box-shadow: 0 0 30px rgba(168,85,247,0.6); }
-       .gift-animation { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 80px; z-index: 10000; animation: giftPop 2s ease-out; pointer-events: none; }
-        @keyframes giftPop { 0% { transform: translate(-50%, -50%) scale(0); opacity: 0; } 50% { transform: translate(-50%, -50%) scale(1.5); opacity: 1; } 100% { transform: translate(-50%, -150%) scale(1); opacity: 0; } }
-       .online-list { max-height: 400px; overflow-y: auto; }
-       .online-user { display: flex; align-items: center; gap: 12px; padding: 12px; background: rgba(10,10,15,0.6); border-radius: 10px; margin: 8px 0; cursor: pointer; transition: 0.2s; }
-       .online-user:hover { background: rgba(168,85,247,0.3); }
-       .online-user img { width: 45px; height: 45px; border-radius: 50%; border: 2px solid #a855f7; }
-       .online-user-info { flex: 1; }
-       .online-user-name { font-weight: bold; font-size: 14px; }
-       .online-user-level { font-size: 11px; color: #a855f7; }
-       .private-chat-box { position: fixed; bottom: 80px; right: 20px; width: 300px; height: 400px; background: rgba(26,26,46,0.98); border: 2px solid #3b82f6; border-radius: 15px; display: none; flex-direction: column; z-index: 9998; box-shadow: 0 0 40px rgba(59,130,246,0.6); }
-       .private-chat-box.show { display: flex; }
-       .private-chat-header { padding: 12px; background: linear-gradient(135deg, #3b82f6, #2563eb); border-radius: 13px 13px 0 0; display: flex; justify-content: space-between; align-items: center; }
+        .menu-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
+        .menu-item { background: linear-gradient(135deg, #0a0a0f, #1a1a2e); border: 1px solid rgba(168,85,247,0.3); border-radius: 12px; padding: 12px; text-align: center; cursor: pointer; transition: all 0.3s; }
+        .menu-item:hover { background: linear-gradient(135deg, #a855f7, #3b82f6); transform: scale(1.08); box-shadow: 0 0 20px rgba(168,85,247,0.6); }
+        .menu-item.active { background: linear-gradient(135deg, #ef4444, #dc2626); border-color: #ef4444; }
+        .menu-item-icon { font-size: 28px; display: block; margin-bottom: 5px; }
+        .menu-item-text { font-size: 11px; font-weight: bold; }
+        .user-menu { position: fixed; background: rgba(26,26,46,0.98); border: 2px solid #a855f7; border-radius: 15px; padding: 8px; z-index: 2000; min-width: 180px; }
+        .user-menu button { width: 100%; padding: 12px; background: #0a0a0f; border: 1px solid rgba(168,85,247,0.3); color: #fff; border-radius: 8px; margin: 3px 0; cursor: pointer; text-align: right; }
+        .user-menu button:hover { background: #a855f7; transform: translateX(-5px); }
+        .user-menu button.danger { background: linear-gradient(135deg, #ef4444, #dc2626); border-color: #ef4444; }
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); z-index: 3000; overflow-y: auto; }
+        .modal.show { display: block; }
+        .modal-content { background: linear-gradient(135deg, #1a1a2e, #0a0a0f); margin: 20px; padding: 25px; border-radius: 20px; border: 2px solid #a855f7; box-shadow: 0 0 50px rgba(168,85,247,0.6); }
+        .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; font-size: 20px; font-weight: bold; }
+        .close-btn { background: linear-gradient(135deg, #ef4444, #dc2626); border: none; color: #fff; width: 35px; height: 35px; border-radius: 50%; cursor: pointer; font-size: 20px; }
+        .close-btn:hover { transform: rotate(90deg); }
+        .setting-group { margin: 20px 0; padding: 18px; background: rgba(10,10,15,0.6); border-radius: 12px; border: 1px solid rgba(168,85,247,0.3); }
+        .setting-group label { display: block; margin-bottom: 8px; font-size: 13px; color: #a855f7; font-weight: bold; }
+        .setting-group input, .setting-group select { width: 100%; padding: 12px; background: #0a0a0f; color: #fff; border: 1px solid #a855f7; border-radius: 10px; font-size: 14px; }
+        .save-btn { width: 100%; padding: 15px; background: linear-gradient(135deg, #ff00ff, #00ffff); border: none; border-radius: 12px; color: #fff; font-size: 16px; font-weight: bold; cursor: pointer; margin-top: 20px; }
+        .save-btn:hover { transform: scale(1.02); box-shadow: 0 0 30px rgba(168,85,247,0.6); }
+        .gift-animation { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 80px; z-index: 9999; animation: giftPop 2s; }
+        @keyframes giftPop { 0% { transform: translate(-50%, -50%) scale(0); opacity: 0; } 50% { transform: translate(-50%, -50%) scale(1.5); opacity: 1; } 100% { transform: translate(-50%, -50%) scale(1) translateY(-200px); opacity: 0; } }
+        .online-list { max-height: 400px; overflow-y: auto; }
+        .online-user { display: flex; align-items: center; gap: 12px; padding: 12px; background: rgba(10,10,15,0.6); border-radius: 12px; margin: 8px 0; border: 1px solid rgba(168,85,247,0.2); cursor: pointer; }
+        .online-user:hover { background: rgba(168,85,247,0.3); }
+        .online-user img { width: 45px; height: 45px; border-radius: 50%; border: 2px solid #a855f7; }
+        .online-user-info { flex: 1; }
+        .online-user-name { font-weight: bold; font-size: 14px; }
+        .online-user-level { font-size: 11px; color: #a855f7; }
+        .private-chat-box { position: fixed; bottom: 80px; right: 20px; width: 300px; height: 400px; background: rgba(26,26,46,0.98); border: 2px solid #3b82f6; border-radius: 15px; display: none; flex-direction: column; z-index: 2000; }
+        .private-chat-box.show { display: flex; }
+        .private-chat-header { padding: 12px; background: linear-gradient(135deg, #3b82f6, #2563eb); border-radius: 13px 13px 0 0; display: flex; justify-content: space-between; align-items: center; }
     </style>
 </head>
 <body data-bg="neon">
     <div class="room-header">
         <div class="room-info">
-            <h2 id="roomName" onclick="showRenameModal()">غرفة علب</h2>
+            <h2 id="roomName" onclick="showRenameModal()">غرفة السبع</h2>
             <div class="room-id-box">
                 <span>ID:</span>
                 <span class="room-id" id="roomIdText">0</span>
                 <button class="copy-id" onclick="copyRoomId()">نسخ</button>
             </div>
+        </div>
         <div class="header-actions">
             <button class="header-btn" onclick="showSettings()">⚙️ اعدادات</button>
             <button class="header-btn" onclick="leaveRoom()">🚪 خروج</button>
@@ -120,7 +121,7 @@
 
     <div class="agency-bar" id="agencyBar">
         <div class="agency-left">
-            <img src="https://i.imgur.com/KjQP8vL.jpg" class="agency-avatar" id="agencyAvatar">
+            <img src="https://i.imgur.com/kJQp8vL.jpg" class="agency-avatar" id="agencyAvatar">
             <span id="agencyName">وكالة السبع</span>
             <span class="lv-badge">Lv.16</span>
         </div>
@@ -167,20 +168,20 @@
     <div id="settingsModal" class="modal">
         <div class="modal-content">
             <div class="modal-header">
-                <span>اعدادات الغرفة</span>
+                <span>⚙️ اعدادات الغرفة</span>
                 <button class="close-btn" onclick="closeModal('settingsModal')">×</button>
             </div>
             <div class="setting-group">
                 <label>عدد مقاعد المايك</label>
                 <select id="micLayoutSelect">
-                    <option value="4*1">4*1 مقعد</option>
-                    <option value="4*2">4*2 مقعد</option>
-                    <option value="4*3">4*3 مقعد</option>
-                    <option value="4*4">4*4 مقعد</option>
-                    <option value="4*5">4*5 مقعد</option>
-                    <option value="6*1">6*1 مقعد</option>
-                    <option value="6*2">6*2 مقعد</option>
-                    <option value="6*3">6*3 مقعد</option>
+                    <option value="4*1">4 مقعد</option>
+                    <option value="4*2">8 مقعد</option>
+                    <option value="4*3">12 مقعد</option>
+                    <option value="4*4">16 مقعد</option>
+                    <option value="4*5">20 مقعد</option>
+                    <option value="6*1">6 مقعد</option>
+                    <option value="6*2">12 مقعد</option>
+                    <option value="6*3">18 مقعد</option>
                 </select>
             </div>
             <div class="setting-group">
@@ -190,7 +191,7 @@
             <div class="setting-group">
                 <label>اظهار شريط الوكالة</label>
                 <select id="showAgencySelect">
-                    <option value="true">اي</option>
+                    <option value="true">نعم</option>
                     <option value="false">لا</option>
                 </select>
             </div>
@@ -226,7 +227,7 @@
     <div id="onlineModal" class="modal">
         <div class="modal-content">
             <div class="modal-header">
-                <span>المتواجدين بالغرفة</span>
+                <span>👥 المتواجدين بالغرفة</span>
                 <button class="close-btn" onclick="closeModal('onlineModal')">×</button>
             </div>
             <div class="online-list" id="onlineList"></div>
@@ -236,7 +237,7 @@
     <div id="giftModal" class="modal">
         <div class="modal-content">
             <div class="modal-header">
-                <span>ارسال هدية</span>
+                <span>🎁 ارسال هدية</span>
                 <button class="close-btn" onclick="closeModal('giftModal')">×</button>
             </div>
             <div class="menu-grid">
@@ -264,50 +265,51 @@
         const socket = io();
         const token = localStorage.getItem('token');
         const roomId = Number(window.location.pathname.split('/').pop());
+        
         let myUserId = null, myUserData = null, roomData = null, isOwner = false, isAdmin = false;
         let localStream = null, isMicOn = false, isMuted = false;
         let peerConnections = {};
         let currentPrivateChat = null;
         let clickTimeout = null;
-
+        
         if (!token) location.href = '/';
-        if ('serviceWorker' in navigator) navigator.serviceWorker.register('/sw.js');
-
+        if ('serviceWorker' in navigator) navigator.register('/sw.js');
+        
         function copyRoomId() {
             navigator.clipboard.writeText(roomId);
             alert('تم نسخ ايدي الغرفة: ' + roomId);
         }
-
+        
         async function init() {
             const meRes = await fetch('/api/me', { headers: { 'Authorization': `Bearer ${token}` } });
             myUserData = await meRes.json();
             myUserId = myUserData.userId;
-
+            
             // Check password
             let roomPassword = '';
             const roomRes = await fetch(`/api/room/${roomId}`);
             roomData = await roomRes.json();
-
-            if (roomData.password && roomData.ownerId!== myUserId &&!roomData.admins.includes(myUserId)) {
+            
+            if (roomData.password && roomData.ownerId!== myUserId && !roomData.admins.includes(myUserId)) {
                 roomPassword = prompt('الغرفة مقفولة، ادخل كلمة السر:');
                 if (!roomPassword) { location.href = '/me'; return; }
             }
-
+            
             isOwner = roomData.ownerId === myUserId;
             isAdmin = roomData.admins.includes(myUserId);
-
+            
             document.getElementById('roomName').textContent = roomData.name;
             document.getElementById('roomIdText').textContent = roomData.roomId;
             document.getElementById('agencyName').textContent = roomData.agencyName;
             if (roomData.avatar) document.getElementById('agencyAvatar').src = roomData.avatar;
             if (!roomData.showAgency) document.getElementById('agencyBar').classList.add('hidden');
             document.body.setAttribute('data-bg', roomData.background);
-
+            
             renderMics(roomData.mics, roomData.micLayout);
             renderControlMenu();
             socket.emit('join-room', { roomId, userId: myUserId, token, roomPassword });
         }
-
+        
         function renderMics(mics, layout) {
             const grid = document.getElementById('micsGrid');
             grid.setAttribute('data-layout', layout || '4*3');
@@ -315,9 +317,9 @@
             mics.forEach((mic) => {
                 const seat = document.createElement('div');
                 seat.className = 'mic-seat';
-                let ringContent = mic.userId
-                   ? `<img src="${mic.avatar || 'https://ui-avatars.com/api/?name=' + encodeURIComponent(mic.username)}" class="mic-avatar">`
-                    : mic.locked? `<div class="mic-icon">🔒</div>` : `<div class="mic-icon">+</div>`;
+                let ringContent = mic.userId 
+                    ? `<img src="${mic.avatar || 'https://ui-avatars.com/api/?name=' + encodeURIComponent(mic.username)}" class="mic-avatar">`
+                    : mic.locked? '<div class="mic-icon">🔒</div>' : '<div class="mic-icon">+</div>';
                 seat.innerHTML = `
                     <div class="mic-ring ${mic.locked? 'locked' : ''} ${mic.muted? 'muted' : ''}" id="ring-${mic.seat}">
                         <div class="mic-ring-inner">${ringContent}</div>
@@ -331,33 +333,33 @@
                 grid.appendChild(seat);
             });
         }
-
+        
         function renderControlMenu() {
             const grid = document.getElementById('menuGrid');
             const myMic = roomData.mics.find(m => m.userId === myUserId);
             let items = [];
-
+            
             items.push({ icon: '💬', text: 'الدردشة', action: 'toggleChat' });
             items.push({ icon: '👥', text: 'المتواجدين', action: 'showOnlineList' });
-
+            
             if (myMic) {
                 items.push({ icon: '🎤', text: isMicOn? 'ايقاف مايكي' : 'تشغيل مايكي', action: 'toggleMic', active: isMicOn });
                 items.push({ icon: '🔇', text: isMuted? 'الغاء الكتم' : 'كتم مايكي', action: 'toggleMute', active: isMuted });
-                items.push({ icon: '😂', text: 'ايموجي', action: 'showEmojiPicker' });
+                items.push({ icon: '😊', text: 'ايموجي', action: 'showEmojiPicker' });
             }
-
+            
             items.push({ icon: '🎁', text: 'هدية', action: 'showGiftModal' });
-
+            
             if (isOwner || isAdmin) {
                 items.push({ icon: '🔊', text: 'ميوت جماعي', action: 'muteAll' });
                 items.push({ icon: '🔒', text: 'قفل مايك', action: 'lockMicMode' });
                 items.push({ icon: '🚫', text: 'طرد', action: 'kickMode' });
             }
-
+            
             if (isOwner) {
                 items.push({ icon: '⭐', text: 'اضافة ادمن', action: 'addAdminMode' });
             }
-
+            
             grid.innerHTML = items.map(item => `
                 <div class="menu-item ${item.active? 'active' : ''}" onclick="${item.action}()">
                     <span class="menu-item-icon">${item.icon}</span>
@@ -365,23 +367,23 @@
                 </div>
             `).join('');
         }
-
+        
         function toggleControlMenu() {
             document.getElementById('controlMenu').classList.toggle('show');
         }
-
+        
         function toggleChat() {
             document.getElementById('chatContainer').classList.toggle('show');
             toggleControlMenu();
         }
-
+        
         async function toggleMic() {
             if (clickTimeout) return;
             clickTimeout = setTimeout(() => clickTimeout = null, 1000);
-
+            
             const myMic = roomData.mics.find(m => m.userId === myUserId);
-            if (!myMic) return alert('اصعد عالمايك اول');
-
+            if (!myMic) return alert('اصعد عالمایک اول');
+            
             if (!isMicOn) {
                 try {
                     localStream = await navigator.mediaDevices.getUserMedia({ audio: true });
@@ -401,263 +403,196 @@
             }
             toggleControlMenu();
         }
-
+        
         function startWebRTC() {
             const otherUsers = roomData.mics.filter(m => m.userId && m.userId!== myUserId).map(m => m.userId);
             otherUsers.forEach(userId => createPeerConnection(userId, true));
         }
-
+        
         function stopWebRTC() {
             Object.values(peerConnections).forEach(pc => pc.close());
             peerConnections = {};
         }
-
+        
         async function createPeerConnection(targetUserId, isInitiator) {
-            const pc = new RTCPeerConnection({ iceServers: [{ urls: 'stun:stun.l.google.com:19302' }] });
+            [{ urls: 'stun:stun.l.google.com:19302' }] });
             peerConnections[targetUserId] = pc;
-
+            
             if (localStream) {
                 localStream.getTracks().forEach(track => pc.addTrack(track, localStream));
             }
-
+            
             pc.ontrack = (event) => {
-                const audio = new Audio();
+                let audio = document.getElementById(`audio-${targetUserId}`);
+                if (!audio) {
+                    audio = document.createElement('audio');
+                    audio.id = `audio-${targetUserId}`;
+                    audio.autoplay = true;
+                    document.body.appendChild(audio);
+                }
                 audio.srcObject = event.streams[0];
-                audio.play();
             };
-
+            
             pc.onicecandidate = (event) => {
                 if (event.candidate) {
-                    socket.emit('webrtc-ice', { targetUserId, candidate: event.candidate });
+                    socket.emit('webrtc-ice-candidate', { targetUserId, candidate: event.candidate });
                 }
             };
-
+            
             if (isInitiator) {
                 const offer = await pc.createOffer();
                 await pc.setLocalDescription(offer);
-                socket.emit('webrtc-offer', { roomId, targetUserId, offer });
+                socket.emit('webrtc-offer', { targetUserId, offer });
             }
         }
-
-        socket.on('webrtc-offer', async ({ fromUserId, offer }) => {
-            await createPeerConnection(fromUserId, false);
-            const pc = peerConnections[fromUserId];
-            await pc.setRemoteDescription(offer);
-            const answer = await pc.createAnswer();
-            await pc.setLocalDescription(answer);
-            socket.emit('webrtc-answer', { targetUserId: fromUserId, answer });
-        });
-
-        socket.on('webrtc-answer', async ({ fromUserId, answer }) => {
-            const pc = peerConnections[fromUserId];
-            if (pc) await pc.setRemoteDescription(answer);
-        });
-
-        socket.on('webrtc-ice', async ({ fromUserId, candidate }) => {
-            const pc = peerConnections[fromUserId];
-            if (pc) await pc.addIceCandidate(candidate);
-        });
-
+        
         function toggleMute() {
-            const myMic = roomData.mics.find(m => m.userId === myUserId);
-            if (!myMic) return;
-            socket.emit('mute-user', { roomId, ownerId: myUserId, targetUserId: myUserId });
+            if (!localStream) return;
             isMuted =!isMuted;
+            localStream.getAudioTracks().forEach(track => track.enabled =!isMuted);
+            const myMic = roomData.mics.find(m => m.userId === myUserId);
+            if (myMic) {
+                const ring = document.getElementById(`ring-${myMic.seat}`);
+                if (isMuted) ring?.classList.add('muted');
+                else ring?.classList.remove('muted');
+            }
             renderControlMenu();
             toggleControlMenu();
         }
-
-        function muteAll() {
-            socket.emit('mute-all', { roomId, ownerId: myUserId });
-            toggleControlMenu();
-        }
-
+        
         function showEmojiPicker() {
-            const emojis = ['😂','😍','😭','😡','❤️','💋','🚬','🤝','👏','🔥','🥰','😎','🎉','💪','🙏','😘'];
+            const emojis = ['😀', '😂', '❤️', '👍', '🔥', '👏', '🎉', '💯'];
             const picker = document.createElement('div');
-            picker.style.cssText = 'position:fixed;bottom:100px;left:50%;transform:translateX(-50%);background:#1a1a2e;border:2px solid #a855f7;border-radius:15px;padding:15px;display:grid;grid-template-columns:repeat(8,1fr);gap:10px;z-index:10000;';
-            picker.innerHTML = emojis.map(e => `<div style="                    font-size:30px;cursor:pointer;padding:5px;border-radius:8px;text-align:center;" 
-                    onclick="sendEmoji('${e}')">${e}</div>`).join('');
+            picker.style.cssText = 'position:fixed; bottom:80px; left:50%; transform:translateX(-50%); background:#1a1a2e; border:2px solid #a855f7; border-radius:15px; padding:10px; display:flex; gap:8px; z-index:3000;';
+            emojis.forEach(emoji => {
+                const btn = document.createElement('button');
+                btn.textContent = emoji;
+                btn.style.cssText = 'font-size:24px; background:none; border:none; cursor:pointer;';
+                btn.onclick = () => { sendEmoji(emoji); picker.remove(); };
+                picker.appendChild(btn);
+            });
             document.body.appendChild(picker);
             setTimeout(() => picker.remove(), 5000);
+            toggleControlMenu();
         }
-
+        
+        function sendEmoji(emoji) {
+            socket.emit('send-emoji', { roomId, emoji });
+        }
+        
         function showGiftModal() {
             document.getElementById('giftModal').classList.add('show');
             toggleControlMenu();
         }
-
-        function sendGift(giftType) {
-            const targetUserId = prompt('اكتب ايدي الشخص اللي بدك تبعتلو الهدية (او اتركه فاضي للكل):');
-            socket.emit('send-gift', { roomId, fromUserId: myUserId, toUserId: targetUserId ? Number(targetUserId) : null, giftType });
+        
+        function sendGift(type) {
+            socket.emit('send-gift', { roomId, type });
             closeModal('giftModal');
         }
-
-        socket.on('gift-received', ({ from, to, giftType }) => {
-            const emojis = { rose: '🌹', car: '🚗', heart: '❤️', crown: '👑' };
-            const div = document.createElement('div');
-            div.className = 'gift-animation';
-            div.textContent = emojis[giftType] || '🎁';
-            document.body.appendChild(div);
-            setTimeout(() => div.remove(), 2000);
-
-            const msg = to ? `${from} اهدى ${to} ${emojis[giftType]}` : `${from} اهدى الغرفة ${emojis[giftType]}`;
-            const chatDiv = document.createElement('div');
-            chatDiv.className = 'chat-msg system';
-            chatDiv.textContent = msg;
-            document.getElementById('chatBox').appendChild(chatDiv);
-        });
-
+        
+        function muteAll() {
+            if (!isOwner &&!isAdmin) return;
+            socket.emit('mute-all', { roomId });
+            toggleControlMenu();
+        }
+        
+        let lockMode = false, kickMode = false, addAdminMode = false;
         function lockMicMode() {
-            alert('اضغط على كرسي فاضي عشان تقفلو');
+            lockMode = true;
+            alert('اختار كرسي لقفل/فتح المايك');
             toggleControlMenu();
         }
-
+        
         function kickMode() {
-            alert('اضغط على شخص بالمايك عشان تطردو');
+            kickMode = true;
+            alert('اختار كرسي لطرد المستخدم');
             toggleControlMenu();
         }
-
+        
         function addAdminMode() {
-            alert('اضغط على شخص بالمايك عشان تعينو ادمن');
+            addAdminMode = true;
+            alert('اختار كرسي لتعيين ادمن');
             toggleControlMenu();
         }
-
+        
         function handleMicClick(mic, e) {
             e.stopPropagation();
-            const menu = document.getElementById('userMenu');
-            let html = '';
-
+            
+            if (lockMode) {
+                socket.emit('lock-mic', { roomId, seat: mic.seat });
+                lockMode = false;
+                return;
+            }
+            if (kickMode && mic.userId) {
+                if (confirm(`طرد ${mic.username}؟`)) {
+                    socket.emit('kick-from-mic', { roomId, userId: mic.userId });
+                }
+                kickMode = false;
+                return;
+            }
+            if (addAdminMode && mic.userId) {
+                if (confirm(`تعيين ${mic.username} ادمن؟`)) {
+                    socket.emit('add-admin', { roomId, userId: mic.userId });
+                }
+                addAdminMode = false;
+                return;
+            }
+            
+            if (mic.locked) return alert('المايك مقفل');
+            
             if (mic.userId) {
-                const isMe = mic.userId === myUserId;
-                if (isMe) {
-                    html += `<button onclick="leaveMic()">⬇️ نزول من المايك</button>`;
-                } else {
-                    html += `<button onclick="startPrivateChat(${mic.userId}, '${mic.username}')">💬 رسالة خاصة</button>`;
-                    html += `<button onclick="followUser(${mic.userId})">➕ متابعة</button>`;
-                    if (isOwner || isAdmin) {
-                        html += `<button class="danger" onclick="kickUser(${mic.userId})">🚫 طرد</button>`;
-                        html += `<button class="danger" onclick="muteUser(${mic.userId})">🔇 كتم الصوت</button>`;
-                        if (isOwner) html += `<button onclick="makeAdmin(${mic.userId})">⭐ اضافة ادمن</button>`;
-                    }
-                }
-            } else {
-                if (!mic.locked) {
-                    html += `<button onclick="sitOnMic(${mic.seat})">⬆️ اصعد</button>`;
-                }
-                if (isOwner || isAdmin) {
-                    html += `<button onclick="lockMic(${mic.seat})">${mic.locked? '🔓 فتح المايك' : '🔒 اغلاق مايك'}</button>`;
-                }
+                showUserMenu(mic, e);
+                return;
             }
-
-            menu.innerHTML = html;
-            menu.style.display = 'block';
-            menu.style.top = e.pageY + 'px';
-            menu.style.left = e.pageX + 'px';
-        }
-
-        document.addEventListener('click', (e) => {
-            if (!e.target.closest('.user-menu') && !e.target.closest('.mic-seat')) {
-                document.getElementById('userMenu').style.display = 'none';
-            }
-            if (!e.target.closest('.control-menu') && !e.target.closest('.control-btn')) {
-                document.getElementById('controlMenu').classList.remove('show');
-            }
-        });
-
-        function sitOnMic(seat) {
+            
             if (clickTimeout) return;
             clickTimeout = setTimeout(() => clickTimeout = null, 1000);
-            socket.emit('sit-mic', { roomId, seat, userId: myUserId });
-            document.getElementById('userMenu').style.display = 'none';
+            socket.emit('take-mic', { roomId, seat: mic.seat });
         }
-
-        function leaveMic() {
-            if (isMicOn) toggleMic();
-            socket.emit('leave-mic', { roomId, userId: myUserId });
-            document.getElementById('userMenu').style.display = 'none';
-        }
-
-        function kickUser(userId) {
-            socket.emit('kick-user', { roomId, ownerId: myUserId, targetUserId: userId });
-            document.getElementById('userMenu').style.display = 'none';
-        }
-
-        function lockMic(seat) {
-            socket.emit('lock-mic', { roomId, seat, userId: myUserId });
-            document.getElementById('userMenu').style.display = 'none';
-        }
-
-        function muteUser(userId) {
-            socket.emit('mute-user', { roomId, ownerId: myUserId, targetUserId: userId });
-            document.getElementById('userMenu').style.display = 'none';
-        }
-
-        function makeAdmin(userId) {
-            socket.emit('make-admin', { roomId, ownerId: myUserId, targetUserId: userId });
-            document.getElementById('userMenu').style.display = 'none';
-        }
-
-        function followUser(userId) {
-            alert('تمت المتابعة');
-            document.getElementById('userMenu').style.display = 'none';
-        }
-
-        function sendEmoji(emoji) {
-            socket.emit('send-emoji', { roomId, userId: myUserId, emoji });
-            document.querySelector('[style*="position:fixed"]')?.remove();
-            toggleControlMenu();
-        }
-
-        function leaveRoom() {
-            if (isMicOn) stopWebRTC();
-            location.href = '/me';
-        }
-
-        function sendMessage() {
-            const input = document.getElementById('chatInput');
-            const msg = input.value.trim();
-            if (msg) {
-                socket.emit('chat-message', { roomId, userId: myUserId, username: myUserData.username, message: msg });
-                input.value = '';
+        
+        function showUserMenu(mic, e) {
+            const menu = document.getElementById('userMenu');
+            menu.innerHTML = '';
+            
+            if (mic.userId!== myUserId) {
+                const pmBtn = document.createElement('button');
+                pmBtn.textContent = '💬 رسالة خاصة';
+                pmBtn.onclick = () => { openPrivateChat(mic.userId, mic.username); menu.style.display = 'none'; };
+                menu.appendChild(pmBtn);
             }
-        }
-
-        function startPrivateChat(userId, username) {
-            currentPrivateChat = userId;
-            document.getElementById('privateChatName').textContent = username;
-            document.getElementById('privateChatMessages').innerHTML = '';
-            document.getElementById('privateChatBox').classList.add('show');
-            document.getElementById('userMenu').style.display = 'none';
-        }
-
-        function closePrivateChat() {
-            document.getElementById('privateChatBox').classList.remove('show');
-            currentPrivateChat = null;
-        }
-
-        function sendPrivateMessage() {
-            const input = document.getElementById('privateChatInput');
-            const msg = input.value.trim();
-            if (msg && currentPrivateChat) {
-                socket.emit('chat-message', { roomId, userId: myUserId, username: myUserData.username, message: msg, toUserId: currentPrivateChat });
-                input.value = '';
+            
+            if (isOwner || isAdmin) {
+                const kickBtn = document.createElement('button');
+                kickBtn.textContent = '🚫 طرد من المايك';
+                kickBtn.className = 'danger';
+                kickBtn.onclick = () => {
+                    socket.emit('kick-from-mic', { roomId, userId: mic.userId });
+                    menu.style.display = 'none';
+                };
+                menu.appendChild(kickBtn);
+                
+                if (isOwner &&!roomData.admins.includes(mic.userId)) {
+                    const adminBtn = document.createElement('button');
+                    adminBtn.textContent = '⭐ تعيين ادمن';
+                    adminBtn.onclick = () => {
+                        socket.emit('add-admin', { roomId, userId: mic.userId });
+                        menu.style.display = 'none';
+                    };
+                    menu.appendChild(adminBtn);
+                }
             }
+            
+            menu.style.display = 'block';
+            menu.style.left = e.pageX + 'px';
+            menu.style.top = e.pageY + 'px';
+            
+            setTimeout(() => {
+                document.onclick = () => { menu.style.display = 'none'; document.onclick = null; };
+            }, 100);
         }
-
-        socket.on('private-message', ({ fromUserId, fromUsername, message, self }) => {
-            if (!currentPrivateChat || currentPrivateChat!== fromUserId &&!self) {
-                startPrivateChat(fromUserId, fromUsername);
-            }
-            const div = document.createElement('div');
-            div.className = 'chat-msg private';
-            div.innerHTML = `<span class="chat-name">${self ? 'انت' : fromUsername}:</span> ${message}`;
-            document.getElementById('privateChatMessages').appendChild(div);
-            document.getElementById('privateChatMessages').scrollTop = document.getElementById('privateChatMessages').scrollHeight;
-        });
-
+        
         function showSettings() {
-            if (!isOwner) return alert('فقط صاحب الغرفة');
+            if (!isOwner &&!isAdmin) return alert('للمالك والادمن فقط');
             document.getElementById('micLayoutSelect').value = roomData.micLayout;
             document.getElementById('agencyNameInput').value = roomData.agencyName;
             document.getElementById('showAgencySelect').value = roomData.showAgency;
@@ -665,119 +600,494 @@
             document.getElementById('roomPasswordInput').value = roomData.password || '';
             document.getElementById('settingsModal').classList.add('show');
         }
-
+        
+        function saveSettings() {
+            const settings = {
+                roomId,
+                micLayout: document.getElementById('micLayoutSelect').value,
+                agencyName: document.getElementById('agencyNameInput').value,
+                showAgency: document.getElementById('showAgencySelect').value === 'true',
+                background: document.getElementById('backgroundSelect').value,
+                password: document.getElementById('roomPasswordInput').value
+            };
+            socket.emit('update-room-settings', settings);
+            closeModal('settingsModal');
+        }
+        
         function showRenameModal() {
-            if (!isOwner) return;
+            if (!isOwner &&!isAdmin) return;
             document.getElementById('newRoomName').value = roomData.name;
             document.getElementById('renameModal').classList.add('show');
         }
-
-        function closeModal(id) {
-            document.getElementById(id).classList.remove('show');
-        }
-
-        async function saveSettings() {
-            const layout = document.getElementById('micLayoutSelect').value;
-            const agencyName = document.getElementById('agencyNameInput').value;
-            const showAgency = document.getElementById('showAgencySelect').value === 'true';
-            const background = document.getElementById('backgroundSelect').value;
-            const password = document.getElementById('roomPasswordInput').value;
-
-            await fetch('/api/room-settings', {
-                method: 'POST',
-                headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
-                body: JSON.stringify({ roomId: Number(roomId), micLayout: layout, agencyName, showAgency, background, password })
-            });
-            closeModal('settingsModal');
-        }
-
-        async function saveRoomName() {
+        
+        function saveRoomName() {
             const newName = document.getElementById('newRoomName').value.trim();
-            if (!newName) return alert('اكتب اسم');
-            await fetch('/api/room-rename', {
+            if (!newName) return alert('ادخل اسم الغرفة');
+            fetch('/api/room-rename', {
                 method: 'POST',
-                headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
-                body: JSON.stringify({ roomId: Number(roomId), name: newName })
+                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                body: JSON.stringify({ roomId, name: newName })
             });
             closeModal('renameModal');
         }
-
-        async function showOnlineList() {
-            const res = await fetch(`/api/room-users/${roomId}`);
-            const users = await res.json();
+        
+        function showOnlineList() {
             const list = document.getElementById('onlineList');
-            list.innerHTML = users.map(u => `
-                <div class="online-user" onclick="startPrivateChat(${u.userId}, '${u.username}')">
-                    <img src="${u.avatar || 'https://ui-avatars.com/api/?name=' + encodeURIComponent(u.username)}" alt="">
+            list.innerHTML = roomData.users.map(u => `
+                <div class="online-user" onclick="openPrivateChat(${u.userId}, '${u.username}')">
+                    <img src="${u.avatar || 'https://ui-avatars.com/api/?name=' + encodeURIComponent(u.username)}">
                     <div class="online-user-info">
-                        <div class="online-user-name">${u.username} ${u.vip ? '👑' : ''}</div>
-                        <div class="online-user-level">Lv.${u.wealthLevel || 0}</div>
+                        <div class="online-user-name">${u.username}</div>
+                        <div class="online-user-level">Lv.${u.level || 1}</div>
                     </div>
                 </div>
             `).join('');
             document.getElementById('onlineModal').classList.add('show');
+            toggleControlMenu();
         }
-
+        
+        function openPrivateChat(userId, username) {
+            currentPrivateChat = userId;
+            document.getElementById('privateChatName').textContent = username;
+            document.getElementById('privateChatMessages').innerHTML = '';
+            document.getElementById('privateChatBox').classList.add('show');
+        }
+        
+        function closePrivateChat() {
+            currentPrivateChat = null;
+            document.getElementById('privateChatBox').classList.remove('show');
+        }
+        
+        function sendPrivateMessage() {
+            const input = document.getElementById('privateChatInput');
+            const msg = input.value.trim();
+            if (!msg ||!currentPrivateChat) return;
+            socket.emit('private-message', { roomId, toUserId: currentPrivateChat, message: msg });
+            input.value = '';
+        }
+        
+        function closeModal(id) {
+            document.getElementById(id).classList.remove('show');
+        }
+        
+        function leaveRoom() {
+            socket.emit('leave-room', { roomId });
+            location.href = '/me';
+        }
+        
+        function sendMessage() {
+            const input = document.getElementById('chatInput');
+            const msg = input.value.trim();
+            if (!msg) return;
+            socket.emit('send-message', { roomId, message: msg });
+            input.value = '';
+        }
+        
+        // Socket Events
+        socket.on('room-users-update', (data) => {
+            document.getElementById('onlineCount').textContent = data.users.length;
+            roomData.users = data.users;
+        });
+        
         socket.on('mic-updated', (mics) => {
             roomData.mics = mics;
             renderMics(mics, roomData.micLayout);
             renderControlMenu();
         });
-
-        socket.on('room-updated', (newRoom) => {
-            roomData = newRoom;
-            document.getElementById('roomName').textContent = newRoom.name;
-            document.getElementById('agencyName').textContent = newRoom.agencyName;
-            document.getElementById('agencyBar').classList.toggle('hidden',!newRoom.showAgency);
-            document.body.setAttribute('data-bg', newRoom.background);
-            renderMics(newRoom.mics, newRoom.micLayout);
+        
+        socket.on('room-updated', (data) => {
+            roomData = {...roomData,...data };
+            if (data.name) document.getElementById('roomName').textContent = data.name;
+            if (data.agencyName) document.getElementById('agencyName').textContent = data.agencyName;
+            if (data.showAgency!== undefined) {
+                document.getElementById('agencyBar').classList.toggle('hidden',!data.showAgency);
+            }
+            if (data.background) document.body.setAttribute('data-bg', data.background);
+            if (data.micLayout) renderMics(roomData.mics, data.micLayout);
         });
-
-        socket.on('chat-message', (data) => {
+        
+        socket.on('new-message', (msg) => {
+            const box = document.getElementById('chatBox');
             const div = document.createElement('div');
-            div.className = 'chat-msg' + (data.system? ' system' : '');
-            if (data.system) {
-                div.textContent = data.message;
+            div.className = 'chat-msg';
+            if (msg.type === 'system') {
+                div.className += ' system';
+                div.textContent = msg.text;
             } else {
-                div.innerHTML = `<span class="chat-name" onclick="startPrivateChat(${data.userId}, '${data.username}')">${data.username}:</span> ${data.message}`;
+                div.innerHTML = `<span class="chat-name" onclick="openPrivateChat(${msg.userId}, '${msg.username}')">${msg.username}:</span> ${msg.text}`;
             }
-            document.getElementById('chatBox').appendChild(div);
-            document.getElementById('chatBox').scrollTop = document.getElementById('chatBox').scrollHeight;
+            box.appendChild(div);
+            box.scrollTop = box.scrollHeight;
         });
-
+        
+        socket.on('private-message', (msg) => {
+            if (currentPrivateChat === msg.fromUserId || currentPrivateChat === msg.toUserId) {
+                const box = document.getElementById('privateChatMessages');
+                const div = document.createElement('div');
+                div.className = 'chat-msg private';
+                div.textContent = `${msg.username}: ${msg.text}`;
+                box.appendChild(div);
+                box.scrollTop = box.scrollHeight;
+            }
+        });
+        
+        socket.on('emoji-broadcast', (data) => {
+            const mic = roomData.mics.find(m => m.userId === data.userId);
+            if (mic) {
+                const ring = document.getElementById(`ring-${mic.seat}`);
+                if (ring) {
+                    let emoji = ring.querySelector('.mic-emoji');
+                    if (!emoji) {
+                        emoji = document.createElement('div');
+                        emoji.className = 'mic-emoji';
+                        ring.appendChild(emoji);
+                    }
+                    emoji.textContent = data.emoji;
+                    setTimeout(() => emoji.remove(), 3000);
+                }
+            }
+        });
+        
+        socket.on('gift-broadcast', (data) => {
+            const anim = document.createElement('div');
+            anim.className = 'gift-animation';
+            anim.textContent = { rose: '🌹', car: '🚗', heart: '❤️', crown: '👑' }[data.type] || '🎁';
+            document.body.appendChild(anim);
+            setTimeout(() => anim.remove(), 2000);
+            
+            const box = document.getElementById('chatBox');
+            const div = document.createElement('div');
+            div.className = 'chat-msg system';
+            div.textContent = `🎁 ${data.fromUsername} ارسل ${anim.textContent} الى ${data.toUsername}`;
+            box.appendChild(div);
+            box.scrollTop = box.scrollHeight;
+        });
+        
         socket.on('user-joined', (data) => {
-            if (data.userId!== myUserId) {
-                // اعادة الاتصال WebRTC للشخص الجديد اذا انا فاتح مايك
-                if (isMicOn) createPeerConnection(data.userId, true);
+            if (localStream && data.userId!== myUserId) {
+                createPeerConnection(data.userId, true);
             }
         });
-
-        socket.on('user-kicked', (data) => {
-            if (data.userId === myUserId) {
-                if (isMicOn) toggleMic();
-                alert('تم طردك من المايك');
-                location.href = '/me';
-            }
+        
+        socket.on('webrtc-offer', async (data) => {
+            const pc = await createPeerConnection(data.fromUserId, false);
+            await pc.setRemoteDescription(data.offer);
+            const answer = await pc.createAnswer();
+            await pc.setLocalDescription(answer);
+            socket.emit('webrtc-answer', { targetUserId: data.fromUserId, answer });
         });
-
-        socket.on('admin-added', (data) => {
+        
+        socket.on('webrtc-answer', async (data) => {
+            const pc = peerConnections[data.fromUserId];
+            if (pc) await pc.setRemoteDescription(data.answer);
+        });
+        
+        socket.on('webrtc-ice-candidate', async (data) => {
+            const pc = peerConnections[data.fromUserId];
+            if (pc) await pc.addIceCandidate(data.candidate);
+        });
+        
+                
+        socket.on('user-kicked-from-mic', () => {
+            alert('تم طردك من المايك');
+            stopWebRTC();
+            localStream?.getTracks().forEach(track => track.stop());
+            isMicOn = false;
+        });
+        
+        socket.on('user-promoted-admin', (data) => {
             if (data.userId === myUserId) {
                 isAdmin = true;
-                alert('تم تعيينك ادمن');
+                alert('تم ترقيتك الى ادمن!');
                 renderControlMenu();
             }
         });
-
-        socket.on('online-count', (count) => {
-            document.getElementById('onlineCount').textContent = count;
+        
+        socket.on('online-count', (data) => {
+            document.getElementById('onlineCount').textContent = data.count;
         });
-
-        socket.on('room-error', (msg) => {
-            alert(msg);
+        
+        socket.on('room-error', (err) => {
+            alert(err.message);
+            if (err.code === 'WRONG_PASSWORD' || err.code === 'ROOM_FULL') {
+                location.href = '/me';
+            }
+        });
+        
+        socket.on('kicked', (data) => {
+            alert(data.message || 'تم طردك من الغرفة');
             location.href = '/me';
         });
-
+        
+        socket.on('banned', (data) => {
+            alert(data.message || 'تم حظرك من الغرفة');
+            location.href = '/me';
+        });
+        
+        socket.on('user-speaking', (data) => {
+            const mic = roomData.mics.find(m => m.userId === data.userId);
+            if (mic) {
+                const ring = document.getElementById(`ring-${mic.seat}`);
+                if (data.speaking) ring?.classList.add('speaking');
+                else ring?.classList.remove('speaking');
+            }
+        });
+        
+        socket.on('mic-locked-update', (data) => {
+            const mic = roomData.mics.find(m => m.seat === data.seat);
+            if (mic) {
+                mic.locked = data.locked;
+                renderMics(roomData.mics, roomData.micLayout);
+            }
+        });
+        
+        socket.on('admin-list-update', (data) => {
+            roomData.admins = data.admins;
+            isAdmin = data.admins.includes(myUserId);
+            renderControlMenu();
+        });
+        
+        socket.on('user-muted-by-admin', (data) => {
+            if (data.userId === myUserId) {
+                isMuted = true;
+                localStream?.getAudioTracks().forEach(track => track.enabled = false);
+                const myMic = roomData.mics.find(m => m.userId === myUserId);
+                if (myMic) {
+                    document.getElementById(`ring-${myMic.seat}`)?.classList.add('muted');
+                }
+                renderControlMenu();
+                alert('تم كتمك من قبل الادمن');
+            }
+        });
+        
+        socket.on('all-muted', () => {
+            if (localStream && !isOwner && !isAdmin) {
+                isMuted = true;
+                localStream.getAudioTracks().forEach(track => track.enabled = false);
+                const myMic = roomData.mics.find(m => m.userId === myUserId);
+                if (myMic) {
+                    document.getElementById(`ring-${myMic.seat}`)?.classList.add('muted');
+                }
+                renderControlMenu();
+            }
+        });
+        
+        socket.on('room-deleted', () => {
+            alert('تم حذف الغرفة من قبل المالك');
+            location.href = '/me';
+        });
+        
+        socket.on('disconnect', () => {
+            console.log('Disconnected from server');
+        });
+        
+        socket.on('reconnect', () => {
+            console.log('Reconnected to server');
+            socket.emit('join-room', { roomId, userId: myUserId, token });
+        });
+        
+        document.addEventListener('click', (e) => {
+            if (!e.target.closest('.user-menu') && !e.target.closest('.mic-seat')) {
+                document.getElementById('userMenu').style.display = 'none';
+            }
+        });
+        
+        window.addEventListener('beforeunload', () => {
+            stopWebRTC();
+            localStream?.getTracks().forEach(track => track.stop());
+            socket.emit('leave-room', { roomId });
+        });
+        
         init();
+            
+        socket.on('user-joined', (data) => {
+            if (localStream && data.userId!== myUserId) {
+                createPeerConnection(data.userId, true);
+            }
+        });
+        
+        socket.on('webrtc-offer', async (data) => {
+            const pc = await createPeerConnection(data.fromUserId, false);
+            await pc.setRemoteDescription(data.offer);
+            const answer = await pc.createAnswer();
+            await pc.setLocalDescription(answer);
+            socket.emit('webrtc-answer', { targetUserId: data.fromUserId, answer });
+        });
+        
+        socket.on('webrtc-answer', async (data) => {
+            const pc = peerConnections[data.fromUserId];
+            if (pc) await pc.setRemoteDescription(data.answer);
+        });
+        
+        socket.on('webrtc-ice-candidate', async (data) => {
+            const pc = peerConnections[data.fromUserId];
+            if (pc) await pc.addIceCandidate(data.candidate);
+        });
+        
+        async function createPeerConnection(targetUserId, isInitiator) {
+            const pc = new RTCPeerConnection({ 
+                iceServers: [
+                    { urls: 'stun:stun.l.google.com:19302' },
+                    { urls: 'stun:stun1.l.google.com:19302' }
+                ] 
+            });
+            peerConnections[targetUserId] = pc;
+            
+            if (localStream) {
+                localStream.getTracks().forEach(track => pc.addTrack(track, localStream));
+            }
+            
+            pc.ontrack = (event) => {
+                let audio = document.getElementById(`audio-${targetUserId}`);
+                if (!audio) {
+                    audio = document.createElement('audio');
+                    audio.id = `audio-${targetUserId}`;
+                    audio.autoplay = true;
+                    document.body.appendChild(audio);
+                }
+                audio.srcObject = event.streams[0];
+            };
+            
+            pc.onicecandidate = (event) => {
+                if (event.candidate) {
+                    socket.emit('webrtc-ice-candidate', { targetUserId, candidate: event.candidate });
+                }
+            };
+            
+            pc.onconnectionstatechange = () => {
+                if (pc.connectionState === 'disconnected' || pc.connectionState === 'failed') {
+                    pc.close();
+                    delete peerConnections[targetUserId];
+                    document.getElementById(`audio-${targetUserId}`)?.remove();
+                }
+            };
+            
+            if (isInitiator) {
+                const offer = await pc.createOffer();
+                await pc.setLocalDescription(offer);
+                socket.emit('webrtc-offer', { targetUserId, offer });
+            }
+            
+            return pc;
+        }
+        
+        function stopWebRTC() {
+            Object.values(peerConnections).forEach(pc => {
+                pc.close();
+            });
+            peerConnections = {};
+            document.querySelectorAll('audio[id^="audio-"]').forEach(audio => audio.remove());
+        }
+        
+        socket.on('disconnect', () => {
+            console.log('Disconnected from server');
+            stopWebRTC();
+        });
+        
+        socket.on('reconnect', () => {
+            console.log('Reconnected to server');
+            socket.emit('join-room', { roomId, userId: myUserId, token });
+        });
+        
+        socket.on('connect_error', (err) => {
+            console.error('Connection error:', err);
+        });
+        
+        document.addEventListener('click', (e) => {
+            if (!e.target.closest('.user-menu') &&!e.target.closest('.mic-seat')) {
+                document.getElementById('userMenu').style.display = 'none';
+            }
+            if (!e.target.closest('.control-menu') &&!e.target.closest('.control-btn')) {
+                document.getElementById('controlMenu').classList.remove('show');
+            }
+        });
+        
+        window.addEventListener('beforeunload', () => {
+            stopWebRTC();
+            localStream?.getTracks().forEach(track => track.stop());
+            socket.emit('leave-room', { roomId });
+        });
+        
+        window.addEventListener('load', () => {
+            init();
+        });
+        
+        // تحقق من صلاحية المايك عند التحميل
+        navigator.permissions?.query({ name: 'microphone' }).then(result => {
+            if (result.state === 'denied') {
+                alert('المايك محظور! فعلو من اعدادات المتصفح عشان تتكلم');
+            }
+        });
+        
+            socket.on('user-kicked-from-mic', () => {
+            alert('تم طردك من المايك');
+            stopWebRTC();
+            localStream?.getTracks().forEach(track => track.stop());
+            isMicOn = false;
+            isMuted = false;
+            renderControlMenu();
+        });
+        
+        socket.on('user-promoted-admin', (data) => {
+            if (data.userId === myUserId) {
+                isAdmin = true;
+                alert('تم ترقيتك الى ادمن!');
+                renderControlMenu();
+            }
+            const box = document.getElementById('chatBox');
+            const div = document.createElement('div');
+            div.className = 'chat-msg system';
+            div.textContent = `⭐ ${data.username} صار ادمن`;
+            box.appendChild(div);
+            box.scrollTop = box.scrollHeight;
+        });
+        
+        socket.on('user-muted-by-admin', (data) => {
+            if (data.userId === myUserId) {
+                isMuted = true;
+                localStream?.getAudioTracks().forEach(track => track.enabled = false);
+                const myMic = roomData.mics.find(m => m.userId === myUserId);
+                if (myMic) {
+                    document.getElementById(`ring-${myMic.seat}`)?.classList.add('muted');
+                }
+                renderControlMenu();
+                alert('تم كتمك من قبل الادمن');
+            }
+        });
+        
+        socket.on('all-muted', () => {
+            if (localStream &&!isOwner &&!isAdmin) {
+                isMuted = true;
+                localStream.getAudioTracks().forEach(track => track.enabled = false);
+                const myMic = roomData.mics.find(m => m.userId === myUserId);
+                if (myMic) {
+                    document.getElementById(`ring-${myMic.seat}`)?.classList.add('muted');
+                }
+                renderControlMenu();
+                alert('الادمن عمل ميوت جماعي');
+            }
+        });
+        
+        socket.on('mic-locked-update', (data) => {
+            const mic = roomData.mics.find(m => m.seat === data.seat);
+            if (mic) {
+                mic.locked = data.locked;
+                renderMics(roomData.mics, roomData.micLayout);
+            }
+        });
+        
+        socket.on('admin-list-update', (data) => {
+            roomData.admins = data.admins;
+            isAdmin = data.admins.includes(myUserId);
+            renderControlMenu();
+        });
+        
+        socket.on('room-deleted', () => {
+            alert('تم حذف الغرفة من قبل المالك');
+            location.href = '/me';
+        });
+        
+        
     </script>
 </body>
 </html>
