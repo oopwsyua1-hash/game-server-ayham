@@ -138,7 +138,7 @@ app.post('/api/create-room', auth, async (req, res) => {
 
 app.post('/api/room-settings', auth, async (req, res) => {
   const { roomId, micLayout } = req.body;
-  const room = await Room.findOne({ roomId });
+  const room = await Room.findOne({ roomId: Number(roomId) });
   const user = await User.findById(req.userId);
   if (!room || room.ownerId!== user.userId) return res.status(403).json({ error: 'غير مصرح' });
 
@@ -173,6 +173,9 @@ io.on('connection', (socket) => {
       socket.join(`room-${roomId}`);
       socket.userId = userId;
       socket.roomId = roomId;
+      const room = await Room.findOne({ roomId });
+      const onlineCount = io.sockets.adapter.rooms.get(`room-${roomId}`)?.size || 0;
+      io.to(`room-${roomId}`).emit('online-count', onlineCount);
     } catch (e) {}
   });
 
@@ -193,7 +196,7 @@ io.on('connection', (socket) => {
     const room = await Room.findOne({ roomId });
     const mic = room.mics.find(m => m.userId === userId);
     if (mic) {
-      mic.userId = null; mic.username = null; mic.avatar = null; mic.emoji = '';
+      mic.userId = null; mic.username = null; mic.avatar = null; mic.emoji = ''; mic.muted = false;
       await room.save();
       io.to(`room-${roomId}`).emit('mic-updated', room.mics);
     }
@@ -223,7 +226,7 @@ io.on('connection', (socket) => {
     if (room.ownerId === ownerId || room.admins.includes(ownerId)) {
       const mic = room.mics.find(m => m.userId === targetUserId);
       if (mic) {
-        mic.userId = null; mic.username = null; mic.avatar = null;
+        mic.userId = null; mic.username = null; mic.avatar = null; mic.emoji = ''; mic.muted = false;
         await room.save();
         io.to(`room-${roomId}`).emit('mic-updated', room.mics);
         io.to(`room-${roomId}`).emit('user-kicked', { userId: targetUserId });
@@ -266,6 +269,13 @@ io.on('connection', (socket) => {
 
   socket.on('chat-message', async ({ roomId, userId, username, message }) => {
     io.to(`room-${roomId}`).emit('chat-message', { userId, username, message });
+  });
+
+  socket.on('disconnect', () => {
+    if (socket.roomId) {
+      const onlineCount = io.sockets.adapter.rooms.get(`room-${socket.roomId}`)?.size || 0;
+      io.to(`room-${socket.roomId}`).emit('online-count', onlineCount);
+    }
   });
 });
 
