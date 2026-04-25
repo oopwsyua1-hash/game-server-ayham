@@ -1,164 +1,185 @@
 const express = require('express');
-const mongoose = require('mongoose');
-const bcrypt = require('bcryptjs');
-const jwt = require('jsonwebtoken');
-const multer = require('multer');
 const path = require('path');
-const fs = require('fs');
+const bcrypt = require('bcrypt');
+const jwt = require('jsonwebtoken');
+const { MongoClient } = require('mongodb');
+const multer = require('multer');
+const { v2: cloudinary } = require('cloudinary');
+
 const app = express();
-
-const JWT_SECRET = 'secret_key_12345';
-const PORT = process.env.PORT || 3000;
-const MONGO_URI = process.env.MONGO_URI || 'mongodb://localhost:27017/mychat';
-
 app.use(express.json());
 app.use(express.static('public'));
-app.use('/uploads', express.static('uploads'));
 
-if (!fs.existsSync('uploads')) fs.mkdirSync('uploads');
-
-mongoose.connect(MONGO_URI).then(() => {
-  console.log('MongoDB Connected');
-}).catch(err => {
-  console.error('MongoDB connection error:', err);
-  process.exit(1);
+// Cloudinary config
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET
 });
 
-const Counter = mongoose.model('Counter', new mongoose.Schema({
-  _id: String,
-  seq: { type: Number, default: 1000000 }
-}));
-
-async function getNextUserId() {
-  const counter = await Counter.findByIdAndUpdate(
-    'userId',
-    { $inc: { seq: 1 } },
-    { new: true, upsert: true }
-  );
-  return counter.seq;
-}
-
-const userSchema = new mongoose.Schema({
-  username: { type: String, required: true, unique: true },
-  password: { type: String, required: true },
-  avatar: String,
-  cover: String,
-  bio: { type: String, maxlength: 60 },
-  lastName: String,
-  country: String,
-  birthDate: String,
-  gender: String,
-  userId: { type: Number, unique: true },
-  coins: { type: Number, default: 0 },
-  isAdmin: { type: Boolean, default: false },
-  agencyName: String,
-  isAgencyOwner: { type: Boolean, default: false }
-});
-
-const User = mongoose.model('User', userSchema);
-
-const storage = multer.diskStorage({
-  destination: 'uploads/',
-  filename: (req, file, cb) => cb(null, Date.now() + path.extname(file.originalname))
-});
+// Multer config
+const storage = multer.memoryStorage();
 const upload = multer({ storage });
 
-function authenticate(req, res, next) {
-  const token = req.headers.authorization?.split(' ')[1];
-  if (!token) return res.status(401).json({ error: 'مطلوب تسجيل الدخول' });
+// MongoDB
+const client = new MongoClient(process.env.MONGODB_URI);
+let db;
+client.connect().then(() => {
+  db = client.db('gameDB');
+  console.log('MongoDB connected');
+});
+
+// JWT Secret
+const JWT_SECRET = process.env.JWT_SECRET || 'secret123';
+
+// Middleware للتحقق من التوكن
+const auth = async (req, res, next) => {
   try {
+    const token = req.headers.authorization?.split(' ')[1];
+    if (!token) return res.status(401).json({ error: 'مطلوب تسجيل دخول' });
     const decoded = jwt.verify(token, JWT_SECRET);
     req.userId = decoded.userId;
     next();
   } catch {
     res.status(401).json({ error: 'توكن غير صالح' });
   }
-}
+};
 
+// Routes
+app.get('/', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'login.html'));
+});
+
+app.get('/me', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'me.html'));
+});
+
+// تسجيل حساب جديد
 app.post('/api/register', async (req, res) => {
-  const { username, password } = req.body;
-  if (!username || !password) return res.status(400).json({ error: 'مطلوب اسم وكلمة مرور' });
-  if (await User.findOne({ username })) return res.status(400).json({ error: 'الاسم موجود' });
-  const hashed = await bcrypt.hash(password, 10);
-  const userId = await getNextUserId();
-  const user = new User({ username, password: hashed, userId });
-  await user.save();
-  const token = jwt.sign({ userId: user._id }, JWT_SECRET);
-  res.json({ success: true, token, user: { username, userId } });
+  try {
+    const { username, password, email } = req.body;
+    const exists = await db.collection('users').findOne({ username });
+    if (exists) return res.status(400).json({ error: 'اسم المستخدم موجود' });
+
+    const hashed = await bcrypt.hash(password, 10);
+    const userId = Date.now().toString().slice(-7);
+    const user = {
+      username,
+      password: hashed,
+      email,
+      userId,
+      coins: 0,
+      createdAt: new Date()
+    };
+
+    await db.collection('users').insertOne(user);
+    const token = jwt.sign({ userId: user.userId }, JWT_SECRET);
+    res.json({ success: true, token, user: { username, userId, coins: 0 } });
+  } catch (err) {
+    res.status(500).json({ error: 'خطأ بالسيرفر' });
+  }
 });
 
+// تسجيل دخول
 app.post('/api/login', async (req, res) => {
-  const { username, password } = req.body;
-  const user = await User.findOne({ username });
-  if (!user || !(await bcrypt.compare(password, user.password))) {
-    return res.status(401).json({ error: 'بيانات خاطئة' });
-  }
-  if (!user.userId) {
-    user.userId = await getNextUserId();
-    await user.save();
-  }
-  const token = jwt.sign({ userId: user._id }, JWT_SECRET);
-  res.json({ success: true, token, user: { username: user.username, userId: user.userId } });
-});
-
-app.get('/api/profile', authenticate, async (req, res) => {
-  const user = await User.findById(req.userId).select('-password');
-  res.json({ user });
-});
-
-app.put('/api/profile', authenticate, async (req, res) => {
-  const { username, lastName, country, birthDate, gender, bio } = req.body;
   try {
-    const user = await User.findById(req.userId);
-    if (username) user.username = username;
-    if (lastName !== undefined) user.lastName = lastName;
-    if (country !== undefined) user.country = country;
-    if (birthDate !== undefined) user.birthDate = birthDate;
-    if (gender !== undefined) user.gender = gender;
-    if (bio !== undefined) user.bio = bio.substring(0, 60);
-    await user.save();
-    res.json({ success: true, msg: 'تم التعديل بنجاح' });
+    const { username, password } = req.body;
+    const user = await db.collection('users').findOne({ username });
+    if (!user) return res.status(400).json({ error: 'المستخدم غير موجود' });
+
+    const valid = await bcrypt.compare(password, user.password);
+    if (!valid) return res.status(400).json({ error: 'كلمة السر غلط' });
+
+    const token = jwt.sign({ userId: user.userId }, JWT_SECRET);
+    res.json({ success: true, token, user: { username: user.username, userId: user.userId, coins: user.coins } });
   } catch (err) {
-    res.status(500).json({ error: 'خطأ في التحديث' });
+    res.status(500).json({ error: 'خطأ بالسيرفر' });
   }
 });
 
-app.post('/api/create-agency', authenticate, async (req, res) => {
-  const { agencyName } = req.body;
-  if (!agencyName) return res.status(400).json({ error: 'ادخل اسم الوكالة' });
+// جلب بيانات البروفايل
+app.get('/api/profile', auth, async (req, res) => {
   try {
-    const user = await User.findById(req.userId);
-    if (user.agencyName) return res.status(400).json({ error: 'انت منضم لوكالة بالفعل' });
-    user.agencyName = agencyName;
-    user.isAgencyOwner = true;
-    await user.save();
-    res.json({ success: true, msg: 'تم انشاء الوكالة بنجاح' });
+    const user = await db.collection('users').findOne({ userId: req.userId });
+    if (!user) return res.status(404).json({ error: 'مستخدم غير موجود' });
+    delete user.password;
+    res.json({ user });
   } catch (err) {
-    res.status(500).json({ error: 'خطأ في انشاء الوكالة' });
+    res.status(500).json({ error: 'خطأ بالسيرفر' });
   }
 });
 
-app.post('/api/upload-avatar', authenticate, upload.single('avatar'), async (req, res) => {
-  const user = await User.findById(req.userId);
-  user.avatar = '/uploads/' + req.file.filename;
-  await user.save();
-  res.json({ success: true, avatar: user.avatar });
+// تعديل البروفايل
+app.put('/api/profile', auth, async (req, res) => {
+  try {
+    const { username, lastName, country, birthDate, gender, bio } = req.body;
+    await db.collection('users').updateOne(
+      { userId: req.userId },
+      { $set: { username, lastName, country, birthDate, gender, bio } }
+    );
+    res.json({ success: true, msg: 'تم التحديث' });
+  } catch (err) {
+    res.status(500).json({ error: 'خطأ بالسيرفر' });
+  }
 });
 
-app.post('/api/upload-cover', authenticate, upload.single('cover'), async (req, res) => {
-  const user = await User.findById(req.userId);
-  user.cover = '/uploads/' + req.file.filename;
-  await user.save();
-  res.json({ success: true, cover: user.cover });
+// رفع صورة البروفايل
+app.post('/api/upload-avatar', auth, upload.single('avatar'), async (req, res) => {
+  try {
+    const result = await new Promise((resolve, reject) => {
+      cloudinary.uploader.upload_stream({ folder: 'avatars' }, (err, result) => {
+        if (err) reject(err);
+        else resolve(result);
+      }).end(req.file.buffer);
+    });
+    await db.collection('users').updateOne({ userId: req.userId }, { $set: { avatar: result.secure_url } });
+    res.json({ success: true, url: result.secure_url });
+  } catch (err) {
+    res.status(500).json({ error: 'فشل الرفع' });
+  }
 });
 
+// رفع صورة الغلاف
+app.post('/api/upload-cover', auth, upload.single('cover'), async (req, res) => {
+  try {
+    const result = await new Promise((resolve, reject) => {
+      cloudinary.uploader.upload_stream({ folder: 'covers' }, (err, result) => {
+        if (err) reject(err);
+        else resolve(result);
+      }).end(req.file.buffer);
+    });
+    await db.collection('users').updateOne({ userId: req.userId }, { $set: { cover: result.secure_url } });
+    res.json({ success: true, url: result.secure_url });
+  } catch (err) {
+    res.status(500).json({ error: 'فشل الرفع' });
+  }
+});
+
+// مستخدم عشوائي
 app.get('/api/random-user', async (req, res) => {
-  const users = await User.find({ username: { $ne: 'admin' } });
-  const random = users[Math.floor(Math.random() * users.length)];
-  res.json({ username: random?.username || 'مستخدم جديد' });
+  try {
+    const count = await db.collection('users').countDocuments();
+    const random = Math.floor(Math.random() * count);
+    const user = await db.collection('users').findOne({}, { skip: random });
+    res.json({ username: user?.username || 'مستخدم مميز' });
+  } catch {
+    res.json({ username: 'مستخدم مميز' });
+  }
 });
 
-app.get('/', (req, res) => res.sendFile(__dirname + '/public/login.html'));
-app.get('/me', (req, res) => res.sendFile(__dirname + '/public/me.html'));
+// انشاء وكالة
+app.post('/api/create-agency', auth, async (req, res) => {
+  try {
+    const { agencyName } = req.body;
+    await db.collection('users').updateOne(
+      { userId: req.userId },
+      { $set: { agencyName, isAgencyOwner: true } }
+    );
+    res.json({ success: true });
+  } catch (err) {
+    res.status(500).json({ error: 'خطأ بالسيرفر' });
+  }
+});
 
-app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => console.log(`Server running on ${PORT}`));
