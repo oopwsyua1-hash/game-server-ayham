@@ -7,37 +7,46 @@
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Cairo', sans-serif; }
         body { background: #0a0a0f; color: #fff; padding-bottom: 70px; }
-      .header { background: #1a1a2e; padding: 15px; display: flex; justify-content: space-between; align-items: center; }
-      .header h1 { color: #a855f7; font-size: 20px; }
-      .logout { background: #ef4444; border: none; color: #fff; padding: 8px 15px; border-radius: 8px; cursor: pointer; }
-      .tabs { display: flex; background: #1a1a2e; }
-      .tab { flex: 1; padding: 15px; text-align: center; cursor: pointer; border-bottom: 3px solid transparent; }
-      .tab.active { border-bottom-color: #a855f7; color: #a855f7; }
-      .content { padding: 20px; }
-      .stats { display: grid; grid-template-columns: repeat(4,1fr); gap: 10px; margin-bottom: 20px; }
-      .stat { background: #1a1a2e; padding: 15px; border-radius: 10px; text-align: center; }
-      .stat-value { font-size: 18px; color: #a855f7; font-weight: bold; }
-      .stat-label { font-size: 12px; color: #999; }
-      .menu-item { background: #1a1a2e; padding: 15px; margin: 10px 0; border-radius: 10px; display: flex; justify-content: space-between; align-items: center; cursor: pointer; transition: 0.3s; }
-      .menu-item:hover { background: #252542; transform: translateX(-5px); }
-      .profile-view { display: none; }
-      .cover { width: 100%; height: 180px; background: linear-gradient(135deg, #a855f7, #3b82f6); position: relative; }
-      .avatar { width: 90px; height: 90px; border-radius: 50%; border: 4px solid #0a0a0f; position: absolute; bottom: -45px; right: 20px; background: #1a1a2e; }
-      .avatar img { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; }
-      .vip-badge { position: absolute; top: -5px; left: -5px; background: linear-gradient(45deg,#f59e0b,#ef4444); padding: 3px 8px; border-radius: 12px; font-size: 10px; font-weight: bold; }
-      .profile-info { padding: 60px 20px 20px; }
-      .name-row { display: flex; align-items: center; gap: 8px; margin-bottom: 5px; }
-      .profile-name { font-size: 22px; font-weight: bold; }
-      .id-row { color: #999; font-size: 14px; margin-bottom: 10px; }
-      .bio { color: #ccc; margin: 15px 0; font-size: 14px; }
-      .levels { display: flex; gap: 10px; margin: 15px 0; flex-wrap: wrap; }
-      .level { background: #1a1a2e; padding: 8px 12px; border-radius: 20px; font-size: 12px; }
-      .room-section { background: #1a1a2e; padding: 15px; border-radius: 10px; margin: 15px 0; }
-      .create-room { background: linear-gradient(135deg,#a855f7,#3b82f6); border: none; color: #fff; padding: 12px; width: 100%; border-radius: 8px; cursor: pointer; margin-top: 10px; font-weight: bold; }
-      .bottom-nav { position: fixed; bottom: 0; left: 0; right: 0; background: #1a1a2e; display: flex; padding: 10px 0; border-top: 1px solid #2a2a3e; }
-      .nav-item { flex: 1; text-align: center; padding: 5px; cursor: pointer; color: #999; font-size: 12px; }
-      .nav-item.active { color: #a855f7; }
-      .nav-icon { font-size: 20px; display: block; margin-bottom: 3px; }
+       .header { background: #1a1a2e; padding: 15px; display: flex; justify-content: space-between; align-items: center; }
+       .header h1 { color: #a855f7; font-size: 20px; }
+       .logout { background: #ef4444; border: none; color: #fff; padding: 8px 15px; border-radius: 8px; cursor: pointer; }
+       .tabs { display: flex; background: #1a1a2e; }
+       .tab { flex: 1; padding: 15px; text-align: center; cursor: pointer; border-bottom: 3px solid transparent; }
+       .tab.active { border-bottom-color: #a855f7; color: #a855f7; }
+       .content { padding: 20px; }
+       .stats { display: grid; grid-template-columns: repeat(4,1fr); gap: 10px; margin-bottom: 20px; }
+       .stat { background: #1a1a2e; padding: 15px; border-radius: 10px; text-align: center; }
+       .stat-value { font-size: 18px; color: #a855f7; font-weight: bold; }
+       .stat-label { font-size: 12px; color: #999; }
+       .menu-item { background: #1a1a2e; padding: 15px; margin: 10px 0; border-radius: 10px; display: flex; justify-content: space-between; align-items: center; cursor: pointer; transition: 0.3s; }
+       .menu-item:hover { background: #252542; transform: translateX(-5px); }
+       .profile-view { display: none; }
+       .cover { width: 100%; height: 180px; background: linear-gradient(135deg, #a855f7, #3b82f6); position: relative; background-size: cover; background-position: center; cursor: pointer; }
+       .avatar { width: 90px; height: 90px; border-radius: 50%; border: 4px solid #0a0a0f; position: absolute; bottom: -45px; right: 20px; background: #1a1a2e; cursor: pointer; }
+       .avatar img { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; }
+       .vip-badge { position: absolute; top: -5px; left: -5px; background: linear-gradient(45deg,#f59e0b,#ef4444); padding: 3px 8px; border-radius: 12px; font-size: 10px; font-weight: bold; }
+       .profile-info { padding: 60px 20px 20px; }
+       .name-row { display: flex; align-items: center; gap: 8px; margin-bottom: 5px; }
+       .profile-name { font-size: 22px; font-weight: bold; animation: pulse 2s infinite; background: linear-gradient(90deg, #ff00ff, #00ffff, #ff00ff); background-size: 200%; -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        @keyframes pulse { 0%,100% { transform: scale(1); } 50% { transform: scale(1.05); } }
+       .id-row { color: #999; font-size: 14px; margin-bottom: 10px; }
+       .id-pulse { animation: colorPulse 3s infinite; font-weight: bold; }
+        @keyframes colorPulse { 0% { color: #ff00ff; } 33% { color: #00ffff; } 66% { color: #ffff00; } 100% { color: #ff00ff; } }
+       .bio-container { overflow: hidden; white-space: nowrap; margin: 15px 0; }
+       .bio { display: inline-block; animation: marquee 15s linear infinite; background: linear-gradient(90deg, #ff00ff, #00ffff, #ff00ff); background-size: 200%; -webkit-background-clip: text; -webkit-text-fill-color: transparent; font-weight: bold; }
+        @keyframes marquee { 0% { transform: translateX(100%); } 100% { transform: translateX(-100%); } }
+       .levels { display: flex; gap: 10px; margin: 15px 0; flex-wrap: wrap; }
+       .level { background: #1a1a2e; padding: 8px 12px; border-radius: 20px; font-size: 12px; }
+       .room-section { background: #1a1a2e; padding: 15px; border-radius: 10px; margin: 15px 0; }
+       .create-room { background: linear-gradient(135deg,#a855f7,#3b82f6); border: none; color: #fff; padding: 12px; width: 100%; border-radius: 8px; cursor: pointer; margin-top: 10px; font-weight: bold; }
+       .bottom-nav { position: fixed; bottom: 0; left: 0; right: 0; background: #1a1a2e; display: flex; padding: 10px 0; border-top: 1px solid #2a2a3e; }
+       .nav-item { flex: 1; text-align: center; padding: 5px; cursor: pointer; color: #999; font-size: 12px; }
+       .nav-item.active { color: #a855f7; }
+       .nav-icon { font-size: 20px; display: block; margin-bottom: 3px; }
+       .edit-modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 9999; justify-content: center; align-items: center; }
+       .edit-box { background: #1a1a2e; padding: 25px; border-radius: 15px; width: 90%; max-width: 400px; }
+       .edit-box input,.edit-box textarea { width: 100%; padding: 10px; margin: 10px 0; background: #0a0a0f; border: 2px solid #a855f7; border-radius: 8px; color: #fff; }
+       .edit-box button { width: 100%; padding: 12px; background: linear-gradient(90deg, #ff00ff, #9d00ff); border: none; border-radius: 8px; color: white; font-weight: bold; margin-top: 10px; }
     </style>
 </head>
 <body>
@@ -67,7 +76,7 @@
         <div class="menu-item">
             <span>💰 المحفظة</span><span id="coins">0</span>
         </div>
-        <div class="menu-item">
+        <div class="menu-item" onclick="showEditModal()">
             <span>✏️ تعديل البروفايل</span><span>←</span>
         </div>
         <div class="menu-item">
@@ -85,7 +94,7 @@
     </div>
 
     <div id="profile-view" class="profile-view">
-        <div class="cover">
+        <div class="cover" onclick="showEditModal()">
             <div class="avatar">
                 <div class="vip-badge">VIP <span id="vipLevel">0</span></div>
                 <img id="avatarImg" src="https://ui-avatars.com/api/?name=User&background=a855f7&color=fff" alt="">
@@ -97,16 +106,16 @@
                 <span id="genderIcon"></span>
             </div>
             <div class="id-row">ID: <span id="profileId">0</span> | العمر: <span id="profileAge">0</span></div>
-            <div class="bio" id="profileBio">...</div>
+            <div class="bio-container"><div class="bio" id="profileBio">...</div></div>
             <div class="levels">
                 <div class="level">💎 الثروة: <span id="wealth">0</span></div>
                 <div class="level">⭐ الشعبية: <span id="popularity">0</span></div>
                 <div class="level">🌍 الدولة: <span id="country">...</span></div>
             </div>
             <div class="room-section">
-                <h3>🎤 غرفة</h3>
-                <div id="roomInfo">ليس لديك غرفة حالياً</div>
-                <button class="create-room" onclick="createRoom()">انشاء غرفة</button>
+                <h3>🎤 وكالتي</h3>
+                <div id="roomInfo">ليس لديك وكالة حالياً</div>
+                <button class="create-room" onclick="createRoom()">انشاء وكالة</button>
             </div>
         </div>
     </div>
@@ -116,6 +125,20 @@
         <div class="nav-item"><span class="nav-icon">🎮</span>الالعاب</div>
         <div class="nav-item"><span class="nav-icon">📝</span>منشورات</div>
         <div class="nav-item"><span class="nav-icon">🎉</span>حفلات</div>
+    </div>
+
+    <div id="editModal" class="edit-modal">
+        <div class="edit-box">
+            <h3 style="color: #a855f7; margin-bottom: 15px;">تعديل البروفايل</h3>
+            <label>الصورة الشخصية:</label>
+            <input type="file" id="editAvatar" accept="image/*">
+            <label>صورة الغلاف:</label>
+            <input type="file" id="editCover" accept="image/*">
+            <label>السيرة الذاتية:</label>
+            <textarea id="editBio" rows="3" placeholder="اكتب سيرتك..."></textarea>
+            <button onclick="saveProfile()">حفظ</button>
+            <button onclick="closeEditModal()" style="background: #ef4444;">الغاء</button>
+        </div>
     </div>
 
     <script>
@@ -142,7 +165,7 @@
             document.getElementById('userId').textContent = userData.userId;
             document.getElementById('coins').textContent = userData.coins + ' 💰';
             document.getElementById('profileName').textContent = userData.username + ' ' + userData.lastName;
-            document.getElementById('profileId').textContent = userData.userId;
+            document.getElementById('profileId').innerHTML = `<span class="id-pulse">${userData.userId}</span>`;
             document.getElementById('profileAge').textContent = userData.age;
             document.getElementById('profileBio').textContent = userData.bio || 'لا يوجد وصف';
             document.getElementById('vipLevel').textContent = userData.vip;
@@ -150,7 +173,9 @@
             document.getElementById('popularity').textContent = userData.popularity;
             document.getElementById('country').textContent = userData.country;
             document.getElementById('genderIcon').textContent = userData.gender === 'male'? '♂️' : '♀️';
-            document.getElementById('avatarImg').src = `https://ui-avatars.com/api/?name=${userData.username}&background=a855f7&color=fff`;
+            if (userData.avatar) document.getElementById('avatarImg').src = userData.avatar;
+            if (userData.cover) document.querySelector('.cover').style.backgroundImage = `url(${userData.cover})`;
+            document.getElementById('editBio').value = userData.bio || '';
         }
 
         function switchTab(tab) {
@@ -163,13 +188,43 @@
             document.getElementById('profile-view').style.display = 'block';
         }
 
+        function showEditModal() {
+            document.getElementById('editModal').style.display = 'flex';
+        }
+
+        function closeEditModal() {
+            document.getElementById('editModal').style.display = 'none';
+        }
+
+        async function saveProfile() {
+            const formData = new FormData();
+            formData.append('bio', document.getElementById('editBio').value);
+            const avatar = document.getElementById('editAvatar').files[0];
+            const cover = document.getElementById('editCover').files[0];
+            if (avatar) formData.append('avatar', avatar);
+            if (cover) formData.append('cover', cover);
+
+            await fetch('/api/update-profile', {
+                method: 'POST',
+                headers: { 'Authorization': `Bearer ${token}` },
+                body: formData
+            });
+            closeEditModal();
+            loadUser();
+        }
+
         function logout() {
             localStorage.removeItem('token');
             location.href = '/';
         }
 
-        function createRoom() {
-            alert('قريباً - نظام الغرف الصوتية 12 مايك');
+        async function createRoom() {
+            const res = await fetch('/api/create-room', {
+                method: 'POST',
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            const data = await res.json();
+            location.href = `/room/${data.roomId}`;
         }
 
         loadUser();
