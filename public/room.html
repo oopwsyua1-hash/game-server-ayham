@@ -8,75 +8,84 @@
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Cairo', sans-serif; }
         body { background: #0a0a0f; color: #fff; height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
-    .room-header { background: linear-gradient(135deg, #a855f7, #3b82f6); padding: 10px 15px; display: flex; justify-content: space-between; align-items: center; }
-    .room-info h2 { font-size: 16px; margin-bottom: 3px; }
-    .room-id-box { display: flex; align-items: center; gap: 6px; background: rgba(0,0,0,0.3); padding: 3px 8px; border-radius: 8px; }
-    .room-id { font-size: 13px; font-weight: bold; }
-    .copy-id { background: rgba(255,255,255,0.2); border: none; color: #fff; padding: 2px 6px; border-radius: 5px; cursor: pointer; font-size: 11px; }
-    .copy-id:active { background: rgba(255,255,255,0.4); }
-    .header-actions { display: flex; gap: 5px; }
-    .header-btn { background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.2); color: #fff; padding: 6px 10px; border-radius: 8px; cursor: pointer; font-size: 12px; }
-    .agency-bar { display: flex; justify-content: space-between; align-items: center; padding: 8px 15px; background: rgba(0,0,0,0.4); font-size: 12px; }
-    .agency-left { display: flex; align-items: center; gap: 8px; }
-    .agency-avatar { width: 32px; height: 32px; border-radius: 6px; border: 2px solid gold; object-fit: cover; }
-    .lv-badge { background: #a855f7; padding: 2px 6px; border-radius: 10px; font-size: 10px; }
-    .mics-wrapper { flex: 1; padding: 12px; overflow-y: auto; }
-    .mics-grid { display: grid; gap: 8px; justify-items: center; }
-    .mics-grid[data-layout="4*1"] { grid-template-columns: repeat(4, 1fr); }
-    .mics-grid[data-layout="4*2"] { grid-template-columns: repeat(4, 1fr); }
-    .mics-grid[data-layout="4*3"] { grid-template-columns: repeat(4, 1fr); }
-    .mics-grid[data-layout="4*4"] { grid-template-columns: repeat(4, 1fr); }
-    .mics-grid[data-layout="4*5"] { grid-template-columns: repeat(4, 1fr); }
-    .mics-grid[data-layout="6*1"] { grid-template-columns: repeat(6, 1fr); }
-    .mics-grid[data-layout="6*2"] { grid-template-columns: repeat(6, 1fr); }
-    .mics-grid[data-layout="6*3"] { grid-template-columns: repeat(6, 1fr); }
-    .mic-seat { position: relative; width: 100%; max-width: 70px; aspect-ratio: 3/4; cursor: pointer; }
-    .mic-bg { width: 100%; height: 100%; background: url('https://i.imgur.com/YxQz5Zx.png') center/contain no-repeat; position: relative; }
-    .mic-ring { position: absolute; top: 15%; left: 50%; transform: translateX(-50%); width: 70%; aspect-ratio: 1; border-radius: 50%; background: conic-gradient(from 0deg, #ff00ff, #00ffff, #ff00ff); padding: 2px; }
-    .mic-ring.locked { background: conic-gradient(from 0deg, #555, #888, #555); }
-    .mic-ring.muted { opacity: 0.4; }
-    .mic-ring.speaking { animation: pulse 0.5s infinite; }
-    @keyframes pulse { 0%,100% { box-shadow: 0 0 0 0 rgba(168,85,247,0.7); } 50% { box-shadow: 0 0 0 8px rgba(168,85,247,0); } }
-    .mic-ring-inner { width: 100%; height: 100%; border-radius: 50%; background: #0a0a0f; display: flex; align-items: center; justify-content: center; }
-    .mic-avatar { width: 90%; height: 90%; border-radius: 50%; object-fit: cover; }
-    .mic-icon { font-size: 22px; color: #fff; }
-    .mic-emoji { position: absolute; top: -10px; right: -5px; font-size: 22px; animation: bounce 0.5s; filter: drop-shadow(0 0 4px #000); z-index: 10; }
+        .room-header { background: linear-gradient(135deg, #a855f7, #3b82f6); padding: 10px 15px; display: flex; justify-content: space-between; align-items: center; }
+        .room-info h2 { font-size: 16px; margin-bottom: 3px; cursor: pointer; }
+        .room-info h2:hover { text-decoration: underline; }
+        .room-id-box { display: flex; align-items: center; gap: 6px; background: rgba(0,0,0,0.3); padding: 3px 8px; border-radius: 8px; }
+        .room-id { font-size: 13px; font-weight: bold; }
+        .copy-id { background: rgba(255,255,255,0.2); border: none; color: #fff; padding: 2px 6px; border-radius: 5px; cursor: pointer; font-size: 11px; }
+        .header-actions { display: flex; gap: 5px; }
+        .header-btn { background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.2); color: #fff; padding: 6px 10px; border-radius: 8px; cursor: pointer; font-size: 12px; }
+        .agency-bar { display: flex; justify-content: space-between; align-items: center; padding: 8px 15px; background: rgba(0,0,0,0.4); font-size: 12px; }
+        .agency-left { display: flex; align-items: center; gap: 8px; }
+        .agency-avatar { width: 32px; height: 32px; border-radius: 6px; border: 2px solid gold; object-fit: cover; }
+        .lv-badge { background: #a855f7; padding: 2px 6px; border-radius: 10px; font-size: 10px; }
+        .mics-wrapper { flex: 1; padding: 12px; overflow-y: auto; }
+        .mics-grid { display: grid; gap: 8px; justify-items: center; }
+        .mics-grid[data-layout="4*1"] { grid-template-columns: repeat(4, 1fr); }
+        .mics-grid[data-layout="4*2"] { grid-template-columns: repeat(4, 1fr); }
+        .mics-grid[data-layout="4*3"] { grid-template-columns: repeat(4, 1fr); }
+        .mics-grid[data-layout="4*4"] { grid-template-columns: repeat(4, 1fr); }
+        .mics-grid[data-layout="4*5"] { grid-template-columns: repeat(4, 1fr); }
+        .mics-grid[data-layout="6*1"] { grid-template-columns: repeat(6, 1fr); }
+        .mics-grid[data-layout="6*2"] { grid-template-columns: repeat(6, 1fr); }
+        .mics-grid[data-layout="6*3"] { grid-template-columns: repeat(6, 1fr); }
+        .mic-seat { position: relative; width: 100%; max-width: 70px; aspect-ratio: 3/4; cursor: pointer; }
+        .mic-bg { width: 100%; height: 100%; background: url('https://i.imgur.com/YxQz5Zx.png') center/contain no-repeat; position: relative; }
+        .mic-ring { position: absolute; top: 15%; left: 50%; transform: translateX(-50%); width: 70%; aspect-ratio: 1; border-radius: 50%; background: conic-gradient(from 0deg, #ff00ff, #00ffff, #ff00ff); padding: 2px; }
+        .mic-ring.locked { background: conic-gradient(from 0deg, #555, #888, #555); }
+        .mic-ring.muted { opacity: 0.4; }
+        .mic-ring.speaking { animation: pulse 0.5s infinite; }
+        @keyframes pulse { 0%,100% { box-shadow: 0 0 0 0 rgba(168,85,247,0.7); } 50% { box-shadow: 0 0 0 8px rgba(168,85,247,0); } }
+        .mic-ring-inner { width: 100%; height: 100%; border-radius: 50%; background: #0a0a0f; display: flex; align-items: center; justify-content: center; }
+        .mic-avatar { width: 90%; height: 90%; border-radius: 50%; object-fit: cover; }
+        .mic-icon { font-size: 22px; color: #fff; }
+        .mic-emoji { position: absolute; top: -10px; right: -5px; font-size: 22px; animation: bounce 0.5s; filter: drop-shadow(0 0 4px #000); z-index: 10; }
         @keyframes bounce { 0%,100% { transform: scale(1); } 50% { transform: scale(1.4); } }
-    .mic-name { position: absolute; bottom: -2px; left: 50%; transform: translateX(-50%); font-size: 9px; background: rgba(0,0,0,0.7); padding: 1px 5px; border-radius: 8px; white-space: nowrap; max-width: 95%; overflow: hidden; text-overflow: ellipsis; }
-    .mic-number { position: absolute; bottom: -15px; left: 50%; transform: translateX(-50%); font-size: 10px; color: #aaa; }
-    .mute-icon { position: absolute; top: 5px; left: 5px; font-size: 14px; }
-    .bottom-panel { background: rgba(10,10,15,0.98); border-top: 2px solid #2a2a3e; }
-    .stats-row { display: flex; justify-content: space-between; padding: 8px 15px; font-size: 12px; align-items: center; }
-    .online-badge { background: linear-gradient(45deg, #ff00ff, #00ffff); padding: 4px 10px; border-radius: 20px; font-weight: bold; }
-    .mic-controls { display: flex; justify-content: center; gap: 10px; padding: 8px; border-top: 1px solid #2a2a3e; }
-    .mic-btn { padding: 10px 20px; background: #1a1a2e; border: 2px solid #a855f7; border-radius: 25px; color: #fff; cursor: pointer; font-size: 14px; transition: 0.2s; }
-    .mic-btn.active { background: #ef4444; border-color: #ef4444; animation: pulse 1s infinite; }
-    .emoji-row { display: flex; gap: 6px; padding: 8px 10px; overflow-x: auto; border-top: 1px solid #2a2a3e; border-bottom: 1px solid #2a2a3e; }
-    .emoji-btn { font-size: 24px; cursor: pointer; padding: 4px; transition: 0.2s; }
-    .emoji-btn:hover { transform: scale(1.3); }
-    .chat-box { max-height: 120px; overflow-y: auto; padding: 8px 15px; font-size: 12px; }
-    .chat-msg { margin: 4px 0; }
-    .chat-name { color: #a855f7; font-weight: bold; }
-    .chat-input-row { display: flex; gap: 5px; padding: 8px 10px; }
-    .chat-input-row input { flex: 1; padding: 8px; background: #1a1a2e; border: 1px solid #a855f7; border-radius: 8px; color: #fff; font-size: 12px; }
-    .chat-input-row button { padding: 8px 15px; background: #a855f7; border: none; border-radius: 8px; color: #fff; cursor: pointer; }
-    .user-menu { position: fixed; background: #1a1a2e; border: 2px solid #a855f7; border-radius: 12px; padding: 8px; display: none; z-index: 999; min-width: 170px; box-shadow: 0 0 25px rgba(168,85,247,0.7); }
-    .user-menu button { width: 100%; padding: 11px; background: #0a0a0f; border: none; color: #fff; text-align: right; cursor: pointer; margin: 3px 0; border-radius: 8px; font-size: 13px; transition: 0.2s; }
-    .user-menu button:hover { background: #a855f7; transform: translateX(-3px); }
-    .user-menu button.danger { background: #ef4444; }
-    .user-menu button.danger:hover { background: #dc2626; }
-    .settings-modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); z-index: 9999; overflow-y: auto; }
-    .settings-content { background: #1a1a2e; margin: 20px; padding: 20px; border-radius: 15px; }
-    .settings-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; font-size: 18px; font-weight: bold; }
-    .close-btn { background: #ef4444; border: none; color: #fff; width: 30px; height: 30px; border-radius: 50%; cursor: pointer; font-size: 18px; }
-    .setting-group { margin: 20px 0; padding: 15px; background: #0a0a0f; border-radius: 10px; }
-    .save-btn { width: 100%; padding: 14px; background: linear-gradient(90deg, #ff00ff, #00ffff); border: none; border-radius: 10px; color: #fff; font-size: 16px; font-weight: bold; cursor: pointer; margin-top: 15px; }
+        .mic-name { position: absolute; bottom: -2px; left: 50%; transform: translateX(-50%); font-size: 9px; background: rgba(0,0,0,0.7); padding: 1px 5px; border-radius: 8px; white-space: nowrap; max-width: 95%; overflow: hidden; text-overflow: ellipsis; }
+        .mic-number { position: absolute; bottom: -15px; left: 50%; transform: translateX(-50%); font-size: 10px; color: #aaa; }
+        .mute-icon { position: absolute; top: 5px; left: 5px; font-size: 14px; }
+        .bottom-panel { background: rgba(10,10,15,0.98); border-top: 2px solid #2a2a3e; }
+        .stats-row { display: flex; justify-content: space-between; padding: 8px 15px; font-size: 12px; align-items: center; }
+        .online-badge { background: linear-gradient(45deg, #ff00ff, #00ffff); padding: 4px 10px; border-radius: 20px; font-weight: bold; }
+        .control-btn { background: #1a1a2e; border: 2px solid #a855f7; border-radius: 8px; color: #fff; padding: 6px 12px; cursor: pointer; font-size: 13px; }
+        .chat-container { display: none; flex-direction: column; max-height: 180px; }
+        .chat-container.show { display: flex; }
+        .chat-box { flex: 1; overflow-y: auto; padding: 8px 15px; font-size: 12px; border-top: 1px solid #2a2a3e; }
+        .chat-msg { margin: 4px 0; }
+        .chat-name { color: #a855f7; font-weight: bold; }
+        .chat-input-row { display: flex; gap: 5px; padding: 8px 10px; border-top: 1px solid #2a2a3e; }
+        .chat-input-row input { flex: 1; padding: 8px; background: #1a1a2e; border: 1px solid #a855f7; border-radius: 8px; color: #fff; font-size: 12px; }
+        .chat-input-row button { padding: 8px 15px; background: #a855f7; border: none; border-radius: 8px; color: #fff; cursor: pointer; }
+        .control-menu { display: none; position: fixed; bottom: 10px; left: 50%; transform: translateX(-50%); background: #1a1a2e; border: 2px solid #a855f7; border-radius: 15px; padding: 12px; z-index: 999; width: 90%; max-width: 400px; box-shadow: 0 0 25px rgba(168,85,247,0.7); }
+        .control-menu.show { display: block; }
+        .menu-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+        .menu-item { background: #0a0a0f; border: 1px solid #2a2a3e; border-radius: 10px; padding: 12px 5px; text-align: center; cursor: pointer; transition: 0.2s; }
+        .menu-item:hover { background: #a855f7; transform: scale(1.05); }
+        .menu-item.active { background: #ef4444; border-color: #ef4444; }
+        .menu-item-icon { font-size: 24px; display: block; margin-bottom: 4px; }
+        .menu-item-text { font-size: 11px; }
+        .user-menu { position: fixed; background: #1a1a2e; border: 2px solid #a855f7; border-radius: 12px; padding: 8px; display: none; z-index: 9999; min-width: 170px; box-shadow: 0 0 25px rgba(168,85,247,0.7); }
+        .user-menu button { width: 100%; padding: 11px; background: #0a0a0f; border: none; color: #fff; text-align: right; cursor: pointer; margin: 3px 0; border-radius: 8px; font-size: 13px; }
+        .user-menu button:hover { background: #a855f7; }
+        .user-menu button.danger { background: #ef4444; }
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); z-index: 9999; overflow-y: auto; }
+        .modal-content { background: #1a1a2e; margin: 20px; padding: 20px; border-radius: 15px; }
+        .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; font-size: 18px; font-weight: bold; }
+        .close-btn { background: #ef4444; border: none; color: #fff; width: 30px; height: 30px; border-radius: 50%; cursor: pointer; font-size: 18px; }
+        .setting-group { margin: 20px 0; padding: 15px; background: #0a0a0f; border-radius: 10px; }
+        .setting-group input, .setting-group select { width: 100%; padding: 12px; background: #0a0a0f; color: #fff; border: 2px solid #a855f7; border-radius: 8px; }
+        .save-btn { width: 100%; padding: 14px; background: linear-gradient(90deg, #ff00ff, #00ffff); border: none; border-radius: 10px; color: #fff; font-size: 16px; font-weight: bold; cursor: pointer; margin-top: 15px; }
+        .emoji-picker { display: none; grid-template-columns: repeat(6, 1fr); gap: 8px; padding: 10px; background: #0a0a0f; border-radius: 10px; margin-top: 10px; }
+        .emoji-picker.show { display: grid; }
+        .emoji-option { font-size: 28px; cursor: pointer; text-align: center; padding: 5px; border-radius: 8px; }
+        .emoji-option:hover { background: #a855f7; }
     </style>
 </head>
 <body>
     <div class="room-header">
         <div class="room-info">
-            <h2 id="roomName">غرفة علب</h2>
+            <h2 id="roomName" onclick="showRenameModal()">غرفة علب</h2>
             <div class="room-id-box">
                 <span>ID:</span>
                 <span class="room-id" id="roomIdText">0</span>
@@ -84,7 +93,7 @@
             </div>
         </div>
         <div class="header-actions">
-            <button class="header-btn" onclick="showMicSettings()">⚙️ اعدادات</button>
+            <button class="header-btn" onclick="showSettings()">⚙️ اعدادات</button>
             <button class="header-btn" onclick="leaveRoom()">🚪 خروج</button>
         </div>
     </div>
@@ -105,43 +114,34 @@
     <div class="bottom-panel">
         <div class="stats-row">
             <div class="online-badge"><span id="onlineCount">0</span> 👥</div>
-            <div>🥇1 🥈2 🥉3</div>
+            <button class="control-btn" onclick="toggleControlMenu()">≡ قائمة التحكم</button>
         </div>
         
-        <div class="mic-controls">
-            <button class="mic-btn" id="micToggleBtn" onclick="toggleMic()">🎤 تشغيل المايك</button>
+        <div class="chat-container" id="chatContainer">
+            <div class="chat-box" id="chatBox"></div>
+            <div class="chat-input-row">
+                <input type="text" id="chatInput" placeholder="اكتب رسالة..." onkeypress="if(event.key==='Enter') sendMessage()">
+                <button onclick="sendMessage()">ارسال</button>
+            </div>
         </div>
+    </div>
 
-        <div class="emoji-row">
-            <div class="emoji-btn" onclick="sendEmoji('😂')">😂</div>
-            <div class="emoji-btn" onclick="sendEmoji('😍')">😍</div>
-            <div class="emoji-btn" onclick="sendEmoji('😭')">😭</div>
-            <div class="emoji-btn" onclick="sendEmoji('😡')">😡</div>
-            <div class="emoji-btn" onclick="sendEmoji('❤️')">❤️</div>
-            <div class="emoji-btn" onclick="sendEmoji('💋')">💋</div>
-            <div class="emoji-btn" onclick="sendEmoji('🚬')">🚬</div>
-            <div class="emoji-btn" onclick="sendEmoji('🤝')">🤝</div>
-            <div class="emoji-btn" onclick="sendEmoji('👏')">👏</div>
-            <div class="emoji-btn" onclick="sendEmoji('🔥')">🔥</div>
-            <div class="emoji-btn" onclick="sendEmoji('🥰')">🥰</div>
-        </div>
-        <div class="chat-box" id="chatBox"></div>
-        <div class="chat-input-row">
-            <input type="text" id="chatInput" placeholder="اكتب رسالة..." onkeypress="if(event.key==='Enter') sendMessage()">
-            <button onclick="sendMessage()">ارسال</button>
-        </div>
+    <div class="control-menu" id="controlMenu">
+        <div class="menu-grid" id="menuGrid"></div>
     </div>
 
     <div id="userMenu" class="user-menu"></div>
 
-    <div id="micSettings" class="settings-modal">
-        <div class="settings-content">
-            <div class="settings-header">
-                <span>عدد مقاعد المايك</span>
-                <button class="close-btn" onclick="closeMicSettings()">×</button>
+    <!-- مودال الاعدادات -->
+    <div id="settingsModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <span>اعدادات الغرفة</span>
+                <button class="close-btn" onclick="closeModal('settingsModal')">×</button>
             </div>
             <div class="setting-group">
-                <select id="micLayoutSelect" style="width:100%; padding:12px; background:#0a0a0f; color:#fff; border:2px solid #a855f7; border-radius:8px;">
+                <label>عدد مقاعد المايك</label>
+                <select id="micLayoutSelect">
                     <option value="4*1">4*1 مقعد</option>
                     <option value="4*2">4*2 مقعد</option>
                     <option value="4*3">4*3 مقعد</option>
@@ -152,7 +152,21 @@
                     <option value="6*3">6*3 مقعد</option>
                 </select>
             </div>
-            <button class="save-btn" onclick="saveMicLayout()">حفظ</button>
+            <button class="save-btn" onclick="saveSettings()">حفظ</button>
+        </div>
+    </div>
+
+    <!-- مودال تغيير الاسم -->
+    <div id="renameModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <span>تغيير اسم الغرفة</span>
+                <button class="close-btn" onclick="closeModal('renameModal')">×</button>
+            </div>
+            <div class="setting-group">
+                <input type="text" id="newRoomName" placeholder="اسم الغرفة الجديد" maxlength="30">
+            </div>
+            <button class="save-btn" onclick="saveRoomName()">حفظ الاسم</button>
         </div>
     </div>
 
@@ -161,13 +175,11 @@
         const token = localStorage.getItem('token');
         const roomId = Number(window.location.pathname.split('/').pop());
         let myUserId = null, myUserData = null, roomData = null, isOwner = false, isAdmin = false;
-        let localStream = null, isMicOn = false;
+        let localStream = null, isMicOn = false, isMuted = false;
+        let audioPlayer = null;
 
         if (!token) location.href = '/';
-
-        if ('serviceWorker' in navigator) {
-          navigator.serviceWorker.register('/sw.js');
-        }
+        if ('serviceWorker' in navigator) navigator.serviceWorker.register('/sw.js');
 
         function copyRoomId() {
             navigator.clipboard.writeText(roomId);
@@ -189,6 +201,7 @@
             if(roomData.avatar) document.getElementById('agencyAvatar').src = roomData.avatar;
 
             renderMics(roomData.mics, roomData.micLayout);
+            renderControlMenu();
             socket.emit('join-room', { roomId, userId: myUserId, token });
         }
 
@@ -216,6 +229,110 @@
                 seat.onclick = (e) => handleMicClick(mic, e);
                 grid.appendChild(seat);
             });
+        }
+
+        function renderControlMenu() {
+            const grid = document.getElementById('menuGrid');
+            const myMic = roomData.mics.find(m => m.userId === myUserId);
+            let items = [];
+
+            // للكل
+            items.push({ icon: '💬', text: 'الدردشة', action: 'toggleChat' });
+
+            // للي قاعد عالمايك
+            if (myMic) {
+                items.push({ icon: '🎤', text: isMicOn ? 'ايقاف مايكي' : 'تشغيل مايكي', action: 'toggleMic', active: isMicOn });
+                items.push({ icon: '🔇', text: isMuted ? 'الغاء الكتم' : 'كتم مايكي', action: 'toggleMute', active: isMuted });
+                items.push({ icon: '😂', text: 'ايموجي', action: 'showEmojiPicker' });
+            }
+
+            // للادمن وصاحب الغرفة
+            if (isOwner || isAdmin) {
+                items.push({ icon: '🎵', text: 'موسيقى', action: 'playMusic' });
+                items.push({ icon: '🔒', text: 'قفل مايك', action: 'lockMicMode' });
+                items.push({ icon: '🚫', text: 'طرد من المايك', action: 'kickMode' });
+            }
+
+            // لصاحب الغرفة بس
+            if (isOwner) {
+                items.push({ icon: '⭐', text: 'اضافة ادمن', action: 'addAdminMode' });
+            }
+
+            grid.innerHTML = items.map(item => `
+                <div class="menu-item ${item.active ? 'active' : ''}" onclick="${item.action}()">
+                    <span class="menu-item-icon">${item.icon}</span>
+                    <span class="menu-item-text">${item.text}</span>
+                </div>
+            `).join('');
+        }
+
+        function toggleControlMenu() {
+            document.getElementById('controlMenu').classList.toggle('show');
+        }
+
+        function toggleChat() {
+            document.getElementById('chatContainer').classList.toggle('show');
+            toggleControlMenu();
+        }
+
+        async function toggleMic() {
+            const myMic = roomData.mics.find(m => m.userId === myUserId);
+            if (!myMic) return alert('اصعد عالمايك اول');
+            
+            if (!isMicOn) {
+                try {
+                    localStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                    isMicOn = true;
+                    document.getElementById(`ring-${myMic.seat}`)?.classList.add('speaking');
+                    renderControlMenu();
+                } catch (err) {
+                    alert('الرجاء السماح بالوصول للمايك');
+                }
+            } else {
+                localStream?.getTracks().forEach(track => track.stop());
+                isMicOn = false;
+                document.getElementById(`ring-${myMic.seat}`)?.classList.remove('speaking');
+                renderControlMenu();
+            }
+            toggleControlMenu();
+        }
+
+        function toggleMute() {
+            const myMic = roomData.mics.find(m => m.userId === myUserId);
+            if (!myMic) return;
+            socket.emit('mute-user', { roomId, ownerId: myUserId, targetUserId: myUserId });
+            isMuted = !isMuted;
+            renderControlMenu();
+            toggleControlMenu();
+        }
+
+        function showEmojiPicker() {
+            const emojis = ['😂','😍','😭','😡','❤️','💋','🚬','🤝','👏','🔥','🥰','😎'];
+            const picker = document.createElement('div');
+            picker.className = 'emoji-picker show';
+            picker.innerHTML = emojis.map(e => `<div class="emoji-option" onclick="sendEmoji('${e}')">${e}</div>`).join('');
+            document.querySelector('.control-menu').appendChild(picker);
+            setTimeout(() => picker.remove(), 5000);
+        }
+
+        function playMusic() {
+            alert('قريباً: تشغيل موسيقى للكل 🎵');
+            toggleControlMenu();
+        }
+
+        function lockMicMode() {
+            alert('اضغط على كرسي فاضي عشان تقفلو');
+            toggleControlMenu();
+        }
+
+        function kickMode() {
+            alert('اضغط على شخص بالمايك عشان تطردو');
+            toggleControlMenu();
+        }
+
+        function addAdminMode() {
+            alert('اضغط على شخص بالمايك عشان تعينو ادمن');
+            toggleControlMenu();
         }
 
         function handleMicClick(mic, e) {
@@ -250,46 +367,32 @@
             menu.style.left = e.pageX + 'px';
         }
 
-        document.addEventListener('click', () => {
-            document.getElementById('userMenu').style.display = 'none';
+        document.addEventListener('click', (e) => {
+            if (!e.target.closest('.user-menu') && !e.target.closest('.mic-seat')) {
+                document.getElementById('userMenu').style.display = 'none';
+            }
+            if (!e.target.closest('.control-menu') && !e.target.closest('.control-btn')) {
+                document.getElementById('controlMenu').classList.remove('show');
+            }
         });
 
-        function sitOnMic(seat) { socket.emit('sit-mic', { roomId, seat, userId: myUserId }); }
+        function sitOnMic(seat) { socket.emit('sit-mic', { roomId, seat, userId: myUserId }); document.getElementById('userMenu').style.display = 'none'; }
         function leaveMic() { 
             if(isMicOn) toggleMic();
             socket.emit('leave-mic', { roomId, userId: myUserId }); 
+            document.getElementById('userMenu').style.display = 'none';
         }
-        function kickUser(userId) { socket.emit('kick-user', { roomId, ownerId: myUserId, targetUserId: userId }); }
-        function lockMic(seat) { socket.emit('lock-mic', { roomId, seat, userId: myUserId }); }
-        function muteUser(userId) { socket.emit('mute-user', { roomId, ownerId: myUserId, targetUserId: userId }); }
-        function makeAdmin(userId) { socket.emit('make-admin', { roomId, ownerId: myUserId, targetUserId: userId }); }
-        function followUser(userId) { alert('تمت المتابعة'); }
-        function sendEmoji(emoji) { socket.emit('send-emoji', { roomId, userId: myUserId, emoji }); }
+        function kickUser(userId) { socket.emit('kick-user', { roomId, ownerId: myUserId, targetUserId: userId }); document.getElementById('userMenu').style.display = 'none'; }
+        function lockMic(seat) { socket.emit('lock-mic', { roomId, seat, userId: myUserId }); document.getElementById('userMenu').style.display = 'none'; }
+        function muteUser(userId) { socket.emit('mute-user', { roomId, ownerId: myUserId, targetUserId: userId }); document.getElementById('userMenu').style.display = 'none'; }
+        function makeAdmin(userId) { socket.emit('make-admin', { roomId, ownerId: myUserId, targetUserId: userId }); document.getElementById('userMenu').style.display = 'none'; }
+        function followUser(userId) { alert('تمت المتابعة'); document.getElementById('userMenu').style.display = 'none'; }
+        function sendEmoji(emoji) { 
+            socket.emit('send-emoji', { roomId, userId: myUserId, emoji }); 
+            document.querySelector('.emoji-picker')?.remove();
+            toggleControlMenu();
+        }
         function leaveRoom() { location.href = '/me'; }
-
-        async function toggleMic() {
-            const btn = document.getElementById('micToggleBtn');
-            const myMic = roomData.mics.find(m => m.userId === myUserId);
-            if (!myMic) return alert('اصعد عالمايك اول');
-            
-            if (!isMicOn) {
-                try {
-                    localStream = await navigator.mediaDevices.getUserMedia({ audio: true });
-                    isMicOn = true;
-                    btn.textContent = '🔴 ايقاف المايك';
-                    btn.classList.add('active');
-                    document.getElementById(`ring-${myMic.seat}`)?.classList.add('speaking');
-                } catch (err) {
-                    alert('الرجاء السماح بالوصول للمايك');
-                }
-            } else {
-                localStream?.getTracks().forEach(track => track.stop());
-                isMicOn = false;
-                btn.textContent = '🎤 تشغيل المايك';
-                btn.classList.remove('active');
-                document.getElementById(`ring-${myMic.seat}`)?.classList.remove('speaking');
-            }
-        }
 
         function sendMessage() {
             const input = document.getElementById('chatInput');
@@ -300,31 +403,48 @@
             }
         }
 
-        function showMicSettings() {
+        function showSettings() {
             if (!isOwner) return alert('فقط صاحب الغرفة');
             document.getElementById('micLayoutSelect').value = roomData.micLayout;
-            document.getElementById('micSettings').style.display = 'block';
+            document.getElementById('settingsModal').style.display = 'block';
         }
-        function closeMicSettings() {
-            document.getElementById('micSettings').style.display = 'none';
+        function showRenameModal() {
+            if (!isOwner) return;
+            document.getElementById('newRoomName').value = roomData.name;
+            document.getElementById('renameModal').style.display = 'block';
         }
-        async function saveMicLayout() {
+        function closeModal(id) {
+            document.getElementById(id).style.display = 'none';
+        }
+        async function saveSettings() {
             const layout = document.getElementById('micLayoutSelect').value;
             await fetch('/api/room-settings', {
                 method: 'POST',
                 headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
                 body: JSON.stringify({ roomId: Number(roomId), micLayout: layout })
             });
-            closeMicSettings();
+            closeModal('settingsModal');
+        }
+        async function saveRoomName() {
+            const newName = document.getElementById('newRoomName').value.trim();
+            if (!newName) return alert('اكتب اسم');
+            await fetch('/api/room-rename', {
+                method: 'POST',
+                headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+                body: JSON.stringify({ roomId: Number(roomId), name: newName })
+            });
+            closeModal('renameModal');
         }
 
         socket.on('mic-updated', (mics) => {
             roomData.mics = mics;
             renderMics(mics, roomData.micLayout);
+            renderControlMenu();
         });
 
         socket.on('room-updated', (newRoom) => {
             roomData = newRoom;
+            document.getElementById('roomName').textContent = newRoom.name;
             renderMics(newRoom.mics, newRoom.micLayout);
         });
 
@@ -347,6 +467,7 @@
             if (data.userId === myUserId) {
                 isAdmin = true;
                 alert('تم تعيينك ادمن');
+                renderControlMenu();
             }
         });
 
