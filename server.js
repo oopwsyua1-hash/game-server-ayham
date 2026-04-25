@@ -53,8 +53,6 @@ const RoomSchema = new mongoose.Schema({
   admins: [Number],
   banned: [Number],
   micLayout: { type: String, default: '4*3' },
-  showStars: { type: Boolean, default: true },
-  allowMusic: { type: Boolean, default: true },
   mics: [{
     seat: Number, userId: Number, username: String, avatar: String,
     muted: { type: Boolean, default: false },
@@ -114,15 +112,6 @@ app.get('/api/me', auth, async (req, res) => {
   res.json(user);
 });
 
-app.post('/api/update-profile', auth, upload.fields([{ name: 'avatar' }, { name: 'cover' }]), async (req, res) => {
-  const { bio } = req.body;
-  const updateData = { bio };
-  if (req.files.avatar) updateData.avatar = '/uploads/' + req.files.avatar[0].filename;
-  if (req.files.cover) updateData.cover = '/uploads/' + req.files.cover[0].filename;
-  await User.findByIdAndUpdate(req.userId, updateData);
-  res.json({ success: true });
-});
-
 app.post('/api/create-room', auth, async (req, res) => {
   const user = await User.findById(req.userId);
   const roomId = Math.floor(100000 + Math.random() * 900000);
@@ -157,7 +146,7 @@ app.post('/api/room-settings', auth, async (req, res) => {
 });
 
 app.get('/api/room/:id', async (req, res) => {
-  const room = await Room.findOne({ roomId: req.params.id });
+  const room = await Room.findOne({ roomId: Number(req.params.id) });
   if (!room) return res.status(404).json({ error: 'الغرفة مو موجودة' });
   res.json(room);
 });
@@ -173,14 +162,13 @@ io.on('connection', (socket) => {
       socket.join(`room-${roomId}`);
       socket.userId = userId;
       socket.roomId = roomId;
-      const room = await Room.findOne({ roomId });
       const onlineCount = io.sockets.adapter.rooms.get(`room-${roomId}`)?.size || 0;
       io.to(`room-${roomId}`).emit('online-count', onlineCount);
     } catch (e) {}
   });
 
   socket.on('sit-mic', async ({ roomId, seat, userId }) => {
-    const room = await Room.findOne({ roomId });
+    const room = await Room.findOne({ roomId: Number(roomId) });
     const user = await User.findOne({ userId });
     const mic = room.mics.find(m => m.seat === seat);
     if (mic &&!mic.userId &&!mic.locked) {
@@ -193,7 +181,7 @@ io.on('connection', (socket) => {
   });
 
   socket.on('leave-mic', async ({ roomId, userId }) => {
-    const room = await Room.findOne({ roomId });
+    const room = await Room.findOne({ roomId: Number(roomId) });
     const mic = room.mics.find(m => m.userId === userId);
     if (mic) {
       mic.userId = null; mic.username = null; mic.avatar = null; mic.emoji = ''; mic.muted = false;
@@ -203,14 +191,14 @@ io.on('connection', (socket) => {
   });
 
   socket.on('send-emoji', async ({ roomId, userId, emoji }) => {
-    const room = await Room.findOne({ roomId });
+    const room = await Room.findOne({ roomId: Number(roomId) });
     const mic = room.mics.find(m => m.userId === userId);
     if (mic) {
       mic.emoji = emoji;
       await room.save();
       io.to(`room-${roomId}`).emit('mic-updated', room.mics);
       setTimeout(async () => {
-        const r = await Room.findOne({ roomId });
+        const r = await Room.findOne({ roomId: Number(roomId) });
         const m = r.mics.find(x => x.userId === userId);
         if (m) {
           m.emoji = '';
@@ -222,7 +210,7 @@ io.on('connection', (socket) => {
   });
 
   socket.on('kick-user', async ({ roomId, ownerId, targetUserId }) => {
-    const room = await Room.findOne({ roomId });
+    const room = await Room.findOne({ roomId: Number(roomId) });
     if (room.ownerId === ownerId || room.admins.includes(ownerId)) {
       const mic = room.mics.find(m => m.userId === targetUserId);
       if (mic) {
@@ -235,7 +223,7 @@ io.on('connection', (socket) => {
   });
 
   socket.on('lock-mic', async ({ roomId, seat, userId }) => {
-    const room = await Room.findOne({ roomId });
+    const room = await Room.findOne({ roomId: Number(roomId) });
     if (room.ownerId === userId || room.admins.includes(userId)) {
       const mic = room.mics.find(m => m.seat === seat);
       if (mic &&!mic.userId) {
@@ -247,7 +235,7 @@ io.on('connection', (socket) => {
   });
 
   socket.on('mute-user', async ({ roomId, ownerId, targetUserId }) => {
-    const room = await Room.findOne({ roomId });
+    const room = await Room.findOne({ roomId: Number(roomId) });
     if (room.ownerId === ownerId || room.admins.includes(ownerId)) {
       const mic = room.mics.find(m => m.userId === targetUserId);
       if (mic) {
@@ -259,7 +247,7 @@ io.on('connection', (socket) => {
   });
 
   socket.on('make-admin', async ({ roomId, ownerId, targetUserId }) => {
-    const room = await Room.findOne({ roomId });
+    const room = await Room.findOne({ roomId: Number(roomId) });
     if (room.ownerId === ownerId &&!room.admins.includes(targetUserId)) {
       room.admins.push(targetUserId);
       await room.save();
@@ -280,4 +268,4 @@ io.on('connection', (socket) => {
 });
 
 const PORT = process.env.PORT || 10000;
-server.listen(PORT, () => console.log(`السيرفر شغال على ${PORT}`));
+server.listen(PORT, () => console.log(`السبع شغال على ${PORT}`));
