@@ -45,12 +45,21 @@ const UserSchema = new mongoose.Schema({
 });
 
 const RoomSchema = new mongoose.Schema({
-  roomId: { type: Number, unique: true }, ownerId: Number, name: String,
-  avatar: { type: String, default: '' }, cover: { type: String, default: '' },
-  admins: [Number], banned: [Number],
+  roomId: { type: Number, unique: true },
+  ownerId: Number,
+  name: String,
+  avatar: { type: String, default: '' },
+  cover: { type: String, default: '' },
+  admins: [Number],
+  banned: [Number],
+  micLayout: { type: String, default: '4*3' },
+  showStars: { type: Boolean, default: true },
+  allowMusic: { type: Boolean, default: true },
   mics: [{
     seat: Number, userId: Number, username: String, avatar: String,
-    muted: { type: Boolean, default: false }, emoji: { type: String, default: '' }
+    muted: { type: Boolean, default: false },
+    locked: { type: Boolean, default: false },
+    emoji: { type: String, default: '' }
   }],
   createdAt: { type: Date, default: Date.now }
 });
@@ -117,10 +126,34 @@ app.post('/api/update-profile', auth, upload.fields([{ name: 'avatar' }, { name:
 app.post('/api/create-room', auth, async (req, res) => {
   const user = await User.findById(req.userId);
   const roomId = Math.floor(100000 + Math.random() * 900000);
-  const mics = Array.from({ length: 20 }, (_, i) => ({ seat: i + 1, userId: null, username: null, avatar: null, muted: false, emoji: '' }));
-  const room = new Room({ roomId, ownerId: user.userId, name: `وكالة ${user.username}`, admins: [user.userId], mics });
+  const [cols, rows] = '4*3'.split('*').map(Number);
+  const totalMics = cols * rows;
+  const mics = Array.from({ length: totalMics }, (_, i) => ({
+    seat: i + 1, userId: null, username: null, avatar: null, muted: false, locked: false, emoji: ''
+  }));
+  const room = new Room({ roomId, ownerId: user.userId, name: `غرفة ${user.username}`, admins: [user.userId], mics });
   await room.save();
   res.json({ roomId });
+});
+
+app.post('/api/room-settings', auth, async (req, res) => {
+  const { roomId, micLayout } = req.body;
+  const room = await Room.findOne({ roomId });
+  const user = await User.findById(req.userId);
+  if (!room || room.ownerId!== user.userId) return res.status(403).json({ error: 'غير مصرح' });
+
+  room.micLayout = micLayout;
+  const [cols, rows] = micLayout.split('*').map(Number);
+  const totalMics = cols * rows;
+  const newMics = [];
+  for (let i = 1; i <= totalMics; i++) {
+    const oldMic = room.mics.find(m => m.seat === i);
+    newMics.push(oldMic || { seat: i, userId: null, username: null, avatar: null, muted: false, locked: false, emoji: '' });
+  }
+  room.mics = newMics;
+  await room.save();
+  io.to(`room-${roomId}`).emit('room-updated', room);
+  res.json({ success: true });
 });
 
 app.get('/api/room/:id', async (req, res) => {
@@ -129,42 +162,28 @@ app.get('/api/room/:id', async (req, res) => {
   res.json(room);
 });
 
-app.post('/api/update-room', auth, upload.fields([{ name: 'avatar' }, { name: 'cover' }]), async (req, res) => {
-  const { roomId, name } = req.body;
-  const room = await Room.findOne({ roomId });
-  const user = await User.findById(req.userId);
-  if (room.ownerId!== user.userId) return res.status(403).json({ error: 'مو انت صاحب الوكالة' });
-  const updateData = { name };
-  if (req.files.avatar) updateData.avatar = '/uploads/' + req.files.avatar[0].filename;
-  if (req.files.cover) updateData.cover = '/uploads/' + req.files.cover[0].filename;
-  await Room.updateOne({ roomId }, updateData);
-  res.json({ success: true });
-});
-
 app.get('/', (req, res) => res.sendFile(path.join(__dirname, 'public', 'index.html')));
 app.get('/me', (req, res) => res.sendFile(path.join(__dirname, 'public', 'me.html')));
 app.get('/room/:id', (req, res) => res.sendFile(path.join(__dirname, 'public', 'room.html')));
 
 io.on('connection', (socket) => {
-  socket.on('join-room', async ({ roomId, token }) => {
+  socket.on('join-room', async ({ roomId, userId, token }) => {
     try {
-      const decoded = jwt.verify(token, JWT_SECRET);
-      const user = await User.findById(decoded.id);
+      jwt.verify(token, JWT_SECRET);
       socket.join(`room-${roomId}`);
-      socket.userId = user.userId;
+      socket.userId = userId;
       socket.roomId = roomId;
-      io.to(`room-${roomId}`).emit('user-joined', { userId: user.userId, username: user.username });
     } catch (e) {}
   });
 
-  socket.on('sit-mic', async ({ roomId, seat, token }) => {
-    const decoded = jwt.verify(token, JWT_SECRET);
-    const user = await User.findById(decoded.id);
+  socket.on('sit-mic', async ({ roomId, seat, userId }) => {
     const room = await Room.findOne({ roomId });
-    if (room.ownerId!== user.userId &&!room.admins.includes(user.userId)) return;
+    const user = await User.findOne({ userId });
     const mic = room.mics.find(m => m.seat === seat);
-    if (mic &&!mic.userId) {
-      mic.userId = user.userId; mic.username = user.username; mic.avatar = user.avatar;
+    if (mic &&!mic.userId &&!mic.locked) {
+      mic.userId = user.userId;
+      mic.username = user.username;
+      mic.avatar = user.avatar;
       await room.save();
       io.to(`room-${roomId}`).emit('mic-updated', room.mics);
     }
@@ -188,22 +207,20 @@ io.on('connection', (socket) => {
       await room.save();
       io.to(`room-${roomId}`).emit('mic-updated', room.mics);
       setTimeout(async () => {
-        mic.emoji = '';
-        await room.save();
-        io.to(`room-${roomId}`).emit('mic-updated', room.mics);
+        const r = await Room.findOne({ roomId });
+        const m = r.mics.find(x => x.userId === userId);
+        if (m) {
+          m.emoji = '';
+          await r.save();
+          io.to(`room-${roomId}`).emit('mic-updated', r.mics);
+        }
       }, 3000);
     }
   });
 
-  socket.on('chat-message', ({ roomId, userId, username, message }) => {
-    io.to(`room-${roomId}`).emit('chat-message', { userId, username, message, time: Date.now() });
-  });
-
-  socket.on('kick-user', async ({ roomId, token, targetUserId }) => {
-    const decoded = jwt.verify(token, JWT_SECRET);
-    const user = await User.findById(decoded.id);
+  socket.on('kick-user', async ({ roomId, ownerId, targetUserId }) => {
     const room = await Room.findOne({ roomId });
-    if (room.ownerId === user.userId || room.admins.includes(user.userId)) {
+    if (room.ownerId === ownerId || room.admins.includes(ownerId)) {
       const mic = room.mics.find(m => m.userId === targetUserId);
       if (mic) {
         mic.userId = null; mic.username = null; mic.avatar = null;
@@ -214,11 +231,21 @@ io.on('connection', (socket) => {
     }
   });
 
-  socket.on('mute-user', async ({ roomId, token, targetUserId }) => {
-    const decoded = jwt.verify(token, JWT_SECRET);
-    const user = await User.findById(decoded.id);
+  socket.on('lock-mic', async ({ roomId, seat, userId }) => {
     const room = await Room.findOne({ roomId });
-    if (room.ownerId === user.userId || room.admins.includes(user.userId)) {
+    if (room.ownerId === userId || room.admins.includes(userId)) {
+      const mic = room.mics.find(m => m.seat === seat);
+      if (mic &&!mic.userId) {
+        mic.locked =!mic.locked;
+        await room.save();
+        io.to(`room-${roomId}`).emit('mic-updated', room.mics);
+      }
+    }
+  });
+
+  socket.on('mute-user', async ({ roomId, ownerId, targetUserId }) => {
+    const room = await Room.findOne({ roomId });
+    if (room.ownerId === ownerId || room.admins.includes(ownerId)) {
       const mic = room.mics.find(m => m.userId === targetUserId);
       if (mic) {
         mic.muted =!mic.muted;
@@ -226,6 +253,19 @@ io.on('connection', (socket) => {
         io.to(`room-${roomId}`).emit('mic-updated', room.mics);
       }
     }
+  });
+
+  socket.on('make-admin', async ({ roomId, ownerId, targetUserId }) => {
+    const room = await Room.findOne({ roomId });
+    if (room.ownerId === ownerId &&!room.admins.includes(targetUserId)) {
+      room.admins.push(targetUserId);
+      await room.save();
+      io.to(`room-${roomId}`).emit('admin-added', { userId: targetUserId });
+    }
+  });
+
+  socket.on('chat-message', async ({ roomId, userId, username, message }) => {
+    io.to(`room-${roomId}`).emit('chat-message', { userId, username, message });
   });
 });
 
