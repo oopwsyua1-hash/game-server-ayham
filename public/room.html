@@ -264,15 +264,17 @@
     <script>
         const socket = io();
         const token = localStorage.getItem('token');
-        const roomId = Number(window.location.pathname.split('/').pop());
+        const roomId = window.location.pathname.split('/').pop() || '10000';
         
-        let myUserId = null, myUserData = null, roomData = null, isOwner = false, isAdmin = false;
+        let myUserId = localStorage.getItem('userId') || 'user_' + Math.random().toString(36).substr(2, 9);
+let myUserData = null, roomData = null, isOwner = false, isAdmin = false;
+localStorage.setItem('userId', myUserId);
         let localStream = null, isMicOn = false, isMuted = false;
         let peerConnections = {};
         let currentPrivateChat = null;
         let clickTimeout = null;
         
-        if (!token) location.href = '/';
+       // if (!token) location.href = '/';
         if ('serviceWorker' in navigator) navigator.register('/sw.js');
         
         function copyRoomId() {
@@ -283,7 +285,6 @@
         async function init() {
             const meRes = await fetch('/api/me', { headers: { 'Authorization': `Bearer ${token}` } });
             myUserData = await meRes.json();
-            myUserId = myUserData.userId;
             
             // Check password
             let roomPassword = '';
@@ -1008,10 +1009,6 @@
             socket.emit('leave-room', { roomId });
         });
         
-        window.addEventListener('load', () => {
-            init();
-        });
-        
         // تحقق من صلاحية المايك عند التحميل
         navigator.permissions?.query({ name: 'microphone' }).then(result => {
             if (result.state === 'denied') {
@@ -1086,8 +1083,7 @@
             alert('تم حذف الغرفة من قبل المالك');
             location.href = '/me';
         });
-        
-        
+        init();
     </script>
 </body>
 </html>
