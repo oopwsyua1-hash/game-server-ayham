@@ -1,74 +1,86 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>أنا - السبع الحلبي</title>
-  <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-    body { font-family: 'Segoe UI', sans-serif; background: #0a0a14; color: #fff; }
-   .header { background: #141428; padding: 15px; border-bottom: 2px solid #ff00ff; display: flex; justify-content: space-between; align-items: center; }
-   .header h1 { color: #ff00ff; font-size: 20px; }
-   .cover { width: 100%; height: 180px; background: linear-gradient(135deg, #a855f7, #3b82f6); position: relative; }
-   .avatar { width: 90px; height: 90px; border-radius: 50%; border: 4px solid #0a0a14; position: absolute; bottom: -45px; right: 20px; background: #1a1a2e; }
-   .avatar img { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; }
-   .top0-frame { background: linear-gradient(135deg, #1a0033, #4c1d95, #1a0033)!important; background-size: 400% 400%!important; animation: top0Glow 3s ease infinite!important; box-shadow: 0 0 30px #a855f7!important; }
-    @keyframes top0Glow { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
-   .profile-info { padding: 60px 20px 20px; }
-   .stats { display: grid; grid-template-columns: repeat(3,1fr); gap: 10px; margin: 20px 0; }
-   .stat-box { background: #141428; padding: 15px; border-radius: 10px; text-align: center; border: 1px solid #ff00ff; }
-   .stat-box h3 { color: #00ffff; font-size: 20px; }
-   .stat-box p { color: #aaa; font-size: 12px; }
-   .menu { background: #141428; margin: 10px 20px; border-radius: 10px; }
-   .menu-item { padding: 15px 20px; border-bottom: 1px solid #1a1a2e; display: flex; justify-content: space-between; align-items: center; cursor: pointer; }
-   .menu-item:hover { background: #1a1a2e; }
-   .menu-item:last-child { border-bottom: none; }
-   .btn { width: calc(100% - 40px); margin: 20px; padding: 14px; background: linear-gradient(90deg, #ff00ff, #9d00ff); border: none; border-radius: 8px; color: white; font-size: 16px; font-weight: bold; cursor: pointer; }
-   .top0-name { background: linear-gradient(45deg, #FFD700, #FFA500); -webkit-background-clip: text; -webkit-text-fill-color: transparent; text-shadow: 0 0 20px #FFD700!important; }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>أنا - السبع الحلبي</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: 'Segoe UI', sans-serif; background: #0a0a14; color: #fff; }
+.header { background: #141428; padding: 15px; border-bottom: 2px solid #ff00ff; display: flex; justify-content: space-between; align-items: center; }
+.header h1 { color: #ff00ff; font-size: 20px; }
+.cover { width: 100%; height: 180px; background: linear-gradient(135deg, #a855f7, #3b82f6); position: relative; }
+.avatar { width: 90px; height: 90px; border-radius: 50%; border: 4px solid #0a0a14; position: absolute; bottom: -45px; right: 20px; background: #1a1a2e; }
+.avatar img { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; }
+.top0-frame { background: linear-gradient(135deg, #1a0033, #4c1d95, #1a0033)!important; background-size: 400% 400%!important; animation: top0Glow 3s ease infinite!important; box-shadow: 0 0 30px #a855f7!important; }
+@keyframes top0Glow { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
+.profile-info { padding: 60px 20px 20px; }
+.stats { display: grid; grid-template-columns: repeat(3,1fr); gap: 10px; margin: 20px 0; }
+.stat-box { background: #141428; padding: 15px; border-radius: 10px; text-align: center; border: 1px solid #ff00ff; }
+.stat-box h3 { color: #00ffff; font-size: 20px; }
+.stat-box p { color: #aaa; font-size: 12px; }
+.menu { background: #141428; margin: 10px 20px; border-radius: 10px; }
+.menu-item { padding: 15px 20px; border-bottom: 1px solid #1a1a2e; display: flex; justify-content: space-between; align-items: center; cursor: pointer; }
+.menu-item:hover { background: #1a1a2e; }
+.menu-item:last-child { border-bottom: none; }
+.btn { width: calc(100% - 40px); margin: 20px; padding: 14px; background: linear-gradient(90deg, #ff00ff, #9d00ff); border: none; border-radius: 8px; color: white; font-size: 16px; font-weight: bold; cursor: pointer; }
+.top0-name { background: linear-gradient(45deg, #FFD700, #FFA500); -webkit-background-clip: text; -webkit-text-fill-color: transparent; text-shadow: 0 0 20px #FFD700!important; }
+</style>
 </head>
 <body>
-  <div class="header"><h1>السبع الحلبي</h1><span onclick="logout()" style="cursor:pointer">تسجيل خروج</span></div>
-  <div class="cover" id="profileCover"><div class="avatar"><img id="avatarImg" src="https://i.pravatar.cc/150"></div></div>
-  <div class="profile-info">
-    <h2 id="profileName" class="profile-name">...</h2>
-    <p>ID: <span id="profileId">0</span> | <span id="profileLevel">LV1</span> | VIP <span id="profileVip">0</span></p>
-    <div class="stats">
-      <div class="stat-box"><h3 id="followers">0</h3><p>متابعين</p></div>
-      <div class="stat-box"><h3 id="following">0</h3><p>يتابع</p></div>
-      <div class="stat-box"><h3 id="friends">0</h3><p>أصدقاء</p></div>
-    </div>
-  </div>
-  <div class="menu">
-    <div class="menu-item"><span>💰 المحفظة</span><span>›</span></div>
-    <div class="menu-item"><span>✏️ تعديل البروفايل</span><span>›</span></div>
-    <div class="menu-item"><span>🎁 ملحقاتي</span><span>›</span></div>
-    <div class="menu-item" onclick="goToRoom()"><span>🎤 غرفتي</span><span>›</span></div>
-    <div class="menu-item"><span>📝 منشوراتي</span><span>›</span></div>
-  </div>
-  <button class="btn" id="roomBtn" onclick="createRoom()">انشاء غرفة</button>
-  <script>
-    const token = localStorage.getItem('token'); if (!token) location.href = '/';
-    async function loadProfile() {
-      const res = await fetch('/api/me', { headers: { 'Authorization': 'Bearer ' + token } });
-      const user = await res.json(); if (user.error) return location.href = '/';
-      document.getElementById('profileName').textContent = user.username + ' ' + (user.lastName || '');
-      document.getElementById('profileId').textContent = user._id.slice(-6);
-      document.getElementById('profileLevel').textContent = user.level;
-      document.getElementById('profileVip').textContent = user.vip;
-      document.getElementById('followers').textContent = user.followers;
-      document.getElementById('following').textContent = user.following;
-      document.getElementById('friends').textContent = user.friends;
-      if (user.level === "10000 TOP") { document.getElementById('profileCover').classList.add('top0-frame'); document.getElementById('profileName').classList.add('top0-name'); }
-      if (user.roomId) document.getElementById('roomBtn').textContent = 'دخول غرفتي';
-    }
-    async function createRoom() {
-      const res = await fetch('/api/create-room', { method: 'POST', headers: { 'Authorization': 'Bearer ' + token } });
-      const data = await res.json(); if (data.success) location.href = '/room?roomId=' + data.roomId; else alert(data.error);
-    }
-    function goToRoom() { location.href = '/room?roomId=10000'; }
-    function logout() { localStorage.removeItem('token'); location.href = '/'; }
-    loadProfile();
-  </script>
+<div class="header"><h1>السبع الحلبي</h1><span onclick="logout()" style="cursor:pointer">تسجيل خروج</span></div>
+<div class="cover" id="profileCover"><div class="avatar"><img id="avatarImg" src="https://i.pravatar.cc/150"></div></div>
+<div class="profile-info">
+<h2 id="profileName" class="profile-name">...</h2>
+<p>ID: <span id="profileId">0</span> | <span id="profileLevel">LV1</span> | VIP <span id="profileVip">0</span></p>
+<div class="stats">
+<div class="stat-box"><h3 id="followers">0</h3><p>متابعين</p></div>
+<div class="stat-box"><h3 id="following">0</h3><p>يتابع</p></div>
+<div class="stat-box"><h3 id="friends">0</h3><p>أصدقاء</p></div>
+</div>
+</div>
+<div class="menu">
+<div class="menu-item"><span>💰 المحفظة</span><span>›</span></div>
+<div class="menu-item"><span>✏️ تعديل البروفايل</span><span>›</span></div>
+<div class="menu-item"><span>🎁 ملحقاتي</span><span>›</span></div>
+<div class="menu-item" onclick="goToRoom()"><span>🎤 غرفتي</span><span>›</span></div>
+<div class="menu-item"><span>📝 منشوراتي</span><span>›</span></div>
+</div>
+<button class="btn" id="roomBtn" onclick="createRoom()">انشاء غرفة</button>
+<script>
+const token = localStorage.getItem('token');
+if (!token) location.href = '/';
+async function loadProfile() {
+const res = await fetch('/api/me', { headers: { 'Authorization': 'Bearer ' + token } });
+const user = await res.json();
+if (user.error) return location.href = '/';
+document.getElementById('profileName').textContent = user.username + ' ' + (user.lastName || '');
+document.getElementById('profileId').textContent = user._id.slice(-6);
+document.getElementById('profileLevel').textContent = user.level;
+document.getElementById('profileVip').textContent = user.vip;
+document.getElementById('followers').textContent = user.followers;
+document.getElementById('following').textContent = user.following;
+document.getElementById('friends').textContent = user.friends;
+if (user.level === "10000 TOP") {
+document.getElementById('profileCover').classList.add('top0-frame');
+document.getElementById('profileName').classList.add('top0-name');
+}
+if (user.roomId) document.getElementById('roomBtn').textContent = 'دخول غرفتي';
+}
+async function createRoom() {
+const res = await fetch('/api/create-room', { method: 'POST', headers: { 'Authorization': 'Bearer ' + token } });
+const data = await res.json();
+if (data.success) location.href = '/room?roomId=' + data.roomId;
+else alert(data.error);
+}
+function goToRoom() {
+location.href = '/room?roomId=10000';
+}
+function logout() {
+localStorage.removeItem('token');
+location.href = '/';
+}
+loadProfile();
+</script>
 </body>
 </html>
