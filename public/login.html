@@ -1,151 +1,249 @@
 <!DOCTYPE html>
-<html dir="rtl" lang="ar">
+<html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>تسجيل الدخول</title>
+    <title>تسجيل الدخول - وكالة السبع</title>
     <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Tajawal', sans-serif; }
         body { 
-            font-family: 'Segoe UI', Tahoma; 
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            margin: 0; 
-            padding: 0;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
+            background: #0a0a0a; color: #fff; 
+            display: flex; justify-content: center; align-items: center; 
+            min-height: 100vh; background: radial-gradient(circle at center, #1a1a1a, #0a0a0a);
         }
-        .container {
-            background: #fff;
-            padding: 40px;
-            border-radius: 20px;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
-            width: 90%;
-            max-width: 400px;
+        
+        .login-box { 
+            background: #1a1a1a; padding: 30px; border-radius: 15px; 
+            border: 2px solid gold; box-shadow: 0 0 30px rgba(255,215,0,0.3);
+            width: 90%; max-width: 400px; text-align: center;
         }
-        h2 { 
-            text-align: center; 
-            color: #667eea;
-            margin-bottom: 30px;
+        
+        .logo {
+            font-size: 32px; color: gold; font-weight: bold; margin-bottom: 10px;
+            text-shadow: 0 0 20px gold; animation: pulseGold 2s infinite;
         }
-        input {
-            width: 100%;
-            padding: 15px;
-            margin: 10px 0;
-            border: 2px solid #ddd;
-            border-radius: 10px;
-            box-sizing: border-box;
-            font-size: 16px;
+        @keyframes pulseGold { 
+            0%,100%{text-shadow:0 0 10px gold} 
+            50%{text-shadow:0 0 25px gold, 0 0 35px gold} 
         }
-        button {
-            width: 100%;
-            padding: 15px;
-            margin: 10px 0;
-            border: none;
-            border-radius: 10px;
-            font-size: 16px;
-            font-weight: bold;
-            cursor: pointer;
-            transition: transform 0.2s;
+        
+        .subtitle { color: #999; margin-bottom: 30px; font-size: 14px; }
+        
+        .tabs {
+            display: flex; gap: 10px; margin-bottom: 25px;
         }
-        button:active { transform: scale(0.95); }
-        .login-btn {
-            background: linear-gradient(90deg, #4CAF50, #45a049);
-            color: white;
+        .tab {
+            flex: 1; padding: 12px; background: #0a0a0a; border: 1px solid #333;
+            border-radius: 8px; cursor: pointer; transition: all 0.3s;
         }
-        .register-btn {
-            background: linear-gradient(90deg, #ff00ff, #9d00ff);
-            color: white;
+        .tab.active {
+            background: linear-gradient(45deg, #b8860b, #ffd700);
+            color: #000; font-weight: bold; border-color: gold;
         }
-        .toggle {
-            text-align: center;
-            margin-top: 15px;
-            color: #666;
-            cursor: pointer;
+        
+        .form-group { margin: 15px 0; text-align: right; }
+        label { 
+            display: block; font-size: 13px; color: #999; 
+            margin-bottom: 5px; margin-right: 5px;
         }
+        input { 
+            width: 100%; padding: 14px; background: #0a0a0a; 
+            border: 1px solid #444; border-radius: 8px; color: #fff; 
+            box-sizing: border-box; font-size: 15px; transition: all 0.3s;
+        }
+        input:focus { 
+            border-color: gold; outline: none; 
+            box-shadow: 0 0 10px rgba(255,215,0,0.2);
+        }
+        
+        .btn { 
+            width: 100%; padding: 14px; 
+            background: linear-gradient(45deg, #b8860b, #ffd700); 
+            color: #000; border: none; border-radius: 10px; 
+            font-size: 16px; font-weight: bold; cursor: pointer; 
+            margin-top: 20px; transition: all 0.3s;
+        }
+        .btn:hover { transform: scale(1.02); box-shadow: 0 0 20px rgba(255,215,0,0.4); }
+        .btn:active { transform: scale(0.98); }
+        .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+        
         .error {
-            background: #ffebee;
-            color: #c62828;
-            padding: 10px;
-            border-radius: 8px;
-            margin: 10px 0;
-            display: none;
+            background: #ff3333; color: #fff; padding: 12px; 
+            border-radius: 8px; margin-top: 15px; display: none; 
+            font-size: 14px; font-weight: bold;
+        }
+        .success {
+            background: #00ff88; color: #000; padding: 12px; 
+            border-radius: 8px; margin-top: 15px; display: none; 
+            font-size: 14px; font-weight: bold;
+        }
+        
+        .owner-hint {
+            font-size: 11px; color: #666; margin-top: 20px; 
+            padding: 10px; background: #0a0a0a; border-radius: 5px;
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <h2 id="title">تسجيل الدخول</h2>
-        <div class="error" id="error"></div>
-        <input type="text" id="username" placeholder="اسم المستخدم">
-        <input type="password" id="password" placeholder="كلمة المرور">
-        <button class="login-btn" id="submitBtn" onclick="submitForm()">دخول</button>
-        <div class="toggle" onclick="toggleMode()">
-            <span id="toggleText">ما عندك حساب؟ سجل الآن</span>
+    <div class="login-box">
+        <div class="logo">👑 وكالة السبع</div>
+        <div class="subtitle">السوري</div>
+        
+        <div class="tabs">
+            <div class="tab active" onclick="switchTab('login')">تسجيل دخول</div>
+            <div class="tab" onclick="switchTab('register')">حساب جديد</div>
+        </div>
+        
+        <!-- تسجيل دخول -->
+        <div id="loginForm">
+            <div class="form-group">
+                <label>الايميل</label>
+                <input type="email" id="loginEmail" placeholder="example@gmail.com">
+            </div>
+            <div class="form-group">
+                <label>كلمة السر</label>
+                <input type="password" id="loginPassword" placeholder="••••••••">
+            </div>
+            <button class="btn" onclick="login()">دخول</button>
+        </div>
+        
+        <!-- تسجيل جديد -->
+        <div id="registerForm" style="display:none;">
+            <div class="form-group">
+                <label>اسم المستخدم</label>
+                <input type="text" id="regUsername" placeholder="السبع الحلبي">
+            </div>
+            <div class="form-group">
+                <label>الايميل</label>
+                <input type="email" id="regEmail" placeholder="example@gmail.com">
+            </div>
+            <div class="form-group">
+                <label>كلمة السر</label>
+                <input type="password" id="regPassword" placeholder="••••••••">
+            </div>
+            <button class="btn" onclick="register()">انشاء حساب</button>
+        </div>
+        
+        <div class="error" id="errorMsg"></div>
+        <div class="success" id="successMsg"></div>
+        
+        <div class="owner-hint">
+            👑 حساب المالك: استخدم الايميل اللي حطيته بـ OWNER_EMAIL
         </div>
     </div>
 
 <script>
-let isLogin = true;
-
-function toggleMode() {
-    isLogin = !isLogin;
-    document.getElementById('title').innerText = isLogin ? 'تسجيل الدخول' : 'انشاء حساب';
-    document.getElementById('submitBtn').innerText = isLogin ? 'دخول' : 'تسجيل';
-    document.getElementById('toggleText').innerText = isLogin ? 'ما عندك حساب؟ سجل الآن' : 'عندك حساب؟ سجل دخول';
-}
-
-async function submitForm() {
-    const username = document.getElementById('username').value.trim();
-    const password = document.getElementById('password').value.trim();
-    const errorDiv = document.getElementById('error');
+    let currentTab = 'login';
     
-    if (!username || !password) {
-        errorDiv.innerText = 'ادخل الاسم وكلمة المرور';
-        errorDiv.style.display = 'block';
-        return;
-    }
-    
-    const endpoint = isLogin ? '/api/login' : '/api/register';
-    try {
-        const res = await fetch(endpoint, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ username, password })
-        });
-        const data = await res.json();
+    function switchTab(tab) {
+        currentTab = tab;
+        document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+        event.target.classList.add('active');
         
-        if (data.success) {
-            localStorage.setItem('token', data.token);
-            window.location.href = '/me';
+        if(tab === 'login') {
+            document.getElementById('loginForm').style.display = 'block';
+            document.getElementById('registerForm').style.display = 'none';
         } else {
-            errorDiv.innerText = data.error || 'صار خطأ';
-            errorDiv.style.display = 'block';
+            document.getElementById('loginForm').style.display = 'none';
+            document.getElementById('registerForm').style.display = 'block';
         }
-    } catch (err) {
-        errorDiv.innerText = 'خطأ في الاتصال';
-        errorDiv.style.display = 'block';
+        hideMessages();
     }
-}
-
-// لو عندك توكن صالح روح للملف مباشرة
-window.addEventListener('load', async () => {
-    const token = localStorage.getItem('token');
-    if (token) {
+    
+    async function login() {
+        const email = document.getElementById('loginEmail').value;
+        const password = document.getElementById('loginPassword').value;
+        
+        if(!email || !password) return showError('عبي كل الحقول');
+        
         try {
-            const res = await fetch('/api/profile', { 
-                headers: { 'Authorization': 'Bearer ' + token } 
+            const res = await fetch('/api/login', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email, password })
             });
-            if (res.ok) {
-                window.location.href = '/me';
-            } else {
-                localStorage.removeItem('token');
-            }
-        } catch {
-            localStorage.removeItem('token');
+            
+            const data = await res.json();
+            
+            if(!res.ok) throw new Error(data.message);
+            
+            localStorage.setItem('token', data.token);
+            showSuccess('تم تسجيل الدخول بنجاح');
+            
+            setTimeout(() => {
+                window.location.href = '/room.html';
+            }, 1000);
+            
+        } catch (error) {
+            showError(error.message || 'خطأ بتسجيل الدخول');
         }
     }
-});
+    
+    async function register() {
+        const username = document.getElementById('regUsername').value;
+        const email = document.getElementById('regEmail').value;
+        const password = document.getElementById('regPassword').value;
+        
+        if(!username || !email || !password) return showError('عبي كل الحقول');
+        if(username.length < 3) return showError('اسم المستخدم قصير');
+        if(password.length < 6) return showError('كلمة السر قصيرة');
+        
+        try {
+            const res = await fetch('/api/register', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ username, email, password })
+            });
+            
+            const data = await res.json();
+            
+            if(!res.ok) throw new Error(data.message);
+            
+            localStorage.setItem('token', data.token);
+            showSuccess('تم انشاء الحساب بنجاح');
+            
+            setTimeout(() => {
+                window.location.href = '/room.html';
+            }, 1000);
+            
+        } catch (error) {
+            showError(error.message || 'خطأ بانشاء الحساب');
+        }
+    }
+    
+    function showError(msg) {
+        const errorDiv = document.getElementById('errorMsg');
+        const successDiv = document.getElementById('successMsg');
+        errorDiv.textContent = msg;
+        errorDiv.style.display = 'block';
+        successDiv.style.display = 'none';
+    }
+    
+    function showSuccess(msg) {
+        const errorDiv = document.getElementById('errorMsg');
+        const successDiv = document.getElementById('successMsg');
+        successDiv.textContent = msg;
+        successDiv.style.display = 'block';
+        errorDiv.style.display = 'none';
+    }
+    
+    function hideMessages() {
+        document.getElementById('errorMsg').style.display = 'none';
+        document.getElementById('successMsg').style.display = 'none';
+    }
+    
+    // اذا مسجل دخول من قبل
+    if(localStorage.getItem('token')) {
+        window.location.href = '/room.html';
+    }
+    
+    // Enter للتسجيل
+    document.addEventListener('keypress', (e) => {
+        if(e.key === 'Enter') {
+            if(currentTab === 'login') login();
+            else register();
+        }
+    });
 </script>
 </body>
 </html>
