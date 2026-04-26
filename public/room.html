@@ -1,179 +1,275 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>وكالة السبع السوري</title>
-    <script src="/socket.io/socket.io.js"></script>
-    <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Tajawal', sans-serif; }
-        body { background: #0a0a0a; color: #fff; overflow: hidden; }
-       .owner-entry { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); z-index: 9999; display: none; justify-content: center; align-items: center; flex-direction: column; }
-       .owner-entry video { width: 80%; max-width: 600px; border: 3px solid gold; border-radius: 10px; }
-       .owner-entry-text { font-size: 28px; color: gold; margin-top: 20px; animation: pulse 1s infinite; text-shadow: 0 0 20px gold; }
-        @keyframes pulse { 0%,100%{transform:scale(1)} 50%{transform:scale(1.1)} }
-       .top-bar { background: linear-gradient(90deg, #1a1a1a, #2a2a2a); padding: 10px; display: flex; justify-content: space-between; border-bottom: 2px solid gold; align-items: center; }
-       .room-name { font-size: 18px; color: gold; font-weight: bold; }
-       .room-id { background: #333; padding: 2px 8px; border-radius: 5px; font-size: 12px; }
-       .users-count { background: #333; padding: 2px 8px; border-radius: 5px; font-size: 12px; }
-       .king-chair { text-align: center; padding: 15px; background: linear-gradient(180deg, #1a1a1a, #0a0a0a); height: 160px; }
-       .king-img { width: 80px; height: 80px; border-radius: 50%; border: 3px solid gold; box-shadow: 0 0 20px gold; object-fit: cover; }
-       .king-name { color: gold; font-size: 20px; margin-top: 10px; text-shadow: 0 0 10px gold; }
-       .mics-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; padding: 10px; max-width: 400px; margin: 0 auto; }
-       .mic { background: #1a1a1a; border: 2px solid #444; border-radius: 10px; padding: 8px; text-align: center; position: relative; height: 85px; cursor: pointer; }
-       .mic.gold { border-color: gold; box-shadow: 0 0 10px rgba(255,215,0,0.3); }
-       .mic.occupied { border-color: #00ff88; }
-       .mic-number { position: absolute; top: 2px; right: 2px; background: gold; color: #000; width: 18px; height: 18px; border-radius: 50%; font-size: 10px; font-weight: bold; display: flex; align-items: center; justify-content: center; }
-       .mic-avatar { width: 40px; height: 40px; border-radius: 50%; margin: 5px auto; background: #333; border: 2px solid #666; object-fit: cover; }
-       .mic-name { font-size: 10px; margin-top: 3px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-       .mic-lock { position: absolute; top: 2px; left: 2px; font-size: 12px; }
-       .mic-reaction { position: absolute; top: -15px; left: 50%; transform: translateX(-50%); font-size: 24px; animation: floatUp 2s forwards; }
-        @keyframes floatUp { 0%{opacity:1;top:-15px} 100%{opacity:0;top:-50px} }
-       .pulse-name { animation: pulseGold 2s infinite; }
-        @keyframes pulseGold { 0%,100%{text-shadow:0 0 5px gold} 50%{text-shadow:0 0 20px gold, 0 0 30px gold} }
-       .owner-panel { display: none; position: fixed; bottom: 70px; right: 10px; background: #1a1a1a; border: 2px solid gold; border-radius: 10px; padding: 10px; z-index: 1000; width: 200px; }
-       .owner-btn { display: block; width: 100%; margin: 5px 0; padding: 8px; background: linear-gradient(45deg, #b8860b, #ffd700); border: none; border-radius: 5px; color: #000; font-weight: bold; cursor: pointer; }
-       .bottom-bar { position: fixed; bottom: 0; width: 100%; background: #1a1a1a; display: flex; justify-content: space-around; padding: 10px; border-top: 2px solid gold; }
-       .bottom-btn { background: #333; border: none; color: #fff; padding: 8px 12px; border-radius: 20px; cursor: pointer; font-size: 12px; }
-       .chat-box { position: fixed; bottom: 60px; left: 0; width: 100%; height: 250px; background: rgba(26,26,26,0.98); display: none; flex-direction: column; border-top: 2px solid gold; }
-       .chat-messages { flex: 1; overflow-y: auto; padding: 10px; }
-       .chat-msg { margin: 5px 0; padding: 5px; background: #222; border-radius: 5px; }
-       .chat-msg b { color: gold; }
-       .chat-input-area { display: flex; padding: 10px; gap: 5px; }
-       .chat-input { flex: 1; padding: 8px; border-radius: 20px; border: 1px solid #444; background: #333; color: #fff; }
-       .error-msg { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: #ff3333; color: #fff; padding: 20px; border-radius: 10px; display: none; z-index: 10000; text-align: center; }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>وكالتي - السبع الحلبي</title>
+<script src="/socket.io/socket.io.js"></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;font-family:'Cairo',Tahoma}
+body{overflow:hidden;background:#000}
+
+#agency{width:100vw;height:100vh;background:url('/uploads/bg.jpg') center/cover;position:relative}
+
+/* الدخولية الذهبية 13 ثانية */
+.golden-entry{position:fixed;inset:0;background:radial-gradient(circle,#ffd700,transparent);z-index:9999;display:flex;align-items:center;justify-content:center;animation:goldenPulse 13s forwards}
+.golden-entry.hide{display:none}
+@keyframes goldenPulse{
+  0%{opacity:0;transform:scale(0.5)}
+  5%{opacity:1;transform:scale(1)}
+  90%{opacity:1}
+  100%{opacity:0;transform:scale(1.2)}
+}
+.golden-text{font-size:80px;font-weight:900;color:#000;text-shadow:0 0 40px #ffd700,0 0 80px #ff6b00;animation:textGlow 1s infinite}
+@keyframes textGlow{0%,100%{transform:scale(1)}50%{transform:scale(1.1)}}
+
+.top-bar{position:absolute;top:0;width:100%;padding:20px;background:linear-gradient(180deg,rgba(0,0,0,0.95),transparent);display:flex;justify-content:space-between;align-items:center;z-index:100}
+
+.vip-card{display:flex;gap:15px;align-items:center}
+.vip-avatar{width:70px;height:70px;border-radius:50%;border:4px solid gold;animation:avatarGlow 2s infinite;object-fit:cover}
+@keyframes avatarGlow{0%,100%{box-shadow:0 0 15px gold}50%{box-shadow:0 0 40px gold,0 0 60px #ff6b00}}
+
+.vip-info{display:flex;flex-direction:column;gap:5px}
+.vip-id{font-size:28px;font-weight:900;animation:rainbowPulse 1.5s infinite;background:linear-gradient(90deg,#ff0000,#ff7f00,#ffff00,#00ff00,#0000ff,#4b0082,#9400d3);background-size:200% auto;-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.vip-name{font-size:32px;font-weight:900;animation:namePulse 2s infinite;color:gold;text-shadow:0 0 25px gold}
+@keyframes rainbowPulse{0%{background-position:0% 50%}100%{background-position:200% 50%}}
+@keyframes namePulse{0%,100%{transform:scale(1);text-shadow:0 0 25px gold}50%{transform:scale(1.12);text-shadow:0 0 50px gold,0 0 80px #ff6b00}}
+
+.bio-wrap{width:350px;overflow:hidden;background:rgba(0,0,0,0.7);padding:8px 15px;border-radius:15px;border:2px solid gold}
+.bio-text{white-space:nowrap;animation:marquee 15s linear infinite;color:#fff;font-size:16px}
+@keyframes marquee{0%{transform:translateX(100%)}100%{transform:translateX(-100%)}}
+
+.settings-btn{background:linear-gradient(45deg,gold,#ff6b00);border:none;padding:15px 30px;border-radius:30px;font-weight:900;font-size:18px;color:#000;cursor:pointer;box-shadow:0 0 20px gold}
+
+.settings-panel{position:absolute;top:100px;left:30px;background:rgba(0,0,0,0.97);border:4px solid gold;border-radius:20px;padding:25px;width:350px;display:none;z-index:200;box-shadow:0 0 40px gold}
+.settings-panel.show{display:block}
+.settings-panel h3{color:gold;margin-bottom:20px;text-align:center;font-size:24px;text-shadow:0 0 15px gold}
+.settings-panel button{display:block;width:100%;margin:10px 0;padding:15px;background:linear-gradient(45deg,#222,#444);border:3px solid gold;color:#fff;border-radius:12px;font-weight:bold;cursor:pointer;font-size:16px;transition:0.3s}
+.settings-panel button:hover{background:gold;color:#000;transform:scale(1.05)}
+
+.seats-area{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);display:grid;gap:25px}
+.seat{width:100px;height:100px;border-radius:50%;background:rgba(255,215,0,0.15);border:4px solid gold;display:flex;align-items:center;justify-content:center;position:relative;backdrop-filter:blur(15px);transition:0.3s}
+.seat.taken{background:linear-gradient(45deg,gold,#ff6b00);box-shadow:0 0 40px gold}
+.seat.mic{font-size:45px;filter:drop-shadow(0 0 10px gold)}
+.seat-name{position:absolute;bottom:-25px;font-size:12px;color:gold;font-weight:bold}
+
+.big-reaction{position:absolute;top:-140px;left:50%;transform:translateX(-50%);font-size:120px;animation:reactionPop 3s forwards;z-index:50;filter:drop-shadow(0 0 40px gold)}
+@keyframes reactionPop{
+  0%{transform:translateX(-50%) scale(0) rotate(0deg);opacity:0}
+  15%{transform:translateX(-50%) scale(1.5) rotate(15deg);opacity:1}
+  85%{transform:translateX(-50%) scale(1.3) rotate(-15deg);opacity:1}
+  100%{transform:translateX(-50%) scale(1) translateY(-100px) rotate(0deg);opacity:0}
+}
+
+.reactions-bar{position:fixed;bottom:120px;left:50%;transform:translateX(-50%);display:flex;gap:25px;background:rgba(0,0,0,0.95);padding:25px 40px;border-radius:50px;border:4px solid gold;z-index:100;box-shadow:0 0 30px gold}
+.react-btn{font-size:60px;background:none;border:none;cursor:pointer;transition:0.2s;filter:drop-shadow(0 0 15px gold)}
+.react-btn:active{transform:scale(1.6) rotate(20deg)}
+
+.agency-chat{position:fixed;bottom:0;right:0;width:400px;height:500px;background:rgba(0,0,0,0.97);border:4px solid gold;border-top-left-radius:25px;box-shadow:0 0 30px gold}
+.chat-header{background:linear-gradient(45deg,gold,#ff6b00);color:#000;padding:15px;text-align:center;font-weight:900;font-size:18px}
+.chat-msgs{height:400px;overflow-y:auto;padding:20px}
+.chat-msg{margin:10px 0;padding:12px;background:rgba(255,255,255,0.1);border-radius:12px;border-right:4px solid gold}
+.chat-msg .name{color:gold;font-weight:bold;font-size:14px}
+.chat-input{display:flex;border-top:3px solid gold}
+.chat-input input{flex:1;padding:15px;background:#111;border:none;color:#fff;font-size:16px}
+.chat-input button{background:gold;border:none;padding:15px 25px;font-weight:900;cursor:pointer;font-size:16px}
+
+.exit-btn{position:fixed;top:20px;left:20px;background:#ef4444;border:none;padding:12px 25px;border-radius:25px;color:#fff;font-weight:bold;cursor:pointer;z-index:150}
+</style>
 </head>
 <body>
-    <div class="owner-entry" id="ownerEntry">
-        <video id="entryVideo" autoplay muted></video>
-        <div class="owner-entry-text" id="entryText">👑 دخول حساب الادارة الرسمي 👑</div>
+
+<!-- الدخولية الذهبية 13 ثانية -->
+<div class="golden-entry hide" id="goldenEntry">
+  <div class="golden-text">👑 السبع الحلبي وصل 👑</div>
+</div>
+
+<div id="agency">
+  <button class="exit-btn" onclick="location.href='/me'">🚪 خروج</button>
+
+  <div class="top-bar">
+    <div class="vip-card">
+      <img class="vip-avatar" id="userAvatar" src="/uploads/default.png">
+      <div class="vip-info">
+        <div class="vip-id">ID: <span id="vipId">000</span></div>
+        <div class="vip-name" id="vipName">السبع الحلبي</div>
+        <div class="bio-wrap"><div class="bio-text" id="vipBio">مرحبا بالكل في وكالتي الخاصة...</div></div>
+      </div>
     </div>
-    <div class="error-msg" id="errorMsg"></div>
-    <div class="top-bar">
-        <div class="room-name">وكالة السبع السوري</div>
-        <div class="room-id" id="roomId">ID: main</div>
-        <div class="users-count">👥 <span id="usersCount">0</span></div>
+    <button class="settings-btn" onclick="toggleSettings()">⚙️ اعدادات الوكالة</button>
+  </div>
+
+  <div class="settings-panel" id="settingsPanel">
+    <h3>👑 تحكم الوكالة</h3>
+    <button onclick="changeSeats()">🎯 تعديل المقاعد: <span id="seatsCount">4</span>→8→12→16→20</button>
+    <button onclick="toggleDoor()">🚪 <span id="doorText">فتح باب الوكالة</span></button>
+    <button onclick="toggleAgency()">⚡ <span id="agencyText">تشغيل الوكالة</span></button>
+    <button onclick="toggleMic()">🎤 <span id="micText">السماح بالصعود للمايك</span></button>
+    <button onclick="manageMembers()">👥 استقبال/طرد اعضاء</button>
+    <button onclick="makeAdmin()">⭐ اعطاء ادمن</button>
+    <button onclick="changeBg()">🖼️ تغيير الخلفية</button>
+    <button onclick="changeDecor()">🎨 تغيير الديكور الداخلي</button>
+    <button onclick="changeAvatar()">📸 تغيير صورة الحساب</button>
+  </div>
+
+  <div class="seats-area" id="seatsArea"></div>
+
+  <div class="reactions-bar">
+    <button class="react-btn" onclick="sendReact('😍')">😍</button>
+    <button class="react-btn" onclick="sendReact('❤️')">❤️</button>
+    <button class="react-btn" onclick="sendReact('🌹')">🌹</button>
+    <button class="react-btn" onclick="sendReact('😘')">😘</button>
+    <button class="react-btn" onclick="sendReact('😂')">😂</button>
+    <button class="react-btn" onclick="sendReact('🔥')">🔥</button>
+    <button class="react-btn" onclick="sendReact('💨')">💨</button>
+    <button class="react-btn" onclick="sendReact('😭')">😭</button>
+    <button class="react-btn" onclick="sendReact('👏')">👏</button>
+  </div>
+
+  <div class="agency-chat">
+    <div class="chat-header">💬 شات الوكالة</div>
+    <div class="chat-msgs" id="chatMsgs"></div>
+    <div class="chat-input">
+      <input id="msgInput" placeholder="اكتب رسالة..." onkeypress="if(event.key==='Enter')sendMsg()">
+      <button onclick="sendMsg()">ارسال</button>
     </div>
-    <div class="king-chair">
-        <img src="" class="king-img" id="kingImg">
-        <div class="king-name pulse-name" id="kingName">السبع الحلبي</div>
-    </div>
-    <div class="mics-grid" id="micsGrid"></div>
-    <div class="owner-panel" id="ownerPanel">
-        <button class="owner-btn" onclick="banUser()">🚫 باند حساب</button>
-        <button class="owner-btn" onclick="showReports()">📊 البلاغات</button>
-    </div>
-    <div class="chat-box" id="chatBox">
-        <div class="chat-messages" id="chatMessages"></div>
-        <div class="chat-input-area">
-            <input type="text" class="chat-input" id="chatInput" placeholder="اكتب رسالة...">
-            <button class="bottom-btn" onclick="sendMessage()">ارسال</button>
-        </div>
-    </div>
-    <div class="bottom-bar">
-        <button class="bottom-btn" onclick="toggleChat()">💬 شات</button>
-        <button class="bottom-btn" onclick="showEmojis()">😂 ايموجي</button>
-        <button class="bottom-btn" id="ownerBtn" onclick="toggleOwnerPanel()">👑 المالك</button>
-        <button class="bottom-btn" onclick="window.location.href='/me'">👤 ملفي</button>
-    </div>
+  </div>
+</div>
 
 <script>
-    const socket = io();
-    const token = localStorage.getItem('token');
-    const roomId = new URLSearchParams(window.location.search).get('room') || 'main';
-    let currentUser = null;
-    let isOwner = false;
-    let myMicIndex = -1;
+const socket = io();
+const userId = localStorage.getItem('userId');
+const token = localStorage.getItem('token');
+const urlParams = new URLSearchParams(window.location.search);
+const ownerId = urlParams.get('owner') || userId;
+const roomId = `room_${ownerId}`;
+let roomData = {};
+let isOwner = userId === ownerId;
 
-    if (!token) window.location.href = '/login.html';
-    document.getElementById('roomId').textContent = 'ID: ' + roomId;
+if(!token) location.href = '/login';
 
-    const micsGrid = document.getElementById('micsGrid');
-    for(let i=0; i<20; i++){
-        micsGrid.innerHTML += `<div class="mic gold" onclick="clickMic(${i})" id="mic${i}"><div class="mic-number">${i+1}</div><div class="mic-lock">🔒</div><img class="mic-avatar" src=""><div class="mic-name">فارغ</div></div>`;
-    }
+// انشاء/دخول غرفة
+if(isOwner) {
+  socket.emit('create-room', {userId});
+} else {
+  socket.emit('join-room', {roomId, userId});
+}
 
-    socket.emit('joinRoom', { roomId, token });
+// الدخولية الذهبية 13 ثانية
+socket.on('golden-entry', ({duration}) => {
+  const el = document.getElementById('goldenEntry');
+  el.classList.remove('hide');
+  setTimeout(() => el.classList.add('hide'), duration);
+});
 
-    socket.on('ownerEntry', (data) => {
-        const entryDiv = document.getElementById('ownerEntry');
-        const video = document.getElementById('entryVideo');
-        const text = document.getElementById('entryText');
-        video.src = data.video;
-        text.textContent = data.text + ' - ' + data.username;
-        entryDiv.style.display = 'flex';
-        video.play();
-        setTimeout(() => entryDiv.style.display = 'none', data.duration * 1000);
-    });
+// استلام بيانات الغرفة
+socket.on('room-data', (data) => {
+  roomData = data;
+  updateUI();
+});
 
-    socket.on('roomUpdate', (room) => {
-        const myUser = room.users.find(u => u.socketId === socket.id);
-        if(myUser) {
-            currentUser = myUser;
-            isOwner = myUser.isOwner;
-            document.getElementById('ownerBtn').style.display = isOwner? 'block' : 'none';
-            if(isOwner) {
-                document.getElementById('kingImg').src = myUser.profilePic || '';
-                document.getElementById('kingName').textContent = myUser.username;
-            }
-        }
-        document.getElementById('usersCount').textContent = room.users.length;
-        room.mics.forEach((mic, i) => {
-            const micDiv = document.getElementById(`mic${i}`);
-            const micAvatar = micDiv.querySelector('.mic-avatar');
-            const micName = micDiv.querySelector('.mic-name');
-            if(mic) {
-                const user = room.users.find(u => u.socketId === mic);
-                if(user) {
-                    micDiv.classList.add('occupied');
-                    micAvatar.src = user.profilePic || '';
-                    micName.textContent = user.username;
-                    if(user.isOwner) micName.classList.add('pulse-name');
-                    else micName.classList.remove('pulse-name');
-                    if(mic === socket.id) myMicIndex = i;
-                }
-            } else {
-                micDiv.classList.remove('occupied');
-                micAvatar.src = '';
-                micName.textContent = 'فارغ';
-                micName.classList.remove('pulse-name');
-            }
-        });
-    });
+socket.on('room-update', (data) => {
+  roomData = data;
+  updateUI();
+});
 
-    socket.on('reaction', ({ micIndex, emoji }) => {
-        const micDiv = document.getElementById(`mic${micIndex}`);
-        const reaction = document.createElement('div');
-        reaction.className = 'mic-reaction';
-        reaction.textContent = emoji;
-        micDiv.appendChild(reaction);
-        setTimeout(() => reaction.remove(), 2000);
-    });
+function updateUI() {
+  document.getElementById('vipId').textContent = roomData.ownerData.vipId;
+  document.getElementById('vipName').textContent = roomData.ownerData.displayName;
+  document.getElementById('vipBio').textContent = roomData.ownerData.bio;
+  document.getElementById('userAvatar').src = roomData.ownerData.avatar;
+  document.getElementById('agency').style.backgroundImage = `url(${roomData.ownerData.agencyBg})`;
 
-    socket.on('newMessage', (data) => {
-        const div = document.createElement('div');
-        div.className = 'chat-msg';
-        div.innerHTML = `<b>${data.username}:</b> ${data.message}`;
-        document.getElementById('chatMessages').appendChild(div);
-        document.getElementById('chatMessages').scrollTop = document.getElementById('chatMessages').scrollHeight;
-    });
+  document.getElementById('seatsCount').textContent = roomData.seats;
+  document.getElementById('doorText').textContent = roomData.agencyOpen? 'قفل باب الوكالة' : 'فتح باب الوكالة';
+  document.getElementById('agencyText').textContent = roomData.agencyRunning? 'ايقاف الوكالة' : 'تشغيل الوكالة';
+  document.getElementById('micText').textContent = roomData.allowMic? 'منع الصعود للمايك' : 'السماح بالصعود للمايك';
 
-    socket.on('error', (data) => showError(data.message));
-    socket.on('kicked', () => { showError('تم طردك من الغرفة'); setTimeout(() => window.location.href = '/', 2000); });
+  renderSeats();
+  if(!isOwner) document.querySelector('.settings-btn').style.display = 'none';
+}
 
-    function showError(msg) {
-        const errorDiv = document.getElementById('errorMsg');
-        errorDiv.textContent = msg;
-        errorDiv.style.display = 'block';
-        setTimeout(() => errorDiv.style.display = 'none', 3000);
-    }
+function renderSeats() {
+  const area = document.getElementById('seatsArea');
+  const cols = roomData.seats <= 4? 2 : roomData.seats <= 8? 4 : roomData.seats <= 12? 4 : 5;
+  area.style.gridTemplateColumns = `repeat(${cols}, 1fr)`;
+  area.innerHTML = '';
 
-    function clickMic(index) { socket.emit('takeMic', { roomId, micIndex: index }); }
-    function toggleOwnerPanel() { if(!isOwner) return showError('هاي بس للمالك'); const panel = document.getElementById('ownerPanel'); panel.style.display = panel.style.display === 'block'?'none' : 'block'; }
-    function sendMessage() { const input = document.getElementById('chatInput'); if(input.value.trim()) { socket.emit('sendMessage', { roomId, message: input.value }); input.value = ''; } }
-    document.getElementById('chatInput').addEventListener('keypress', (e) => { if(e.key === 'Enter') sendMessage(); });
-    function toggleChat() { const chat = document.getElementById('chatBox'); chat.style.display = chat.style.display === 'flex'?'none' : 'flex'; }
-    function showEmojis() { if(myMicIndex === -1) return showError('لازم تكون على المايك'); const emojis = ['😂','😍','❤️','🎉','😢','🔥','👏']; const emoji = emojis[Math.floor(Math.random()*emojis.length)]; socket.emit('sendReaction', { roomId, micIndex: myMicIndex, emoji }); }
-    function banUser() { const userId = prompt('حط ID المستخدم للباند:'); const reason = prompt('سبب الباند:'); if(userId && reason) { fetch('/api/admin/ban', { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token }, body: JSON.stringify({ targetUserId: userId, reason }) }).then(res => res.json()).then(data => showError(data.message)); } }
-    function showReports() {
+  for(let i=0; i<roomData.seats; i++) {
+    const seat = document.createElement('div');
+    seat.className = 'seat';
+    seat.innerHTML = `<div class="mic">🎤</div>`;
+    seat.id = `seat-${i}`;
+    area.appendChild(seat);
+  }
+}
+
+// تفاعلات 3D كبيرة
+socket.on('show-reaction', ({userId, reaction}) => {
+  const seats = document.querySelectorAll('.seat');
+  const randomSeat = seats[Math.floor(Math.random() * seats.length)];
+  const div = document.createElement('div');
+  div.className = 'big-reaction';
+  div.textContent = reaction;
+  randomSeat.appendChild(div);
+  setTimeout(()=>div.remove(), 3000);
+});
+
+// شات
+socket.on('new-msg', ({vipId, name, msg}) => {
+  const div = document.createElement('div');
+  div.className = 'chat-msg';
+  div.innerHTML = `<div class="name">ID:${vipId} ${name}</div><div>${msg}</div>`;
+  document.getElementById('chatMsgs').appendChild(div);
+  document.getElementById('chatMsgs').scrollTop = 999999;
+});
+
+function toggleSettings(){document.getElementById('settingsPanel').classList.toggle('show')}
+
+function changeSeats(){
+  const next = {4:8,8:12,12:16,16:20,20:4}[roomData.seats];
+  socket.emit('update-room', {roomId, userId, updates:{seats:next}});
+}
+
+function toggleDoor(){
+  socket.emit('update-room', {roomId, userId, updates:{agencyOpen:!roomData.agencyOpen}});
+}
+
+function toggleAgency(){
+  socket.emit('update-room', {roomId, userId, updates:{agencyRunning:!roomData.agencyRunning}});
+}
+
+function toggleMic(){
+  socket.emit('update-room', {roomId, userId, updates:{allowMic:!roomData.allowMic}});
+}
+
+function sendReact(r){
+  socket.emit('big-reaction', {roomId, userId, reaction:r});
+}
+
+function sendMsg(){
+  const msg = document.getElementById('msgInput').value.trim();
+  if(msg) socket.emit('agency-msg', {roomId, userId, msg});
+  document.getElementById('msgInput').value = '';
+}
+
+function manageMembers(){
+  const members = Array.from(roomData.members.values());
+  const list = members.map(m => `${m.vipId} - ${m.displayName}`).join('\n');
+  const targetId = prompt('اكتب ID العضو للطرد:\n\n' + list);
+  if(targetId) socket.emit('kick-member', {roomId, ownerId: userId, targetId});
+}
+
+function makeAdmin(){
+  const members = Array.from(roomData.members.values());
+  const list = members.map(m => `${m.vipId} - ${m.displayName}`).join('\n');
+  const targetId = prompt('اكتب ID العضو لاعطائه ادمن:\n\n' + list);
+  if(targetId) socket.emit('make-admin', {roomId, ownerId: userId, targetId});
+}
+
+function changeBg(){alert('ارفع صورة الخلفية من الاعدادات')}
+function changeDecor(){alert('ارفع صورة الديكور')}
+function changeAvatar(){alert('ارفع صورة الحساب')}
+</script>
+</body>
+</html>
