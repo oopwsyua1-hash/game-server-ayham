@@ -13,7 +13,7 @@ const io = socketIo(server, { cors: { origin: "*", methods: ["GET", "POST"] } })
 
 const PORT = process.env.PORT || 3000;
 const MONGO_URI = process.env.MONGO_URI || 'mongodb+srv://Sabe7:sabe7@cluster0.mlmou5y.mongodb.net/sabe7_chat?retryWrites=true&w=majority&appName=Cluster0';
-const OWNER_EMAIL = 'lion777788@gmail.com';
+const OWNER_EMAIL = 'm12341234ahmad@gmail.com';
 const OWNER_DATA = {
     level: "10000 TOP",
     username: "السبع الحلبي",
@@ -295,6 +295,9 @@ io.on('connection', (socket) => {
         console.log('🔌 قطع اتصال:', socket.id);
     });
 });
+
+// هاد السطر عشان اي رابط غلط يرجع عالصفحة الرئيسية بدل Cannot GET
+app.get('*', (req, res) => res.redirect('/'));
 
 server.listen(PORT, () => {
     console.log(`🚀 السيرفر شغال على بورت ${PORT}`);
