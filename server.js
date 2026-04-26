@@ -1,405 +1,189 @@
 const express = require('express');
-const mongoose = require('mongoose');
-const bcrypt = require('bcryptjs');
-const jwt = require('jsonwebtoken');
-const cors = require('cors');
-const path = require('path');
 const http = require('http');
 const { Server } = require('socket.io');
-const multer = require('multer');
-const fs = require('fs');
-require('dotenv').config();
+const path = require('path');
 
 const app = express();
 const server = http.createServer(app);
-const io = new Server(server, { cors: { origin: "*" } });
-
-app.use(cors());
-app.use(express.json());
-
-app.use((req, res, next) => {
-  res.set('Cache-Control', 'no-store, no-cache, must-revalidate, private');
-  next();
-});
-
-app.use(express.static('public'));
-app.use('/uploads', express.static('uploads'));
-if (!fs.existsSync('uploads')) fs.mkdirSync('uploads');
-
-const JWT_SECRET = process.env.JWT_SECRET || 'al-sabe7-secret-2026';
-mongoose.connect(process.env.MONGO_URI || 'mongodb://localhost:27017/sabe7')
-.then(() => console.log('MongoDB متصل'))
-.catch(err => console.log('MongoDB Error:', err));
-
-const storage = multer.diskStorage({
-  destination: 'uploads/',
-  filename: (req, file, cb) => cb(null, Date.now() + '-' + file.originalname)
-});
-const upload = multer({ storage });
-
-const UserSchema = new mongoose.Schema({
-  username: String, lastName: String, email: { type: String, unique: true }, password: String,
-  country: String, birthDate: String, age: Number, gender: String, userId: { type: Number, unique: true },
-  avatar: { type: String, default: '' }, cover: { type: String, default: '' },
-  bio: { type: String, default: 'اهلا بالعالم' }, vip: { type: Number, default: 0 },
-  followers: { type: Number, default: 0 }, following: { type: Number, default: 0 },
-  friends: { type: Number, default: 0 }, wealthLevel: { type: Number, default: 0 },
-  popularity: { type: Number, default: 0 }, coins: { type: Number, default: 0 },
-  createdAt: { type: Date, default: Date.now }
-});
-
-const RoomSchema = new mongoose.Schema({
-  roomId: { type: Number, unique: true },
-  ownerId: Number,
-  name: String,
-  avatar: { type: String, default: '' },
-  cover: { type: String, default: '' },
-  agencyName: { type: String, default: 'وكالة السبع' },
-  showAgency: { type: Boolean, default: true },
-  background: { type: String, default: 'neon' },
-  password: { type: String, default: '' },
-  admins: [Number],
-  banned: [Number],
-  micLayout: { type: String, default: '4*3' },
-  mics: [{
-    seat: Number, userId: Number, username: String, avatar: String,
-    muted: { type: Boolean, default: false },
-    locked: { type: Boolean, default: false },
-    emoji: { type: String, default: '' }
-  }],
-  gifts: [{ from: Number, to: Number, type: String, createdAt: { type: Date, default: Date.now } }],
-  createdAt: { type: Date, default: Date.now }
-});
-
-const User = mongoose.model('User', UserSchema);
-const Room = mongoose.model('Room', RoomSchema);
-
-const auth = async (req, res, next) => {
-  try {
-    const token = req.headers.authorization?.split(' ')[1];
-    if (!token) return res.status(401).json({ error: 'غير مصرح' });
-    const decoded = jwt.verify(token, JWT_SECRET);
-    req.userId = decoded.id;
-    next();
-  } catch (err) {
-    res.status(401).json({ error: 'توكن غير صالح' });
-  }
-};
-
-// Routes
-app.post('/api/register', async (req, res) => {
-  try {
-    const { username, lastName, email, password, country, birthDate, age, gender } = req.body;
-    const existingUser = await User.findOne({ email });
-    if (existingUser) return res.status(400).json({ error: 'الايميل مستخدم من قبل' });
-    const hashedPassword = await bcrypt.hash(password, 10);
-    const userId = Math.floor(100000 + Math.random() * 900000);
-    const user = new User({ username, lastName, email, password: hashedPassword, country, birthDate, age, gender, userId });
-    await user.save();
-    const token = jwt.sign({ id: user._id }, JWT_SECRET);
-    res.json({ token, user: { username, lastName, userId } });
-  } catch (err) {
-    res.status(500).json({ error: 'صار خطأ بالسيرفر' });
-  }
-});
-
-app.post('/api/login', async (req, res) => {
-  try {
-    const { email, password } = req.body;
-    const user = await User.findOne({ email });
-    if (!user) return res.status(400).json({ error: 'الايميل او كلمة السر غلط' });
-    const validPass = await bcrypt.compare(password, user.password);
-    if (!validPass) return res.status(400).json({ error: 'الايميل او كلمة السر غلط' });
-    const token = jwt.sign({ id: user._id }, JWT_SECRET);
-    res.json({ token, user: { username: user.username, lastName: user.lastName, userId: user.userId } });
-  } catch (err) {
-    res.status(500).json({ error: 'صار خطأ بالسيرفر' });
-  }
-});
-
-app.get('/api/me', auth, async (req, res) => {
-  const user = await User.findById(req.userId).select('-password');
-  res.json(user);
-});
-
-app.post('/api/create-room', auth, async (req, res) => {
-  const user = await User.findById(req.userId);
-  const roomId = Math.floor(100000 + Math.random() * 900000);
-  const [cols, rows] = '4*3'.split('*').map(Number);
-  const totalMics = cols * rows;
-  const mics = Array.from({ length: totalMics }, (_, i) => ({
-    seat: i + 1, userId: null, username: null, avatar: null, muted: false, locked: false, emoji: ''
-  }));
-  const room = new Room({ roomId, ownerId: user.userId, name: `غرفة ${user.username}`, admins: [user.userId], mics });
-  await room.save();
-  res.json({ roomId });
-});
-
-app.post('/api/room-settings', auth, async (req, res) => {
-  const { roomId, micLayout, agencyName, showAgency, background, password } = req.body;
-  const room = await Room.findOne({ roomId: Number(roomId) });
-  const user = await User.findById(req.userId);
-  if (!room) return res.status(404).json({ error: 'الغرفة مو موجودة' });
-  if (room.ownerId!== user.userId) return res.status(403).json({ error: 'غير مصرح' });
-
-  if (micLayout) {
-    room.micLayout = micLayout;
-    const [cols, rows] = micLayout.split('*').map(Number);
-    const totalMics = cols * rows;
-    const newMics = [];
-    for (let i = 1; i <= totalMics; i++) {
-      const oldMic = room.mics.find(m => m.seat === i);
-      newMics.push(oldMic || { seat: i, userId: null, username: null, avatar: null, muted: false, locked: false, emoji: '' });
+const io = new Server(server, {
+    cors: {
+        origin: "*",
+        methods: ["GET", "POST"]
     }
-    room.mics = newMics;
-  }
-  if (agencyName!== undefined) room.agencyName = agencyName;
-  if (showAgency!== undefined) room.showAgency = showAgency;
-  if (background!== undefined) room.background = background;
-  if (password!== undefined) room.password = password;
-
-  await room.save();
-  io.to(`room-${roomId}`).emit('room-updated', room);
-  res.json({ success: true });
-});
-
-app.post('/api/room-rename', auth, async (req, res) => {
-  const { roomId, name } = req.body;
-  const room = await Room.findOne({ roomId: Number(roomId) });
-  const user = await User.findById(req.userId);
-  if (!room) return res.status(404).json({ error: 'الغرفة مو موجودة' });
-  if (room.ownerId!== user.userId) return res.status(403).json({ error: 'فقط صاحب الغرفة' });
-  room.name = name;
-  await room.save();
-  io.to(`room-${roomId}`).emit('room-updated', room);
-  res.json({ success: true });
-});
-
-app.get('/api/room/:id', async (req, res) => {
-  const room = await Room.findOne({ roomId: Number(req.params.id) });
-  if (!room) return res.status(404).json({ error: 'الغرفة مو موجودة' });
-  res.json(room);
-});
-
-app.get('/api/room-users/:id', async (req, res) => {
-  const sockets = await io.in(`room-${req.params.id}`).fetchSockets();
-  const userIds = sockets.map(s => s.userId).filter(Boolean);
-  const users = await User.find({ userId: { $in: userIds } }).select('userId username avatar vip wealthLevel');
-  res.json(users);
-});
-
-app.get('/', (req, res) => res.sendFile(path.join(__dirname, 'public', 'index.html')));
-app.get('/me', (req, res) => res.sendFile(path.join(__dirname, 'public', 'me.html')));
-app.get('/room/:id', (req, res) => res.sendFile(path.join(__dirname, 'public', 'room.html')));
-
-// Socket.IO
-const roomUsers = {}; // roomId -> Set of userIds
-const userSockets = {}; // userId -> socketId
-
-io.on('connection', (socket) => {
-
-  socket.on('join-room', async ({ roomId, userId, token, roomPassword }) => {
-    try {
-      jwt.verify(token, JWT_SECRET);
-      const room = await Room.findOne({ roomId: Number(roomId) });
-      if (!room) return;
-
-      if (room.password && room.password!== roomPassword && room.ownerId!== userId &&!room.admins.includes(userId)) {
-        socket.emit('room-error', 'كلمة السر غلط');
-        return;
-      }
-
-      socket.join(`room-${roomId}`);
-      socket.userId = userId;
-      socket.roomId = Number(roomId);
-      userSockets[userId] = socket.id;
-
-      if (!roomUsers[roomId]) roomUsers[roomId] = new Set();
-      roomUsers[roomId].add(userId);
-
-      const user = await User.findOne({ userId });
-      io.to(`room-${roomId}`).emit('user-joined', { userId, username: user.username });
-      io.to(`room-${roomId}`).emit('online-count', roomUsers[roomId].size);
-      io.to(`room-${roomId}`).emit('chat-message', { system: true, message: `${user.username} دخل الغرفة` });
-    } catch (e) {}
-  });
-
-  socket.on('sit-mic', async ({ roomId, seat, userId }) => {
-    const room = await Room.findOne({ roomId: Number(roomId) });
-    const user = await User.findOne({ userId });
-    if (!room ||!user) return;
-
-    // نزل من الكرسي القديم اول
-    const oldMic = room.mics.find(m => m.userId === userId);
-    if (oldMic) {
-      oldMic.userId = null; oldMic.username = null; oldMic.avatar = null; oldMic.emoji = ''; oldMic.muted = false;
-    }
-
-    const mic = room.mics.find(m => m.seat === seat);
-    if (mic &&!mic.userId &&!mic.locked) {
-      mic.userId = user.userId;
-      mic.username = user.username;
-      mic.avatar = user.avatar;
-      await room.save();
-      io.to(`room-${roomId}`).emit('mic-updated', room.mics);
-    }
-  });
-
-  socket.on('leave-mic', async ({ roomId, userId }) => {
-    const room = await Room.findOne({ roomId: Number(roomId) });
-    if (!room) return;
-    const mic = room.mics.find(m => m.userId === userId);
-    if (mic) {
-      mic.userId = null; mic.username = null; mic.avatar = null; mic.emoji = ''; mic.muted = false;
-      await room.save();
-      io.to(`room-${roomId}`).emit('mic-updated', room.mics);
-    }
-  });
-
-  socket.on('send-emoji', async ({ roomId, userId, emoji }) => {
-    const room = await Room.findOne({ roomId: Number(roomId) });
-    if (!room) return;
-    const mic = room.mics.find(m => m.userId === userId);
-    if (mic) {
-      mic.emoji = emoji;
-      await room.save();
-      io.to(`room-${roomId}`).emit('mic-updated', room.mics);
-      setTimeout(async () => {
-        const r = await Room.findOne({ roomId: Number(roomId) });
-        const m = r.mics.find(x => x.userId === userId);
-        if (m) {
-          m.emoji = '';
-          await r.save();
-          io.to(`room-${roomId}`).emit('mic-updated', r.mics);
-        }
-      }, 3000);
-    }
-  });
-
-  socket.on('kick-user', async ({ roomId, ownerId, targetUserId }) => {
-    const room = await Room.findOne({ roomId: Number(roomId) });
-    if (!room) return;
-    if (room.ownerId === ownerId || room.admins.includes(ownerId)) {
-      const mic = room.mics.find(m => m.userId === targetUserId);
-      if (mic) {
-        mic.userId = null; mic.username = null; mic.avatar = null; mic.emoji = ''; mic.muted = false;
-        await room.save();
-        io.to(`room-${roomId}`).emit('mic-updated', room.mics);
-        io.to(`room-${roomId}`).emit('user-kicked', { userId: targetUserId });
-      }
-    }
-  });
-
-  socket.on('lock-mic', async ({ roomId, seat, userId }) => {
-    const room = await Room.findOne({ roomId: Number(roomId) });
-    if (!room) return;
-    if (room.ownerId === userId || room.admins.includes(userId)) {
-      const mic = room.mics.find(m => m.seat === seat);
-      if (mic &&!mic.userId) {
-        mic.locked =!mic.locked;
-        await room.save();
-        io.to(`room-${roomId}`).emit('mic-updated', room.mics);
-      }
-    }
-  });
-
-  socket.on('mute-user', async ({ roomId, ownerId, targetUserId }) => {
-    const room = await Room.findOne({ roomId: Number(roomId) });
-    if (!room) return;
-    const mic = room.mics.find(m => m.userId === targetUserId);
-    if (mic && (room.ownerId === ownerId || room.admins.includes(ownerId) || targetUserId === ownerId)) {
-      mic.muted =!mic.muted;
-      await room.save();
-      io.to(`room-${roomId}`).emit('mic-updated', room.mics);
-    }
-  });
-
-  socket.on('mute-all', async ({ roomId, ownerId }) => {
-    const room = await Room.findOne({ roomId: Number(roomId) });
-    if (!room || room.ownerId!== ownerId) return;
-    room.mics.forEach(m => { if (m.userId && m.userId!== ownerId) m.muted = true; });
-    await room.save();
-    io.to(`room-${roomId}`).emit('mic-updated', room.mics);
-  });
-
-  socket.on('make-admin', async ({ roomId, ownerId, targetUserId }) => {
-    const room = await Room.findOne({ roomId: Number(roomId) });
-    if (!room) return;
-    if (room.ownerId === ownerId &&!room.admins.includes(targetUserId)) {
-      room.admins.push(targetUserId);
-      await room.save();
-      io.to(`room-${roomId}`).emit('admin-added', { userId: targetUserId });
-    }
-  });
-
-  socket.on('send-gift', async ({ roomId, fromUserId, toUserId, giftType }) => {
-    const room = await Room.findOne({ roomId: Number(roomId) });
-    if (!room) return;
-    room.gifts.push({ from: fromUserId, to: toUserId, type: giftType });
-    await room.save();
-    const fromUser = await User.findOne({ userId: fromUserId });
-    const toUser = await User.findOne({ userId: toUserId });
-    io.to(`room-${roomId}`).emit('gift-received', {
-      from: fromUser.username,
-      to: toUser?.username || 'الغرفة',
-      giftType,
-      animation: giftType
-    });
-  });
-
-  socket.on('chat-message', async ({ roomId, userId, username, message, toUserId }) => {
-    if (toUserId) {
-      // رسالة خاصة
-      const targetSocket = userSockets[toUserId];
-      if (targetSocket) {
-        io.to(targetSocket).emit('private-message', { fromUserId: userId, fromUsername: username, message });
-        socket.emit('private-message', { fromUserId: userId, fromUsername: username, message, self: true });
-      }
-    } else {
-      io.to(`room-${roomId}`).emit('chat-message', { userId, username, message });
-    }
-  });
-
-  // WebRTC Signaling
-  socket.on('webrtc-offer', ({ roomId, targetUserId, offer }) => {
-    const targetSocket = userSockets[targetUserId];
-    if (targetSocket) io.to(targetSocket).emit('webrtc-offer', { fromUserId: socket.userId, offer });
-  });
-
-  socket.on('webrtc-answer', ({ targetUserId, answer }) => {
-    const targetSocket = userSockets[targetUserId];
-    if (targetSocket) io.to(targetSocket).emit('webrtc-answer', { fromUserId: socket.userId, answer });
-  });
-
-  socket.on('webrtc-ice', ({ targetUserId, candidate }) => {
-    const targetSocket = userSockets[targetUserId];
-    if (targetSocket) io.to(targetSocket).emit('webrtc-ice', { fromUserId: socket.userId, candidate });
-  });
-
-  socket.on('disconnect', async () => {
-    if (socket.roomId && socket.userId) {
-      if (roomUsers[socket.roomId]) {
-        roomUsers[socket.roomId].delete(socket.userId);
-        io.to(`room-${socket.roomId}`).emit('online-count', roomUsers[socket.roomId].size);
-
-        const user = await User.findOne({ userId: socket.userId });
-        io.to(`room-${socket.roomId}`).emit('chat-message', { system: true, message: `${user.username} طلع من الغرفة` });
-
-        // نزل من المايك اذا كان طالع
-        const room = await Room.findOne({ roomId: socket.roomId });
-        if (room) {
-          const mic = room.mics.find(m => m.userId === socket.userId);
-          if (mic) {
-            mic.userId = null; mic.username = null; mic.avatar = null; mic.emoji = ''; mic.muted = false;
-            await room.save();
-            io.to(`room-${socket.roomId}`).emit('mic-updated', room.mics);
-          }
-        }
-      }
-      delete userSockets[socket.userId];
-    }
-  });
 });
 
 const PORT = process.env.PORT || 10000;
-server.listen(PORT, () => console.log(`السبع شغال على ${PORT}`));
+
+// ملفات ثابتة من مجلد public
+app.use(express.static(path.join(__dirname, 'public')));
+
+// تخزين الغرف بالذاكرة
+let rooms = {};
+
+// انشاء غرفة افتراضية 10000 اذا مو موجودة
+const DEFAULT_ROOM = '10000';
+if (!rooms[DEFAULT_ROOM]) {
+    rooms[DEFAULT_ROOM] = {
+        id: DEFAULT_ROOM,
+        name: 'غرفة ايهم الرئيسية',
+        ownerId: 'admin_ayham',
+        admins: ['admin_ayham'],
+        welcomeMessage: 'اهلا وسهلا فيك بغرفة ايهم 👑',
+        agencyName: 'وكالة النجوم',
+        onlineUsers: [],
+        mics: Array(12).fill(null).map((_, i) => ({
+            slot: i + 1,
+            userId: null,
+            username: null,
+            avatar: null,
+            locked: false,
+            isMuted: false
+        }))
+    };
+    console.log('✅ تم انشاء الغرفة الافتراضية 10000');
+}
+
+// صفحة الغرفة
+app.get('/room/:roomId', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'room.html'));
+});
+
+// اي رابط تاني يرجع للصفحة الرئيسية
+app.get('*', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'index.html'));
+});
+
+// Socket.io
+io.on('connection', (socket) => {
+    console.log('مستخدم جديد اتصل:', socket.id);
+
+    // دخول غرفة
+    socket.on('join-room', (data) => {
+        const { roomId, userId, username } = data;
+
+        if (!rooms[roomId]) {
+            socket.emit('error', { message: 'الغرفة غير موجودة' });
+            return;
+        }
+
+        socket.join(roomId);
+        socket.roomId = roomId;
+        socket.userId = userId || socket.id;
+        socket.username = username || `ضيف_${socket.id.substring(0, 5)}`;
+
+        // ضيفه للاونلاين اذا مو موجود
+        const existingUser = rooms[roomId].onlineUsers.find(u => u.userId === socket.userId);
+        if (!existingUser) {
+            rooms[roomId].onlineUsers.push({
+                userId: socket.userId,
+                username: socket.username,
+                socketId: socket.id
+            });
+        }
+
+        console.log(`${socket.username} دخل غرفة ${roomId}`);
+
+        // ابعت بيانات الغرفة كاملة
+        socket.emit('room-data', {
+            room: rooms[roomId],
+            currentUser: {
+                userId: socket.userId,
+                username: socket.username
+            }
+        });
+
+        // خبر الباقي انه في واحد دخل
+        socket.to(roomId).emit('user-joined', {
+            userId: socket.userId,
+            username: socket.username
+        });
+
+        // حدث قائمة الاونلاين للكل
+        io.to(roomId).emit('online-users-updated', rooms[roomId].onlineUsers);
+    });
+
+    // رسالة شات
+    socket.on('chat-message', (data) => {
+        const { roomId, message } = data;
+        if (!rooms[roomId]) return;
+
+        const msgData = {
+            userId: socket.userId,
+            username: socket.username,
+            message: message,
+            timestamp: Date.now()
+        };
+
+        io.to(roomId).emit('chat-message', msgData);
+    });
+
+    // طلوع مايك
+    socket.on('take-mic', (data) => {
+        const { roomId, slot } = data;
+        if (!rooms[roomId]) return;
+
+        // تأكد انو المايك فاضي ومو مقفول
+        if (rooms[roomId].mics[slot - 1].userId === null &&!rooms[roomId].mics[slot - 1].locked) {
+            // نزلو من اي مايك تاني اول
+            rooms[roomId].mics = rooms[roomId].mics.map(mic => {
+                if (mic.userId === socket.userId) {
+                    return {...mic, userId: null, username: null, avatar: null };
+                }
+                return mic;
+            });
+
+            // طلعو عالمايك الجديد
+            rooms[roomId].mics[slot - 1] = {
+               ...rooms[roomId].mics[slot - 1],
+                userId: socket.userId,
+                username: socket.username,
+                avatar: null
+            };
+
+            io.to(roomId).emit('mics-updated', rooms[roomId].mics);
+        }
+    });
+
+    // نزول من المايك
+    socket.on('leave-mic', (data) => {
+        const { roomId } = data;
+        if (!rooms[roomId]) return;
+
+        rooms[roomId].mics = rooms[roomId].mics.map(mic => {
+            if (mic.userId === socket.userId) {
+                return {...mic, userId: null, username: null, avatar: null };
+            }
+            return mic;
+        });
+
+        io.to(roomId).emit('mics-updated', rooms[roomId].mics);
+    });
+
+    // فصل الاتصال
+    socket.on('disconnect', () => {
+        console.log('مستخدم فصل:', socket.id);
+        const roomId = socket.roomId;
+
+        if (roomId && rooms[roomId]) {
+            // شيله من الاونلاين
+            rooms[roomId].onlineUsers = rooms[roomId].onlineUsers.filter(u => u.userId!== socket.userId);
+
+            // نزلو من المايك اذا كان طالع
+            rooms[roomId].mics = rooms[roomId].mics.map(mic => {
+                if (mic.userId === socket.userId) {
+                    return {...mic, userId: null, username: null, avatar: null };
+                }
+                return mic;
+            });
+
+            // حدث للباقي
+            io.to(roomId).emit('user-left', { userId: socket.userId });
+            io.to(roomId).emit('online-users-updated', rooms[roomId].onlineUsers);
+            io.to(roomId).emit('mics-updated', rooms[roomId].mics);
+        }
+    });
+});
+
+server.listen(PORT, () => {
+    console.log(`🚀 السيرفر شغال على البورت ${PORT}`);
+});
