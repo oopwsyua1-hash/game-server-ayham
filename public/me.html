@@ -54,8 +54,8 @@ const token = localStorage.getItem('token');
 if (!token) location.href = '/';
 
 fetch('/api/me', { headers: { 'Authorization': 'Bearer ' + token } })
- .then(r => r.json())
- .then(user => {
+.then(r => r.json())
+.then(user => {
     if (user.error) return location.href = '/';
     document.getElementById('username').textContent = user.username;
     document.getElementById('level').textContent = user.level;
@@ -67,7 +67,7 @@ fetch('/api/me', { headers: { 'Authorization': 'Bearer ' + token } })
       document.getElementById('avatar').textContent = '👑';
     }
   })
- .catch(() => location.href = '/');
+.catch(() => location.href = '/');
 
 function createRoom() {
   const roomId = Math.floor(Math.random() * 90000) + 10000;
