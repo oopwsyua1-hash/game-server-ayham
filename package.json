@@ -1,5 +1,5 @@
 {
-  "name": "sabe7-live",
+  "name": "halabi-server",
   "version": "1.0.0",
   "main": "server.js",
   "scripts": {
@@ -7,10 +7,10 @@
   },
   "dependencies": {
     "express": "^4.18.2",
-    "socket.io": "^4.7.2",
-    "mongoose": "^8.0.0",
-    "jsonwebtoken": "^9.0.2",
+    "mongoose": "^8.0.3",
+    "cors": "^2.8.5",
     "bcryptjs": "^2.4.3",
-    "cors": "^2.8.5"
+    "jsonwebtoken": "^9.0.2",
+    "socket.io": "^4.7.2"
   }
 }
