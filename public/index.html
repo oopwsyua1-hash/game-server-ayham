@@ -6,173 +6,91 @@
 <title>السبع الحلبي - تسجيل الدخول</title>
 <style>
 * { margin: 0; padding: 0; box-sizing: border-box; }
-body { font-family: 'Segoe UI', sans-serif; background: linear-gradient(135deg, #0a0a14, #1a0033, #0a0a14); color: #fff; min-height: 100vh; display: flex; justify-content: center; align-items: center; padding: 20px; }
-.container { width: 100%; max-width: 400px; background: #141428; border-radius: 15px; padding: 30px; border: 2px solid #ff00ff; box-shadow: 0 0 30px rgba(255, 0, 255, 0.3); }
+body { font-family: 'Segoe UI', sans-serif; background: linear-gradient(135deg, #0a0a14 0%, #1a1a2e 100%); color: #fff; min-height: 100vh; display: flex; justify-content: center; align-items: center; }
+.container { width: 90%; max-width: 400px; background: #141428; border-radius: 20px; padding: 30px; border: 2px solid #ff00ff; box-shadow: 0 0 30px rgba(255,0,255,0.3); }
 .logo { text-align: center; margin-bottom: 30px; }
-.logo h1 { color: #ff00ff; font-size: 28px; margin-bottom: 5px; text-shadow: 0 0 15px #ff00ff; }
+.logo img { width: 80px; height: 80px; border-radius: 50%; border: 3px solid #FFD700; box-shadow: 0 0 20px #FFD700; margin-bottom: 10px; }
+.logo h1 { color: #ff00ff; font-size: 28px; text-shadow: 0 0 10px #ff00ff; margin-bottom: 5px; }
 .logo p { color: #aaa; font-size: 14px; }
-.tabs { display: flex; gap: 10px; margin-bottom: 25px; }
-.tab { flex: 1; padding: 12px; background: #1a1a2e; border: none; border-radius: 8px; color: #aaa; cursor: pointer; font-size: 16px; font-weight: bold; transition: all 0.3s; }
-.tab.active { background: linear-gradient(90deg, #ff00ff, #9d00ff); color: #fff; }
-.form-group { margin-bottom: 15px; }
-.form-group label { display: block; margin-bottom: 8px; color: #00ffff; font-size: 14px; }
-.form-group input,.form-group select { width: 100%; padding: 12px; background: #1a1a2e; border: 1px solid #333; border-radius: 8px; color: #fff; font-size: 15px; outline: none; transition: border 0.3s; }
-.form-group input:focus,.form-group select:focus { border-color: #ff00ff; }
-.btn { width: 100%; padding: 14px; background: linear-gradient(90deg, #ff00ff, #9d00ff); border: none; border-radius: 8px; color: white; font-size: 16px; font-weight: bold; cursor: pointer; margin-top: 10px; transition: transform 0.2s; }
-.btn:hover { transform: scale(1.02); }
-.btn-owner { background: linear-gradient(90deg, #FFD700, #FFA500); color: #000; margin-top: 15px; }
-.error { background: #3a1a1a; border: 1px solid #ff0000; color: #ff6666; padding: 12px; border-radius: 8px; margin-bottom: 15px; text-align: center; display: none; }
-.success { background: #1a3a1a; border: 1px solid #00ff00; color: #66ff66; padding: 12px; border-radius: 8px; margin-bottom: 15px; text-align: center; display: none; }
-.hidden { display: none; }
-.row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+input { width: 100%; padding: 15px; margin: 10px 0; background: #1a1a2e; border: 2px solid #333; border-radius: 10px; color: #fff; font-size: 16px; transition: 0.3s; }
+input:focus { outline: none; border-color: #ff00ff; box-shadow: 0 0 10px rgba(255,0,255,0.5); }
+.btn { width: 100%; padding: 15px; margin: 10px 0; background: linear-gradient(45deg, #ff00ff, #cc00cc); border: none; border-radius: 10px; color: #fff; font-size: 18px; font-weight: bold; cursor: pointer; transition: 0.3s; }
+.btn:hover { transform: scale(1.05); box-shadow: 0 0 20px #ff00ff; }
+.btn-owner { background: linear-gradient(45deg, #FFD700, #ff00ff); color: #000; }
+.toggle { text-align: center; margin-top: 20px; color: #aaa; cursor: pointer; }
+.toggle:hover { color: #ff00ff; }
+.error { color: #ff0000; text-align: center; margin: 10px 0; font-size: 14px; }
 </style>
 </head>
 <body>
 <div class="container">
-<div class="logo">
-<h1>👑 السبع الحلبي</h1>
-<p>غرف صوتية - 20 مايك</p>
+  <div class="logo">
+    <img src="https://i.ibb.co/6RJ5hq6/lion.png" onerror="this.style.display='none'">
+    <h1>👑 السبع الحلبي</h1>
+    <p>غرف صوتية - 20 مايك</p>
+  </div>
+
+  <div id="loginForm">
+    <input type="email" id="loginEmail" placeholder="الايميل">
+    <input type="password" id="loginPassword" placeholder="كلمة السر">
+    <div class="error" id="loginError"></div>
+    <button class="btn" onclick="login()">تسجيل دخول</button>
+    <button class="btn btn-owner" onclick="ownerLogin()">👑 دخول المالك مباشر</button>
+    <div class="toggle" onclick="showRegister()">ما عندك حساب؟ سجل جديد</div>
+  </div>
+
+  <div id="registerForm" style="display:none">
+    <input type="text" id="regUsername" placeholder="اسم المستخدم">
+    <input type="email" id="regEmail" placeholder="الايميل">
+    <input type="password" id="regPassword" placeholder="كلمة السر">
+    <div class="error" id="regError"></div>
+    <button class="btn" onclick="register()">حساب جديد</button>
+    <div class="toggle" onclick="showLogin()">عندك حساب؟ سجل دخول</div>
+  </div>
 </div>
-<div class="tabs">
-<button class="tab active" onclick="switchTab('login')">تسجيل دخول</button>
-<button class="tab" onclick="switchTab('register')">حساب جديد</button>
-</div>
-<div id="errorMsg" class="error"></div>
-<div id="successMsg" class="success"></div>
-<div id="loginForm">
-<div class="form-group"><label>البريد الالكتروني</label><input type="email" id="loginEmail" placeholder="example@email.com"></div>
-<div class="form-group"><label>كلمة المرور</label><input type="password" id="loginPassword" placeholder="••••••••"></div>
-<button class="btn" onclick="login()">تسجيل الدخول</button>
-<button class="btn btn-owner" onclick="autoLogin()">👑 دخول المالك مباشر</button>
-</div>
-<div id="registerForm" class="hidden">
-<div class="row">
-<div class="form-group"><label>الاسم الاول</label><input type="text" id="regUsername" placeholder="احمد"></div>
-<div class="form-group"><label>الاسم الاخير</label><input type="text" id="regLastName" placeholder="الحلبي"></div>
-</div>
-<div class="form-group"><label>البريد الالكتروني</label><input type="email" id="regEmail" placeholder="example@email.com"></div>
-<div class="form-group"><label>كلمة المرور</label><input type="password" id="regPassword" placeholder="••••••••"></div>
-<div class="row">
-<div class="form-group"><label>الدولة</label><select id="regCountry"><option value="سوريا">سوريا</option><option value="لبنان">لبنان</option><option value="الاردن">الاردن</option><option value="مصر">مصر</option><option value="السعودية">السعودية</option><option value="الامارات">الامارات</option><option value="العراق">العراق</option><option value="تركيا">تركيا</option></select></div>
-<div class="form-group"><label>الجنس</label><select id="regGender"><option value="ذكر">ذكر</option><option value="انثى">انثى</option></select></div>
-</div>
-<div class="row">
-<div class="form-group"><label>تاريخ الميلاد</label><input type="date" id="regBirthDate"></div>
-<div class="form-group"><label>العمر</label><input type="number" id="regAge" placeholder="25"></div>
-</div>
-<button class="btn" onclick="register()">انشاء حساب</button>
-</div>
+
 <script>
-function switchTab(tab) {
-const loginForm = document.getElementById('loginForm');
-const registerForm = document.getElementById('registerForm');
-const tabs = document.querySelectorAll('.tab');
-tabs.forEach(t => t.classList.remove('active'));
-event.target.classList.add('active');
-if (tab === 'login') {
-loginForm.classList.remove('hidden');
-registerForm.classList.add('hidden');
-} else {
-loginForm.classList.add('hidden');
-registerForm.classList.remove('hidden');
-}
-hideMessages();
-}
-function showError(msg) {
-const errorDiv = document.getElementById('errorMsg');
-errorDiv.textContent = msg;
-errorDiv.style.display = 'block';
-document.getElementById('successMsg').style.display = 'none';
-}
-function showSuccess(msg) {
-const successDiv = document.getElementById('successMsg');
-successDiv.textContent = msg;
-successDiv.style.display = 'block';
-document.getElementById('errorMsg').style.display = 'none';
-}
-function hideMessages() {
-document.getElementById('errorMsg').style.display = 'none';
-document.getElementById('successMsg').style.display = 'none';
-}
-async function register() {
-hideMessages();
-const data = {
-username: document.getElementById('regUsername').value,
-lastName: document.getElementById('regLastName').value,
-email: document.getElementById('regEmail').value,
-password: document.getElementById('regPassword').value,
-country: document.getElementById('regCountry').value,
-gender: document.getElementById('regGender').value,
-birthDate: document.getElementById('regBirthDate').value,
-age: parseInt(document.getElementById('regAge').value)
-};
-if (!data.username ||!data.email ||!data.password) {
-showError('عبي كل الحقول المطلوبة');
-return;
-}
-try {
-const res = await fetch('/api/register', {
-method: 'POST',
-headers: { 'Content-Type': 'application/json' },
-body: JSON.stringify(data)
-});
-const result = await res.json();
-if (result.error) {
-showError(result.error);
-} else {
-localStorage.setItem('token', result.token);
-showSuccess('تم انشاء الحساب بنجاح! جاري التحويل...');
-setTimeout(() => location.href = '/me', 1500);
-}
-} catch (err) {
-showError('خطأ بالاتصال بالسيرفر');
-}
-}
+const API = '';
+function showRegister() { document.getElementById('loginForm').style.display='none'; document.getElementById('registerForm').style.display='block'; }
+function showLogin() { document.getElementById('registerForm').style.display='none'; document.getElementById('loginForm').style.display='block'; }
+
 async function login() {
-hideMessages();
-const email = document.getElementById('loginEmail').value;
-const password = document.getElementById('loginPassword').value;
-if (!email ||!password) {
-showError('عبي الايميل وكلمة السر');
-return;
+  const email = document.getElementById('loginEmail').value;
+  const password = document.getElementById('loginPassword').value;
+  const error = document.getElementById('loginError');
+  try {
+    const res = await fetch(API + '/api/login', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({email, password}) });
+    const data = await res.json();
+    if (data.error) { error.textContent = data.error; return; }
+    localStorage.setItem('token', data.token);
+    location.href = '/me';
+  } catch(e) { error.textContent = 'خطأ بالاتصال بالسيرفر'; }
 }
-try {
-const res = await fetch('/api/login', {
-method: 'POST',
-headers: { 'Content-Type': 'application/json' },
-body: JSON.stringify({ email, password })
-});
-const result = await res.json();
-if (result.error) {
-showError(result.error);
-} else {
-localStorage.setItem('token', result.token);
-showSuccess('تم تسجيل الدخول! جاري التحويل...');
-setTimeout(() => location.href = '/me', 1500);
+
+async function register() {
+  const username = document.getElementById('regUsername').value;
+  const email = document.getElementById('regEmail').value;
+  const password = document.getElementById('regPassword').value;
+  const error = document.getElementById('regError');
+  try {
+    const res = await fetch(API + '/api/register', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({username, email, password}) });
+    const data = await res.json();
+    if (data.error) { error.textContent = data.error; return; }
+    localStorage.setItem('token', data.token);
+    location.href = '/me';
+  } catch(e) { error.textContent = 'خطأ بالاتصال بالسيرفر'; }
 }
-} catch (err) {
-showError('خطأ بالاتصال بالسيرفر');
+
+async function ownerLogin() {
+  try {
+    const res = await fetch(API + '/api/owner-login', { method: 'POST' });
+    const data = await res.json();
+    localStorage.setItem('token', data.token);
+    location.href = '/me';
+  } catch(e) { alert('خطأ بالاتصال بالسيرفر'); }
 }
-}
-async function autoLogin() {
-hideMessages();
-showSuccess('جاري دخول المالك...');
-try {
-const res = await fetch('/api/auto-login', { method: 'POST' });
-const result = await res.json();
-if (result.error) {
-showError(result.error);
-} else {
-localStorage.setItem('token', result.token);
-setTimeout(() => location.href = '/me', 1000);
-}
-} catch (err) {
-showError('خطأ بالاتصال بالسيرفر');
-}
-}
-if (localStorage.getItem('token')) {
-location.href = '/me';
-}
+
+if (localStorage.getItem('token')) location.href = '/me';
 </script>
 </body>
 </html>
