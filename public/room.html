@@ -3,136 +3,135 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>وكالتي - السبع الحلبي</title>
+<title>وكالة السبع الحلبي</title>
 <script src="/socket.io/socket.io.js"></script>
 <style>
 *{margin:0;padding:0;box-sizing:border-box;font-family:'Cairo',Tahoma}
 body{overflow:hidden;background:#000}
 
-#agency{width:100vw;height:100vh;background:url('/uploads/bg.jpg') center/cover;position:relative}
+/* الدخولية الذهبية 13 ثانية فيديو */
+.entry-video-overlay{position:fixed;inset:0;background:#000;z-index:99999;display:flex;align-items:center;justify-content:center}
+.entry-video-overlay.hide{display:none}
+.entry-video-overlay video{width:100%;height:100%;object-fit:cover;opacity:0.5}
+.entry-video-info{position:absolute;display:flex;flex-direction:column;align-items:center;gap:20px;z-index:10}
+.entry-video-info img{width:200px;height:200px;border-radius:50%;border:8px solid gold;box-shadow:0 0 60px gold,0 0 100px #ff6b00;animation:avatarEntry 13s ease-in-out}
+@keyframes avatarEntry{0%{transform:scale(0) rotate(0deg)}10%{transform:scale(1.2) rotate(360deg)}90%{transform:scale(1.1)}100%{transform:scale(1);opacity:0}}
+.entry-text{text-align:center}
+.entry-crown{font-size:100px;animation:bounce 1s infinite}
+@keyframes bounce{0%,100%{transform:translateY(0)}50%{transform:translateY(-20px)}}
+.entry-name{font-size:60px;font-weight:900;color:gold;text-shadow:0 0 30px gold,0 0 60px #ff6b00}
+.entry-vip{font-size:40px;color:#fff;background:linear-gradient(45deg,gold,#ff6b00);padding:10px 30px;border-radius:30px;display:inline-block;margin:10px 0}
+.entry-title{font-size:35px;color:#fff;text-shadow:0 0 20px #fff}
 
-/* الدخولية الذهبية 13 ثانية */
-.golden-entry{position:fixed;inset:0;background:radial-gradient(circle,#ffd700,transparent);z-index:9999;display:flex;align-items:center;justify-content:center;animation:goldenPulse 13s forwards}
-.golden-entry.hide{display:none}
-@keyframes goldenPulse{
-  0%{opacity:0;transform:scale(0.5)}
-  5%{opacity:1;transform:scale(1)}
-  90%{opacity:1}
-  100%{opacity:0;transform:scale(1.2)}
-}
-.golden-text{font-size:80px;font-weight:900;color:#000;text-shadow:0 0 40px #ffd700,0 0 80px #ff6b00;animation:textGlow 1s infinite}
-@keyframes textGlow{0%,100%{transform:scale(1)}50%{transform:scale(1.1)}}
+#agency{width:100vw;height:100vh;background:url('https://i.ibb.co/7jXqZ4J/lion-bg.jpg') center/cover;position:relative}
 
-.top-bar{position:absolute;top:0;width:100%;padding:20px;background:linear-gradient(180deg,rgba(0,0,0,0.95),transparent);display:flex;justify-content:space-between;align-items:center;z-index:100}
+.top-bar{position:absolute;top:0;width:100%;padding:15px 20px;background:linear-gradient(180deg,rgba(0,0,0,0.8),transparent);display:flex;justify-content:space-between;align-items:center;z-index:100}
+.speaker-btn{width:45px;height:45px;background:linear-gradient(45deg,#ffa500,#ff6b00);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:24px;border:3px solid gold}
+.top-center{text-align:center;color:#fff}
+.top-center .title{font-size:14px;opacity:0.8}
+.top-center .id-lv{background:rgba(0,0,0,0.6);padding:5px 15px;border-radius:20px;margin-top:5px;display:inline-block}
+.top-right{width:80px;height:80px;border:4px solid gold;border-radius:15px;overflow:hidden}
+.top-right img{width:100%;height:100%;object-fit:cover}
 
-.vip-card{display:flex;gap:15px;align-items:center}
-.vip-avatar{width:70px;height:70px;border-radius:50%;border:4px solid gold;animation:avatarGlow 2s infinite;object-fit:cover}
-@keyframes avatarGlow{0%,100%{box-shadow:0 0 15px gold}50%{box-shadow:0 0 40px gold,0 0 60px #ff6b00}}
+.seats-area{position:absolute;top:120px;left:50%;transform:translateX(-50%);display:grid;grid-template-columns:repeat(4,1fr);gap:15px;width:90%;max-width:600px}
+.gold-seat{aspect-ratio:1;background:url('https://i.ibb.co/3cqJXqZ/gold-seat.png') center/contain no-repeat;position:relative;display:flex;align-items:center;justify-content:center}
+.seat-circle{width:65%;height:65%;border-radius:50%;border:4px solid;animation:rainbowBorder 3s linear infinite;position:relative;overflow:hidden;background:rgba(0,0,0,0.5)}
+@keyframes rainbowBorder{0%{border-color:#ff0000}16%{border-color:#ff7f00}33%{border-color:#ffff00}50%{border-color:#00ff00}66%{border-color:#0000ff}83%{border-color:#4b0082}100%{border-color:#9400d3}}
+.seat-circle.locked::after{content:'🔒';position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:35px;background:rgba(0,0,0,0.7)}
+.seat-circle.empty::after{content:'+';position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:50px;color:gold}
+.seat-circle img{width:100%;height:100%;object-fit:cover}
+.seat-num{position:absolute;bottom:-5px;left:50%;transform:translateX(-50%);background:gold;color:#000;padding:2px 8px;border-radius:10px;font-weight:900;font-size:12px}
 
-.vip-info{display:flex;flex-direction:column;gap:5px}
-.vip-id{font-size:28px;font-weight:900;animation:rainbowPulse 1.5s infinite;background:linear-gradient(90deg,#ff0000,#ff7f00,#ffff00,#00ff00,#0000ff,#4b0082,#9400d3);background-size:200% auto;-webkit-background-clip:text;-webkit-text-fill-color:transparent}
-.vip-name{font-size:32px;font-weight:900;animation:namePulse 2s infinite;color:gold;text-shadow:0 0 25px gold}
-@keyframes rainbowPulse{0%{background-position:0% 50%}100%{background-position:200% 50%}}
-@keyframes namePulse{0%,100%{transform:scale(1);text-shadow:0 0 25px gold}50%{transform:scale(1.12);text-shadow:0 0 50px gold,0 0 80px #ff6b00}}
+.stats-bar{position:absolute;top:380px;left:50%;transform:translateX(-50%);display:flex;gap:20px;align-items:center}
+.people-count{background:rgba(139,0,139,0.8);padding:10px 20px;border-radius:25px;border:2px solid #ff00ff;color:#fff;font-weight:bold;display:flex;align-items:center;gap:8px}
+.ranking{display:flex;gap:5px}
+.rank-badge{width:45px;height:45px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:900;border:3px solid}
+.rank-1{background:linear-gradient(45deg,gold,#ff6b00);border-color:gold}
+.rank-2{background:linear-gradient(45deg,#c0c0c0,#808080);border-color:silver}
+.rank-3{background:linear-gradient(45deg,#cd7f32,#8b4513);border-color:#cd7f32}
 
-.bio-wrap{width:350px;overflow:hidden;background:rgba(0,0,0,0.7);padding:8px 15px;border-radius:15px;border:2px solid gold}
-.bio-text{white-space:nowrap;animation:marquee 15s linear infinite;color:#fff;font-size:16px}
-@keyframes marquee{0%{transform:translateX(100%)}100%{transform:translateX(-100%)}}
+.owner-frame{position:absolute;bottom:180px;left:50%;transform:translateX(-50%);width:300px;height:300px}
+.wreath{position:absolute;inset:0;background:url('https://i.ibb.co/0jZqX4J/wreath.png') center/contain no-repeat;animation:rotateSlow 20s linear infinite}
+@keyframes rotateSlow{0%{transform:rotate(0deg)}100%{transform:rotate(360deg)}}
+.owner-photo{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:70%;height:70%;border-radius:50%;overflow:hidden;border:5px solid gold;box-shadow:0 0 40px gold}
+.owner-photo img{width:100%;height:100%;object-fit:cover}
 
-.settings-btn{background:linear-gradient(45deg,gold,#ff6b00);border:none;padding:15px 30px;border-radius:30px;font-weight:900;font-size:18px;color:#000;cursor:pointer;box-shadow:0 0 20px gold}
+.welcome-box{position:absolute;bottom:80px;left:50%;transform:translateX(-50%);width:85%;background:rgba(0,0,0,0.85);padding:15px;border-radius:15px;border:2px solid gold;text-align:center;color:gold}
 
-.settings-panel{position:absolute;top:100px;left:30px;background:rgba(0,0,0,0.97);border:4px solid gold;border-radius:20px;padding:25px;width:350px;display:none;z-index:200;box-shadow:0 0 40px gold}
-.settings-panel.show{display:block}
-.settings-panel h3{color:gold;margin-bottom:20px;text-align:center;font-size:24px;text-shadow:0 0 15px gold}
-.settings-panel button{display:block;width:100%;margin:10px 0;padding:15px;background:linear-gradient(45deg,#222,#444);border:3px solid gold;color:#fff;border-radius:12px;font-weight:bold;cursor:pointer;font-size:16px;transition:0.3s}
-.settings-panel button:hover{background:gold;color:#000;transform:scale(1.05)}
+.bottom-bar{position:fixed;bottom:0;width:100%;background:linear-gradient(180deg,transparent,rgba(0,0,0,0.95));padding:15px;display:flex;justify-content:space-around;align-items:center}
+.bottom-btn{width:55px;height:55px;border-radius:15px;display:flex;align-items:center;justify-content:center;font-size:28px;border:none;cursor:pointer}
+.btn-gift{background:linear-gradient(45deg,#ff6b00,#ff0000)}
+.btn-party{background:linear-gradient(45deg,#ff00ff,#9400d3)}
+.btn-chat{background:linear-gradient(45deg,#00bfff,#0080ff)}
+.btn-mic{background:linear-gradient(45deg,#808080,#404040)}
+.btn-speaker{background:linear-gradient(45deg,#808080,#404040)}
 
-.seats-area{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);display:grid;gap:25px}
-.seat{width:100px;height:100px;border-radius:50%;background:rgba(255,215,0,0.15);border:4px solid gold;display:flex;align-items:center;justify-content:center;position:relative;backdrop-filter:blur(15px);transition:0.3s}
-.seat.taken{background:linear-gradient(45deg,gold,#ff6b00);box-shadow:0 0 40px gold}
-.seat.mic{font-size:45px;filter:drop-shadow(0 0 10px gold)}
-.seat-name{position:absolute;bottom:-25px;font-size:12px;color:gold;font-weight:bold}
-
-.big-reaction{position:absolute;top:-140px;left:50%;transform:translateX(-50%);font-size:120px;animation:reactionPop 3s forwards;z-index:50;filter:drop-shadow(0 0 40px gold)}
-@keyframes reactionPop{
-  0%{transform:translateX(-50%) scale(0) rotate(0deg);opacity:0}
-  15%{transform:translateX(-50%) scale(1.5) rotate(15deg);opacity:1}
-  85%{transform:translateX(-50%) scale(1.3) rotate(-15deg);opacity:1}
-  100%{transform:translateX(-50%) scale(1) translateY(-100px) rotate(0deg);opacity:0}
-}
-
-.reactions-bar{position:fixed;bottom:120px;left:50%;transform:translateX(-50%);display:flex;gap:25px;background:rgba(0,0,0,0.95);padding:25px 40px;border-radius:50px;border:4px solid gold;z-index:100;box-shadow:0 0 30px gold}
-.react-btn{font-size:60px;background:none;border:none;cursor:pointer;transition:0.2s;filter:drop-shadow(0 0 15px gold)}
-.react-btn:active{transform:scale(1.6) rotate(20deg)}
-
-.agency-chat{position:fixed;bottom:0;right:0;width:400px;height:500px;background:rgba(0,0,0,0.97);border:4px solid gold;border-top-left-radius:25px;box-shadow:0 0 30px gold}
-.chat-header{background:linear-gradient(45deg,gold,#ff6b00);color:#000;padding:15px;text-align:center;font-weight:900;font-size:18px}
-.chat-msgs{height:400px;overflow-y:auto;padding:20px}
-.chat-msg{margin:10px 0;padding:12px;background:rgba(255,255,255,0.1);border-radius:12px;border-right:4px solid gold}
-.chat-msg .name{color:gold;font-weight:bold;font-size:14px}
-.chat-input{display:flex;border-top:3px solid gold}
-.chat-input input{flex:1;padding:15px;background:#111;border:none;color:#fff;font-size:16px}
-.chat-input button{background:gold;border:none;padding:15px 25px;font-weight:900;cursor:pointer;font-size:16px}
-
-.exit-btn{position:fixed;top:20px;left:20px;background:#ef4444;border:none;padding:12px 25px;border-radius:25px;color:#fff;font-weight:bold;cursor:pointer;z-index:150}
+.settings-btn{position:fixed;top:15px;left:15px;background:linear-gradient(45deg,gold,#ff6b00);border:none;padding:12px 25px;border-radius:25px;font-weight:900;color:#000;cursor:pointer;z-index:200;box-shadow:0 0 20px gold}
 </style>
 </head>
 <body>
 
-<!-- الدخولية الذهبية 13 ثانية -->
-<div class="golden-entry hide" id="goldenEntry">
-  <div class="golden-text">👑 السبع الحلبي وصل 👑</div>
+<div id="entryVideoOverlay" class="entry-video-overlay hide">
+  <video id="entryVideo" autoplay muted loop>
+    <source src="" type="video/mp4">
+  </video>
+  <div class="entry-video-info">
+    <img id="entryAvatar" src="">
+    <div class="entry-text">
+      <div class="entry-crown">👑</div>
+      <div class="entry-name" id="entryName">السبع الحلبي</div>
+      <div class="entry-vip">VIP <span id="entryVipId">777</span></div>
+      <div class="entry-title">دخل الوكالة</div>
+    </div>
+  </div>
 </div>
 
 <div id="agency">
-  <button class="exit-btn" onclick="location.href='/me'">🚪 خروج</button>
+  <button class="settings-btn" onclick="toggleSettings()">⚙️ اعدادات الوكالة</button>
 
   <div class="top-bar">
-    <div class="vip-card">
-      <img class="vip-avatar" id="userAvatar" src="/uploads/default.png">
-      <div class="vip-info">
-        <div class="vip-id">ID: <span id="vipId">000</span></div>
-        <div class="vip-name" id="vipName">السبع الحلبي</div>
-        <div class="bio-wrap"><div class="bio-text" id="vipBio">مرحبا بالكل في وكالتي الخاصة...</div></div>
-      </div>
+    <div class="speaker-btn">📢</div>
+    <div class="top-center">
+      <div class="title">للتسجيل المضيفات</div>
+      <div class="id-lv">Lv.16 💎 <span id="vipId">000</span> ID</div>
     </div>
-    <button class="settings-btn" onclick="toggleSettings()">⚙️ اعدادات الوكالة</button>
-  </div>
-
-  <div class="settings-panel" id="settingsPanel">
-    <h3>👑 تحكم الوكالة</h3>
-    <button onclick="changeSeats()">🎯 تعديل المقاعد: <span id="seatsCount">4</span>→8→12→16→20</button>
-    <button onclick="toggleDoor()">🚪 <span id="doorText">فتح باب الوكالة</span></button>
-    <button onclick="toggleAgency()">⚡ <span id="agencyText">تشغيل الوكالة</span></button>
-    <button onclick="toggleMic()">🎤 <span id="micText">السماح بالصعود للمايك</span></button>
-    <button onclick="manageMembers()">👥 استقبال/طرد اعضاء</button>
-    <button onclick="makeAdmin()">⭐ اعطاء ادمن</button>
-    <button onclick="changeBg()">🖼️ تغيير الخلفية</button>
-    <button onclick="changeDecor()">🎨 تغيير الديكور الداخلي</button>
-    <button onclick="changeAvatar()">📸 تغيير صورة الحساب</button>
+    <div class="top-right">
+      <img src="https://i.ibb.co/3cqJXqZ/frame.png" alt="frame">
+    </div>
   </div>
 
   <div class="seats-area" id="seatsArea"></div>
 
-  <div class="reactions-bar">
-    <button class="react-btn" onclick="sendReact('😍')">😍</button>
-    <button class="react-btn" onclick="sendReact('❤️')">❤️</button>
-    <button class="react-btn" onclick="sendReact('🌹')">🌹</button>
-    <button class="react-btn" onclick="sendReact('😘')">😘</button>
-    <button class="react-btn" onclick="sendReact('😂')">😂</button>
-    <button class="react-btn" onclick="sendReact('🔥')">🔥</button>
-    <button class="react-btn" onclick="sendReact('💨')">💨</button>
-    <button class="react-btn" onclick="sendReact('😭')">😭</button>
-    <button class="react-btn" onclick="sendReact('👏')">👏</button>
+  <div class="stats-bar">
+    <div class="people-count">
+      <span>👥</span>
+      <span id="peopleCount">0</span>
+    </div>
+    <div class="ranking">
+      <div class="rank-badge rank-1">1</div>
+      <div class="rank-badge rank-2">2</div>
+      <div class="rank-badge rank-3">3</div>
+    </div>
   </div>
 
-  <div class="agency-chat">
-    <div class="chat-header">💬 شات الوكالة</div>
-    <div class="chat-msgs" id="chatMsgs"></div>
-    <div class="chat-input">
-      <input id="msgInput" placeholder="اكتب رسالة..." onkeypress="if(event.key==='Enter')sendMsg()">
-      <button onclick="sendMsg()">ارسال</button>
+  <div class="owner-frame">
+    <div class="wreath"></div>
+    <div class="owner-photo">
+      <img id="ownerImg" src="https://ui-avatars.com/api/?name=السبع&background=a855f7&color=fff" alt="المالك">
     </div>
+  </div>
+
+  <div class="welcome-box">
+    <div class="emoji">😊</div>
+    <div class="text">مرحباً بكم في وكالة السبع الحلبي! نتمنى لكم أوقات طيبة<br>سيتم الابلاغ وحظر أي مستخدم يخالف لوائح التطبيق</div>
+  </div>
+
+  <div class="bottom-bar">
+    <button class="bottom-btn btn-gift">🎁</button>
+    <button class="bottom-btn btn-party">🎉</button>
+    <button class="bottom-btn btn-chat">💬</button>
+    <button class="bottom-btn btn-mic">🎤</button>
+    <button class="bottom-btn btn-speaker">🔊</button>
   </div>
 </div>
 
@@ -144,25 +143,37 @@ const urlParams = new URLSearchParams(window.location.search);
 const ownerId = urlParams.get('owner') || userId;
 const roomId = `room_${ownerId}`;
 let roomData = {};
-let isOwner = userId === ownerId;
 
 if(!token) location.href = '/login';
 
-// انشاء/دخول غرفة
-if(isOwner) {
+if(userId === ownerId) {
   socket.emit('create-room', {userId});
 } else {
   socket.emit('join-room', {roomId, userId});
 }
 
-// الدخولية الذهبية 13 ثانية
-socket.on('golden-entry', ({duration}) => {
-  const el = document.getElementById('goldenEntry');
-  el.classList.remove('hide');
-  setTimeout(() => el.classList.add('hide'), duration);
+socket.on('golden-entry-video', (data) => {
+  const overlay = document.getElementById('entryVideoOverlay');
+  const video = document.getElementById('entryVideo');
+  const avatar = document.getElementById('entryAvatar');
+  const name = document.getElementById('entryName');
+  const vipId = document.getElementById('entryVipId');
+  
+  video.src = data.videoUrl;
+  avatar.src = data.avatar;
+  name.textContent = data.username;
+  vipId.textContent = data.vipId;
+  
+  overlay.classList.remove('hide');
+  video.play();
+  
+  setTimeout(() => {
+    overlay.classList.add('hide');
+    video.pause();
+    video.src = '';
+  }, data.duration);
 });
 
-// استلام بيانات الغرفة
 socket.on('room-data', (data) => {
   roomData = data;
   updateUI();
@@ -174,102 +185,32 @@ socket.on('room-update', (data) => {
 });
 
 function updateUI() {
-  document.getElementById('vipId').textContent = roomData.ownerData.vipId;
-  document.getElementById('vipName').textContent = roomData.ownerData.displayName;
-  document.getElementById('vipBio').textContent = roomData.ownerData.bio;
-  document.getElementById('userAvatar').src = roomData.ownerData.avatar;
-  document.getElementById('agency').style.backgroundImage = `url(${roomData.ownerData.agencyBg})`;
-
-  document.getElementById('seatsCount').textContent = roomData.seats;
-  document.getElementById('doorText').textContent = roomData.agencyOpen? 'قفل باب الوكالة' : 'فتح باب الوكالة';
-  document.getElementById('agencyText').textContent = roomData.agencyRunning? 'ايقاف الوكالة' : 'تشغيل الوكالة';
-  document.getElementById('micText').textContent = roomData.allowMic? 'منع الصعود للمايك' : 'السماح بالصعود للمايك';
-
+  if(roomData.ownerData) {
+    document.getElementById('vipId').textContent = roomData.ownerData.vipId;
+    document.getElementById('ownerImg').src = roomData.ownerData.avatar || `https://ui-avatars.com/api/?name=${roomData.ownerData.username}&background=a855f7&color=fff`;
+  }
+  document.getElementById('peopleCount').textContent = roomData.members?.size || 0;
   renderSeats();
-  if(!isOwner) document.querySelector('.settings-btn').style.display = 'none';
 }
 
 function renderSeats() {
   const area = document.getElementById('seatsArea');
-  const cols = roomData.seats <= 4? 2 : roomData.seats <= 8? 4 : roomData.seats <= 12? 4 : 5;
-  area.style.gridTemplateColumns = `repeat(${cols}, 1fr)`;
   area.innerHTML = '';
-
-  for(let i=0; i<roomData.seats; i++) {
+  const seats = roomData.seats || 12;
+  
+  for(let i=1; i<=seats; i++) {
     const seat = document.createElement('div');
-    seat.className = 'seat';
-    seat.innerHTML = `<div class="mic">🎤</div>`;
-    seat.id = `seat-${i}`;
+    seat.className = 'gold-seat';
+    const circle = document.createElement('div');
+    circle.className = 'seat-circle empty';
+    if([8,10,11].includes(i)) circle.className = 'seat-circle locked';
+    seat.appendChild(circle);
+    seat.innerHTML += `<div class="seat-num">${i}</div>`;
     area.appendChild(seat);
   }
 }
 
-// تفاعلات 3D كبيرة
-socket.on('show-reaction', ({userId, reaction}) => {
-  const seats = document.querySelectorAll('.seat');
-  const randomSeat = seats[Math.floor(Math.random() * seats.length)];
-  const div = document.createElement('div');
-  div.className = 'big-reaction';
-  div.textContent = reaction;
-  randomSeat.appendChild(div);
-  setTimeout(()=>div.remove(), 3000);
-});
-
-// شات
-socket.on('new-msg', ({vipId, name, msg}) => {
-  const div = document.createElement('div');
-  div.className = 'chat-msg';
-  div.innerHTML = `<div class="name">ID:${vipId} ${name}</div><div>${msg}</div>`;
-  document.getElementById('chatMsgs').appendChild(div);
-  document.getElementById('chatMsgs').scrollTop = 999999;
-});
-
-function toggleSettings(){document.getElementById('settingsPanel').classList.toggle('show')}
-
-function changeSeats(){
-  const next = {4:8,8:12,12:16,16:20,20:4}[roomData.seats];
-  socket.emit('update-room', {roomId, userId, updates:{seats:next}});
-}
-
-function toggleDoor(){
-  socket.emit('update-room', {roomId, userId, updates:{agencyOpen:!roomData.agencyOpen}});
-}
-
-function toggleAgency(){
-  socket.emit('update-room', {roomId, userId, updates:{agencyRunning:!roomData.agencyRunning}});
-}
-
-function toggleMic(){
-  socket.emit('update-room', {roomId, userId, updates:{allowMic:!roomData.allowMic}});
-}
-
-function sendReact(r){
-  socket.emit('big-reaction', {roomId, userId, reaction:r});
-}
-
-function sendMsg(){
-  const msg = document.getElementById('msgInput').value.trim();
-  if(msg) socket.emit('agency-msg', {roomId, userId, msg});
-  document.getElementById('msgInput').value = '';
-}
-
-function manageMembers(){
-  const members = Array.from(roomData.members.values());
-  const list = members.map(m => `${m.vipId} - ${m.displayName}`).join('\n');
-  const targetId = prompt('اكتب ID العضو للطرد:\n\n' + list);
-  if(targetId) socket.emit('kick-member', {roomId, ownerId: userId, targetId});
-}
-
-function makeAdmin(){
-  const members = Array.from(roomData.members.values());
-  const list = members.map(m => `${m.vipId} - ${m.displayName}`).join('\n');
-  const targetId = prompt('اكتب ID العضو لاعطائه ادمن:\n\n' + list);
-  if(targetId) socket.emit('make-admin', {roomId, ownerId: userId, targetId});
-}
-
-function changeBg(){alert('ارفع صورة الخلفية من الاعدادات')}
-function changeDecor(){alert('ارفع صورة الديكور')}
-function changeAvatar(){alert('ارفع صورة الحساب')}
+function toggleSettings(){alert('اعدادات الوكالة')}
 </script>
 </body>
 </html>
