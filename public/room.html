@@ -8,27 +8,25 @@
 <style>
 * { margin: 0; padding: 0; box-sizing: border-box; }
 body { font-family: 'Segoe UI', sans-serif; background: #0a0a14; color: #fff; padding-bottom: 70px; }
-
-/* شاشة دخول المالك - فل سكرين شفاف */
-.entry-screen { 
-  position: fixed; top: 0; left: 0; width: 100%; height: 100vh; 
-  background: rgba(0,0,0,0.85); 
-  z-index: 9999; display: none; justify-content: center; align-items: center; flex-direction: column;
-  backdrop-filter: blur(5px);
+.entry-screen {
+  position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+  background: #000;
+  z-index: 9999; display: none; justify-content: center; align-items: center;
+  overflow: hidden;
 }
-.entry-video { 
-  width: 100%; height: 100vh; object-fit: cover; 
+.entry-video {
+  width: 100vw; height: 100vh; object-fit: cover;
   position: absolute; top: 0; left: 0;
-  opacity: 0.6; /* شفاف شوي */
+  opacity: 0.75;
+  filter: blur(1px);
 }
-.entry-text { 
-  color: #FFD700; font-size: 32px; font-weight: bold; 
-  text-shadow: 0 0 20px #FFD700, 0 0 40px #ff00ff; 
+.entry-text {
+  color: #FFD700; font-size: 36px; font-weight: bold;
+  text-shadow: 0 0 30px #FFD700, 0 0 60px #ff00ff;
   animation: textPulse 1s infinite; z-index: 10;
   position: relative;
 }
 @keyframes textPulse { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.7; transform: scale(1.05); } }
-
 .header { background: linear-gradient(90deg, #141428, #1a1a2e); padding: 15px; border-bottom: 3px solid #ff00ff; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 10px rgba(255,0,255,0.3); position: relative; z-index: 100; }
 .header h1 { color: #ff00ff; font-size: 18px; font-weight: bold; text-shadow: 0 0 10px #ff00ff; }
 .header span { cursor: pointer; transition: 0.3s; }
@@ -69,9 +67,8 @@ body { font-family: 'Segoe UI', sans-serif; background: #0a0a14; color: #fff; pa
 </style>
 </head>
 <body>
-<!-- شاشة دخول المالك VIP -->
 <div class="entry-screen" id="entryScreen">
-  <video class="entry-video" id="entryVideo" playsinline autoplay muted></video>
+  <video class="entry-video" id="entryVideo" playsinline autoplay></video>
   <div class="entry-text" id="entryText"></div>
 </div>
 
@@ -82,7 +79,7 @@ body { font-family: 'Segoe UI', sans-serif; background: #0a0a14; color: #fff; pa
 </div>
 
 <div class="lion-container">
-  <img class="lion-img" src="https://i.ibb.co/6RJ5hq6/lion.png" alt="السبع الحلبي" onerror="this.src='https://cdn-icons-png.flaticon.com/512/616/616430.png'">
+  <img class="lion-img" src="https://i.imgur.com/8QJZQxG.png" alt="السبع الحلبي">
   <div class="owner-badge">👑 ادارة عامة 10000 TOP</div>
 </div>
 
@@ -133,16 +130,7 @@ let myUser = null;
 let currentRoom = null;
 let myMicIndex = -1;
 
-if (!token) {
-  alert('لازم تسجل دخول اول');
-  location.href = '/';
-}
-
-// تشغيل الصوت تلقائي بالمتصفح
-document.addEventListener('click', () => {
-  const video = document.getElementById('entryVideo');
-  if (video) video.muted = false;
-}, { once: true });
+if (!token) { alert('لازم تسجل دخول اول'); location.href = '/'; }
 
 socket.emit('joinRoom', { roomId, token });
 
@@ -150,23 +138,26 @@ socket.on('ownerEntry', (data) => {
   const screen = document.getElementById('entryScreen');
   const video = document.getElementById('entryVideo');
   const text = document.getElementById('entryText');
-  
+
   video.src = data.video;
-  video.muted = true; // يشتغل صامت اول شي عشان المتصفح
+  video.muted = false;
   video.loop = false;
   video.playsInline = true;
+  video.controls = false;
   text.textContent = data.text;
   screen.style.display = 'flex';
-  
-  video.play().then(() => {
-    // بعد ما يشتغل شيل الصامت
-    setTimeout(() => { video.muted = false; }, 500);
-  }).catch(e => console.log('Autoplay blocked:', e));
-  
-  // اخفي بعد المدة
+
+  video.play().catch(e => {
+    video.muted = true;
+    video.play().then(() => {
+      setTimeout(() => { video.muted = false; }, 800);
+    });
+  });
+
   setTimeout(() => {
     screen.style.display = 'none';
     video.pause();
+    video.src = '';
   }, data.duration * 1000);
 });
 
@@ -179,87 +170,3 @@ socket.on('roomUpdate', (room) => {
 });
 
 function updateMics(mics) {
-  const grid = document.getElementById('micsGrid');
-  grid.innerHTML = '';
-  myMicIndex = -1;
-  mics.forEach((mic, idx) => {
-    const div = document.createElement('div');
-    div.className = 'mic';
-    if (mic === 'closed') {
-      div.classList.add('closed');
-      div.innerHTML = `<span class="mic-number">${idx + 1}</span><div class="mic-icon">🔒</div><div class="mic-name">مغلق</div>`;
-    } else if (mic) {
-      const user = currentRoom.users.find(u => u.socketId === mic);
-      if (user) {
-        div.classList.add('taken');
-        if (user.level === '10000 TOP') div.classList.add('owner');
-        if (mic === socket.id) {
-          myMicIndex = idx;
-          document.getElementById('reactions').style.display = 'flex';
-          document.getElementById('micBtn').innerHTML = '<span class="footer-btn-icon">🔽</span><span>نزول مايك</span>';
-        }
-        div.innerHTML = `<span class="mic-number">${idx + 1}</span><div class="mic-icon">🎤</div><div class="mic-name">${user.username}</div>`;
-        div.onclick = () => { if (mic === socket.id) socket.emit('leaveMic', { roomId }); };
-      }
-    } else {
-      div.innerHTML = `<span class="mic-number">${idx + 1}</span><div class="mic-icon">🎤</div><div class="mic-name">فاضي</div>`;
-      div.onclick = () => socket.emit('takeMic', { roomId, micIndex: idx });
-    }
-    grid.appendChild(div);
-  });
-  if (myMicIndex === -1) {
-    document.getElementById('reactions').style.display = 'none';
-    document.getElementById('micBtn').innerHTML = '<span class="footer-btn-icon">🎤</span><span>صعود مايك</span>';
-  }
-}
-
-function updateUsers(users) {
-  const list = document.getElementById('usersList');
-  list.innerHTML = '';
-  users.forEach(u => {
-    const div = document.createElement('div');
-    div.className = 'user-item';
-    let actions = '';
-    if (myUser?.email === 'm1234ahmad@gmail.com' && u.userId !== myUser._id) {
-      actions = `<div class="admin-actions">
-        <button class="admin-btn" onclick="adminAction('KICK','${u.userId}')">طرد</button>
-        <button class="admin-btn" onclick="adminAction('CLOSE_MIC','${u.userId}')">غلق مايك</button>
-      </div>`;
-    }
-    div.innerHTML = `<span>${u.username} <span class="user-level">${u.level}</span>${u.vip > 0 ? '<span class="user-vip">VIP' + u.vip + '</span>' : ''}</span>${actions}`;
-    list.appendChild(div);
-  });
-}
-
-function adminAction(action, targetUserId) {
-  if (confirm('متأكد من ' + (action === 'KICK' ? 'الطرد' : 'غلق المايك') + '؟')) {
-    socket.emit('adminAction', { action, targetUserId, roomId });
-  }
-}
-
-document.getElementById('micBtn').onclick = () => {
-  if (myMicIndex >= 0) {
-    socket.emit('leaveMic', { roomId });
-  } else {
-    const emptyMic = currentRoom.mics.findIndex(m => m === null);
-    if (emptyMic >= 0) {
-      socket.emit('takeMic', { roomId, micIndex: emptyMic });
-    } else {
-      alert('كل المايكات محجوزة');
-    }
-  }
-};
-
-function sendReaction(emoji) { socket.emit('sendReaction', { roomId, micIndex: myMicIndex, emoji }); }
-function scrollToUsers() { document.querySelector('.users-list').scrollIntoView({ behavior: 'smooth' }); }
-function logout() { localStorage.removeItem('token'); location.href = '/'; }
-
-fetch('/api/me', { headers: { 'Authorization': 'Bearer ' + token } })
-  .then(r => r.json())
-  .then(u => { if (u.error) return location.href = '/'; myUser = u; })
-  .catch(() => location.href = '/');
-
-socket.on('disconnect', () => { alert('انقطع الاتصال بالسيرفر'); });
-</script>
-</body>
-</html>
