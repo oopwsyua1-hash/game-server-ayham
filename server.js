@@ -19,7 +19,6 @@ app.use(cors());
 app.use(express.json());
 app.use(express.static('public'));
 
-// عدّل ايميلك هون مباشرة اذا ما عندك.env
 const OWNER_EMAIL = process.env.OWNER_EMAIL || 'ايميلك@gmail.com';
 const OWNER_ENTRY_VIDEO = 'https://files.catbox.moe/v0ec0k.mp4';
 const JWT_SECRET = process.env.JWT_SECRET || 'sabaa-gold-secret-2024';
@@ -86,7 +85,6 @@ async function isOwner(userId) {
     return user && user.email === OWNER_EMAIL;
 }
 
-// تسجيل حساب جديد
 app.post('/api/register', async (req, res) => {
     try {
         const { username, email, password } = req.body;
@@ -101,22 +99,17 @@ app.post('/api/register', async (req, res) => {
             email,
             password: hashedPassword,
             level: isOwnerAccount? 10000 : 1,
-            vip: isOwnerAccount? 10 : 0,
-            points: 0,
-            wins: 0,
-            games: 0
+            vip: isOwnerAccount? 10 : 0
         });
         await user.save();
 
         const token = jwt.sign({ userId: user._id }, JWT_SECRET);
         res.json({ token, user: { username: user.username, email: user.email, level: user.level, vip: user.vip } });
     } catch (error) {
-        console.log(error);
         res.status(500).json({ message: 'خطأ بالسيرفر' });
     }
 });
 
-// تسجيل دخول
 app.post('/api/login', async (req, res) => {
     try {
         const { email, password } = req.body;
@@ -133,12 +126,10 @@ app.post('/api/login', async (req, res) => {
         const token = jwt.sign({ userId: user._id }, JWT_SECRET);
         res.json({ token, user: { username: user.username, email: user.email, level: user.level, vip: user.vip } });
     } catch (error) {
-        console.log(error);
         res.status(500).json({ message: 'خطأ بالسيرفر' });
     }
 });
 
-// جلب البروفايل
 app.get('/api/profile', authMiddleware, async (req, res) => {
     try {
         const user = await User.findById(req.userId);
@@ -151,7 +142,6 @@ app.get('/api/profile', authMiddleware, async (req, res) => {
     }
 });
 
-// تعديل البروفايل
 app.post('/api/profile/update', authMiddleware, async (req, res) => {
     try {
         const { bio, profilePic, coverPic } = req.body;
@@ -166,7 +156,6 @@ app.post('/api/profile/update', authMiddleware, async (req, res) => {
     }
 });
 
-// باند حساب - بس للمالك
 app.post('/api/admin/ban', authMiddleware, async (req, res) => {
     try {
         if (!await isOwner(req.userId)) return res.status(403).json({ message: 'ماعندك صلاحية' });
@@ -179,19 +168,6 @@ app.post('/api/admin/ban', authMiddleware, async (req, res) => {
     }
 });
 
-// فك باند
-app.post('/api/admin/unban', authMiddleware, async (req, res) => {
-    try {
-        if (!await isOwner(req.userId)) return res.status(403).json({ message: 'ماعندك صلاحية' });
-        const { targetUserId } = req.body;
-        await User.findByIdAndUpdate(targetUserId, { banned: false, banReason: '' });
-        res.json({ message: 'تم فك الباند' });
-    } catch (error) {
-        res.status(500).json({ message: 'خطأ بالسيرفر' });
-    }
-});
-
-// جلب البلاغات - بس للمالك
 app.get('/api/admin/reports', authMiddleware, async (req, res) => {
     try {
         if (!await isOwner(req.userId)) return res.status(403).json({ message: 'ماعندك صلاحية' });
@@ -202,24 +178,18 @@ app.get('/api/admin/reports', authMiddleware, async (req, res) => {
     }
 });
 
-// ارسال بلاغ
-app.post('/api/report', authMiddleware, async (req, res) => {
-    try {
-        const { reportedId, reason, roomId } = req.body;
-        const report = new Report({ reporterId: req.userId, reportedId, reason, roomId });
-        await report.save();
-        res.json({ message: 'تم ارسال البلاغ' });
-    } catch (error) {
-        res.status(500).json({ message: 'خطأ بالسيرفر' });
-    }
+// خلي /me يفتح me.html عشان ما يطلع Cannot GET /me
+app.get('/me', (req, res) => {
+    res.sendFile(__dirname + '/public/me.html');
 });
 
-// Socket.IO
+app.get('/room', (req, res) => {
+    res.sendFile(__dirname + '/public/room.html');
+});
+
 const rooms = {};
 
 io.on('connection', (socket) => {
-    console.log('User connected:', socket.id);
-
     socket.on('joinRoom', async ({ roomId, token }) => {
         try {
             const decoded = jwt.verify(token, JWT_SECRET);
@@ -257,7 +227,6 @@ io.on('connection', (socket) => {
 
             rooms[roomId].users.push(userData);
 
-            // دخولية المالك + تنبيه الادارة الرسمي
             if (user.email === OWNER_EMAIL) {
                 io.to(roomId).emit('ownerEntry', {
                     video: OWNER_ENTRY_VIDEO,
@@ -273,8 +242,6 @@ io.on('connection', (socket) => {
             }
 
             io.to(roomId).emit('roomUpdate', rooms[roomId]);
-            socket.to(roomId).emit('userJoined', { username: user.username });
-
         } catch (error) {
             console.log('Join room error:', error);
         }
@@ -284,53 +251,16 @@ io.on('connection', (socket) => {
         const room = rooms[roomId];
         const user = room.users.find(u => u.socketId === socket.id);
         if (!room ||!user) return;
-
-        // بس المالك بيصعد عالطول، الباقي لازم اذن
-        if (user.email!== OWNER_EMAIL) {
-            return socket.emit('error', { message: 'لازم اذن من صاحب الوكالة' });
-        }
-
+        if (user.email!== OWNER_EMAIL) return socket.emit('error', { message: 'لازم اذن من صاحب الوكالة' });
         room.mics[micIndex] = socket.id;
         io.to(roomId).emit('roomUpdate', room);
     });
 
-    socket.on('adminAction', async ({ action, targetUserId, roomId, micIndex }) => {
-        const room = rooms[roomId];
-        const admin = room.users.find(u => u.socketId === socket.id);
-        if (!admin || admin.email!== OWNER_EMAIL) return;
-
-        const targetUser = room.users.find(u => u.userId === targetUserId);
-        if (!targetUser) return;
-
-        switch(action) {
-            case 'REMOVE_MIC':
-                const idx = room.mics.indexOf(targetUser.socketId);
-                if (idx!== -1) room.mics[idx] = null;
-                io.to(targetUser.socketId).emit('removedFromMic');
-                break;
-            case 'FORCE_MIC':
-                room.mics[micIndex] = targetUser.socketId;
-                io.to(targetUser.socketId).emit('forcedToMic', { micIndex });
-                break;
-            case 'KICK':
-                io.to(targetUser.socketId).emit('kicked');
-                room.users = room.users.filter(u => u.socketId!== targetUser.socketId);
-                break;
-            case 'MUTE_MIC':
-                io.to(targetUser.socketId).emit('muted');
-                break;
-            case 'ADD_ADMIN':
-                await Room.findByIdAndUpdate(room.dbId, { $addToSet: { admins: targetUserId } });
-                break;
-        }
-        io.to(roomId).emit('roomUpdate', room);
-    });
-
-    socket.on('sendMessage', ({ roomId, message, image }) => {
+    socket.on('sendMessage', ({ roomId, message }) => {
         const room = rooms[roomId];
         const user = room.users.find(u => u.socketId === socket.id);
         if (!user) return;
-        io.to(roomId).emit('newMessage', { username: user.username, message, image, userId: user.userId });
+        io.to(roomId).emit('newMessage', { username: user.username, message, userId: user.userId });
     });
 
     socket.on('sendReaction', ({ roomId, micIndex, emoji }) => {
@@ -344,10 +274,8 @@ io.on('connection', (socket) => {
             if (userIndex!== -1) {
                 const micIndex = room.mics.indexOf(socket.id);
                 if (micIndex!== -1) room.mics[micIndex] = null;
-                const username = room.users[userIndex].username;
                 room.users.splice(userIndex, 1);
                 io.to(roomId).emit('roomUpdate', room);
-                io.to(roomId).emit('userLeft', { username });
             }
         }
     });
