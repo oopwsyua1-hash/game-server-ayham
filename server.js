@@ -5,6 +5,7 @@ const mongoose = require('mongoose');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
 const cors = require('cors');
+const path = require('path');
 
 const app = express();
 const server = http.createServer(app);
@@ -86,6 +87,16 @@ const auth = async (req, res, next) => {
 app.get('/api/me', auth, (req, res) => {
   res.json({ _id: req.user._id, username: req.user.username, email: req.user.email, level: req.user.level, vip: req.user.vip, coins: req.user.coins });
 });
+
+// ===== هاد الحل تبع Cannot GET /me =====
+app.get('/me', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'me.html'));
+});
+
+app.get('/room.html', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'room.html'));
+});
+// =======================================
 
 // Socket.io
 const rooms = new Map();
