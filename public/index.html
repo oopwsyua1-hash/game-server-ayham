@@ -1,96 +1,62 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>السبع الحلبي - تسجيل الدخول</title>
-<style>
-* { margin: 0; padding: 0; box-sizing: border-box; }
-body { font-family: 'Segoe UI', sans-serif; background: linear-gradient(135deg, #0a0a14 0%, #1a1a2e 100%); color: #fff; min-height: 100vh; display: flex; justify-content: center; align-items: center; }
-.container { width: 90%; max-width: 400px; background: #141428; border-radius: 20px; padding: 30px; border: 2px solid #ff00ff; box-shadow: 0 0 30px rgba(255,0,255,0.3); }
-.logo { text-align: center; margin-bottom: 30px; }
-.logo img { width: 80px; height: 80px; border-radius: 50%; border: 3px solid #FFD700; box-shadow: 0 0 20px #FFD700; margin-bottom: 10px; }
-.logo h1 { color: #ff00ff; font-size: 28px; text-shadow: 0 0 10px #ff00ff; margin-bottom: 5px; }
-.logo p { color: #aaa; font-size: 14px; }
-input { width: 100%; padding: 15px; margin: 10px 0; background: #1a1a2e; border: 2px solid #333; border-radius: 10px; color: #fff; font-size: 16px; transition: 0.3s; }
-input:focus { outline: none; border-color: #ff00ff; box-shadow: 0 0 10px rgba(255,0,255,0.5); }
-.btn { width: 100%; padding: 15px; margin: 10px 0; background: linear-gradient(45deg, #ff00ff, #cc00cc); border: none; border-radius: 10px; color: #fff; font-size: 18px; font-weight: bold; cursor: pointer; transition: 0.3s; }
-.btn:hover { transform: scale(1.05); box-shadow: 0 0 20px #ff00ff; }
-.btn-owner { background: linear-gradient(45deg, #FFD700, #ff00ff); color: #000; }
-.toggle { text-align: center; margin-top: 20px; color: #aaa; cursor: pointer; }
-.toggle:hover { color: #ff00ff; }
-.error { color: #ff0000; text-align: center; margin: 10px 0; font-size: 14px; }
-</style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>السبع لايف - تسجيل دخول</title>
+  <style>
+    body {
+      background: linear-gradient(180deg, #1a0000, #4a0000);
+      color: #fff;
+      font-family: 'Cairo', sans-serif;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+    }
+   .login-box {
+      background: #00000080;
+      border: 2px solid #FFD700;
+      border-radius: 20px;
+      padding: 40px;
+      text-align: center;
+      width: 300px;
+    }
+    h1 { color: #FFD700; margin-bottom: 30px; }
+    button {
+      background: linear-gradient(45deg, #FFD700, #FF00FF);
+      color: #000;
+      font-size: 20px;
+      padding: 15px;
+      border: none;
+      border-radius: 15px;
+      font-weight: bold;
+      width: 100%;
+      cursor: pointer;
+    }
+  </style>
 </head>
 <body>
-<div class="container">
-  <div class="logo">
-    <img src="https://i.imgur.com/8QJZQxG.png" onerror="this.style.display='none'">
-    <h1>👑 السبع الحلبي</h1>
-    <p>غرف صوتية - 20 مايك</p>
+  <div class="login-box">
+    <h1>👑 السبع لايف</h1>
+    <p style="color: #FFD700; margin-bottom: 20px;">غرف صوتية VIP</p>
+    <button id="ownerLoginBtn">دخول المالك مباشر 👑</button>
   </div>
 
-  <div id="loginForm">
-    <input type="email" id="loginEmail" placeholder="الايميل">
-    <input type="password" id="loginPassword" placeholder="كلمة السر">
-    <div class="error" id="loginError"></div>
-    <button class="btn" onclick="login()">تسجيل دخول</button>
-    <button class="btn btn-owner" onclick="ownerLogin()">👑 دخول المالك مباشر</button>
-    <div class="toggle" onclick="showRegister()">ما عندك حساب؟ سجل جديد</div>
-  </div>
+  <script>
+    document.getElementById('ownerLoginBtn').onclick = async () => {
+      const res = await fetch('/api/owner-login', { method: 'POST' });
+      const data = await res.json();
+      localStorage.setItem('token', data.token);
+      localStorage.setItem('user', JSON.stringify(data.user));
 
-  <div id="registerForm" style="display:none">
-    <input type="text" id="regUsername" placeholder="اسم المستخدم">
-    <input type="email" id="regEmail" placeholder="الايميل">
-    <input type="password" id="regPassword" placeholder="كلمة السر">
-    <div class="error" id="regError"></div>
-    <button class="btn" onclick="register()">حساب جديد</button>
-    <div class="toggle" onclick="showLogin()">عندك حساب؟ سجل دخول</div>
-  </div>
-</div>
+      // هاي الخدعة بتفعل الصوت لكل التطبيق
+      const audio = new Audio();
+      audio.play().catch(() => {});
 
-<script>
-const API = '';
-function showRegister() { document.getElementById('loginForm').style.display='none'; document.getElementById('registerForm').style.display='block'; }
-function showLogin() { document.getElementById('registerForm').style.display='none'; document.getElementById('loginForm').style.display='block'; }
-
-async function login() {
-  const email = document.getElementById('loginEmail').value;
-  const password = document.getElementById('loginPassword').value;
-  const error = document.getElementById('loginError');
-  try {
-    const res = await fetch(API + '/api/login', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({email, password}) });
-    const data = await res.json();
-    if (data.error) { error.textContent = data.error; return; }
-    localStorage.setItem('token', data.token);
-    location.href = '/me';
-  } catch(e) { error.textContent = 'خطأ بالاتصال بالسيرفر'; }
-}
-
-async function register() {
-  const username = document.getElementById('regUsername').value;
-  const email = document.getElementById('regEmail').value;
-  const password = document.getElementById('regPassword').value;
-  const error = document.getElementById('regError');
-  try {
-    const res = await fetch(API + '/api/register', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({username, email, password}) });
-    const data = await res.json();
-    if (data.error) { error.textContent = data.error; return; }
-    localStorage.setItem('token', data.token);
-    location.href = '/me';
-  } catch(e) { error.textContent = 'خطأ بالاتصال بالسيرفر'; }
-}
-
-async function ownerLogin() {
-  try {
-    const res = await fetch(API + '/api/owner-login', { method: 'POST' });
-    const data = await res.json();
-    localStorage.setItem('token', data.token);
-    location.href = '/me';
-  } catch(e) { alert('خطأ بالاتصال بالسيرفر'); }
-}
-
-if (localStorage.getItem('token')) location.href = '/me';
-</script>
+      location.href = '/room.html';
+    }
+  </script>
 </body>
 </html>
