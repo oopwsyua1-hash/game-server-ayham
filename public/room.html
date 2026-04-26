@@ -7,20 +7,327 @@
   <script src="/socket.io/socket.io.js"></script>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
-    body { font-family: 'Segoe UI', sans-serif; background: #0a0a14; color: #fff; padding-bottom: 80px; }
-    #entryOverlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #000; z-index: 9999; justify-content: center; align-items: center; }
-    #entryVideo { width: 100%; height: 100%; object-fit: cover; }
-    #entryText { position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%); color: #FFD700; font-size: 28px; font-weight: bold; text-shadow: 0 0 20px #FFD700; animation: pulse 1s infinite; text-align: center; }
-    @keyframes pulse { 0%,100% { scale: 1; } 50% { scale: 1.1; } }
-   .lion-header { width: 100%; height: 120px; background: #000; display: flex; justify-content: center; align-items: center; border-bottom: 2px solid #FFD700; }
-   .lion-img { width: 100px; height: 100px; animation: lionPulse 2s ease-in-out infinite; filter: drop-shadow(0 0 15px #FFD700); }
-    @keyframes lionPulse { 0%, 100% { transform: scale(1); filter: drop-shadow(0 0 15px #FFD700); } 50% { transform: scale(1.1); filter: drop-shadow(0 0 30px #FFA500); } }
-   .header { background: #141428; padding: 10px 15px; border-bottom: 1px solid #ff00ff; text-align: center; }
-   .header h1 { font-size: 18px; }
-   .container { padding: 15px; max-width: 600px; margin: 0 auto; }
-   .mics-grid { display: grid; grid-template-columns: repeat(5,1fr); gap: 6px; margin: 15px 0; }
-   .mic-slot { background: #141428; padding: 6px 3px; border-radius: 8px; text-align: center; cursor: pointer; border: 2px solid #1a1a2e; min-height: 65px; font-size: 10px; position: relative; transition: all 0.2s; }
-   .mic-slot:hover { transform: scale(1.05); }
-   .mic-slot.taken { background: #2d1b69; border-color: #a855f7; }
-   .mic-slot.closed { background: #3a1a1a; border-color: #ff0000; cursor: not-allowed; }
-   .mic-slot.owner { background: linear-gradient(135deg, #FFD700, #FFA500); color: #000; font-weight:
+    body { font-family: 'Segoe UI', sans-serif; background: #0a0a14; color: #fff; padding-bottom: 70px; }
+    
+    .entry-screen { 
+      position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
+      background: #000; z-index: 9999; display: none; 
+      justify-content: center; align-items: center; flex-direction: column; 
+    }
+    .entry-video { width: 100%; max-width: 400px; border-radius: 10px; }
+    .entry-text { 
+      color: #FFD700; font-size: 24px; font-weight: bold; margin-top: 20px; 
+      text-shadow: 0 0 20px #FFD700; animation: pulse 1s infinite; 
+    }
+    @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+    
+    .header { 
+      background: #141428; padding: 15px; border-bottom: 2px solid #ff00ff; 
+      display: flex; justify-content: space-between; align-items: center; 
+    }
+    .header h1 { color: #ff00ff; font-size: 18px; }
+    .header span { cursor: pointer; }
+    
+    .lion-container { text-align: center; padding: 10px 0; }
+    .lion-img { 
+      width: 100px; height: 100px; 
+      animation: lionPulse 2s ease infinite; 
+      filter: drop-shadow(0 0 15px #FFD700);
+    }
+    @keyframes lionPulse { 
+      0%, 100% { transform: scale(1); filter: drop-shadow(0 0 10px #FFD700); } 
+      50% { transform: scale(1.15); filter: drop-shadow(0 0 30px #FFD700); } 
+    }
+    
+    .reactions { 
+      display: flex; justify-content: center; gap: 15px; padding: 15px; 
+      background: #141428; margin: 0 15px; border-radius: 10px;
+    }
+    .reaction-btn { 
+      font-size: 28px; cursor: pointer; transition: transform 0.2s; 
+      background: none; border: none; 
+    }
+    .reaction-btn:hover { transform: scale(1.3); }
+    
+    .mics-grid { 
+      display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; 
+      padding: 15px; max-width: 500px; margin: 0 auto; 
+    }
+    .mic { 
+      aspect-ratio: 1; background: #1a1a2e; border-radius: 10px; 
+      border: 2px solid #333; display: flex; flex-direction: column; 
+      align-items: center; justify-content: center; cursor: pointer; 
+      position: relative; font-size: 10px; transition: all 0.3s;
+    }
+    .mic:hover { border-color: #ff00ff; }
+    .mic.taken { border-color: #a855f7; background: #2d1b4e; }
+    .mic.owner { 
+      border-color: #FFD700; background: #4a3c00; 
+      box-shadow: 0 0 15px #FFD700; animation: ownerGlow 2s ease infinite; 
+    }
+    .mic.closed { border-color: #ff0000; background: #3a1a1a; opacity: 0.5; cursor: not-allowed; }
+    @keyframes ownerGlow { 
+      0%, 100% { box-shadow: 0 0 15px #FFD700; } 
+      50% { box-shadow: 0 0 25px #FFD700; } 
+    }
+    .mic-icon { font-size: 20px; margin-bottom: 3px; }
+    .mic-name { 
+      font-size: 8px; text-align: center; max-width: 100%; 
+      overflow: hidden; text-overflow: ellipsis; white-space: nowrap; padding: 0 2px;
+    }
+    .mic-number { position: absolute; top: 2px; left: 2px; font-size: 9px; color: #666; }
+    
+    .users-list { 
+      background: #141428; margin: 15px; border-radius: 10px; 
+      padding: 15px; max-height: 200px; overflow-y: auto; 
+    }
+    .users-list h3 { margin-bottom: 10px; color: #ff00ff; font-size: 14px; }
+    .user-item { 
+      padding: 8px; border-bottom: 1px solid #1a1a2e; 
+      display: flex; justify-content: space-between; align-items: center; font-size: 13px; 
+    }
+    .user-item:last-child { border-bottom: none; }
+    .user-level { color: #00ffff; font-size: 11px; }
+    .user-vip { color: #FFD700; font-size: 11px; margin-right: 5px; }
+    .admin-actions { display: flex; gap: 5px; }
+    .admin-btn { 
+      padding: 4px 8px; background: #ff0000; border: none; border-radius: 5px; 
+      color: white; font-size: 10px; cursor: pointer; 
+    }
+    .admin-btn:hover { background: #cc0000; }
+    
+    .footer { 
+      position: fixed; bottom: 0; width: 100%; background: #141428; 
+      border-top: 2px solid #ff00ff; display: flex; 
+      justify-content: space-around; padding: 12px 0; z-index: 100;
+    }
+    .footer-btn { 
+      background: none; border: none; color: #aaa; font-size: 11px; 
+      cursor: pointer; display: flex; flex-direction: column; 
+      align-items: center; gap: 3px; transition: color 0.3s;
+    }
+    .footer-btn:hover { color: #ff00ff; }
+    .footer-btn.active { color: #ff00ff; }
+    .footer-btn-icon { font-size: 20px; }
+  </style>
+</head>
+<body>
+  <div class="entry-screen" id="entryScreen">
+    <video class="entry-video" id="entryVideo" autoplay muted></video>
+    <div class="entry-text" id="entryText"></div>
+  </div>
+
+  <div class="header">
+    <span onclick="location.href='/me'">← رجوع</span>
+    <h1>🎤 غرفة السبع الحلبي</h1>
+    <span>👥 <span id="userCount">0</span></span>
+  </div>
+
+  <div class="lion-container">
+    <img class="lion-img" src="https://i.imgur.com/8Qf5zKz.png" alt="السبع الحلبي">
+  </div>
+
+  <div class="reactions" id="reactions" style="display:none">
+    <button class="reaction-btn" onclick="sendReaction('😂')">😂</button>
+    <button class="reaction-btn" onclick="sendReaction('❤️')">❤️</button>
+    <button class="reaction-btn" onclick="sendReaction('😍')">😍</button>
+    <button class="reaction-btn" onclick="sendReaction('🎉')">🎉</button>
+    <button class="reaction-btn" onclick="sendReaction('😢')">😢</button>
+  </div>
+
+  <div class="mics-grid" id="micsGrid"></div>
+
+  <div class="users-list">
+    <h3>المتواجدين (<span id="totalUsers">0</span>)</h3>
+    <div id="usersList"></div>
+  </div>
+
+  <div class="footer">
+    <button class="footer-btn" onclick="scrollToUsers()">
+      <span class="footer-btn-icon">👥</span>
+      <span>المتواجدين</span>
+    </button>
+    <button class="footer-btn">
+      <span class="footer-btn-icon">🛡️</span>
+      <span>الادمن</span>
+    </button>
+    <button class="footer-btn">
+      <span class="footer-btn-icon">👑</span>
+      <span>صاحب الغرفة</span>
+    </button>
+    <button class="footer-btn" onclick="location.href='/me'">
+      <span class="footer-btn-icon">➕</span>
+      <span>انشاء غرفة</span>
+    </button>
+    <button class="footer-btn" id="micBtn">
+      <span class="footer-btn-icon">🎤</span>
+      <span>صعود مايك</span>
+    </button>
+  </div>
+
+  <script>
+    const socket = io();
+    const token = localStorage.getItem('token');
+    const urlParams = new URLSearchParams(window.location.search);
+    const roomId = urlParams.get('roomId') || '10000';
+    let myUser = null;
+    let currentRoom = null;
+    let myMicIndex = -1;
+
+    if (!token) {
+      alert('لازم تسجل دخول اول');
+      location.href = '/';
+    }
+
+    // دخول الغرفة
+    socket.emit('joinRoom', { roomId, token });
+
+    // استقبال دخولية المالك
+    socket.on('ownerEntry', (data) => {
+      const screen = document.getElementById('entryScreen');
+      const video = document.getElementById('entryVideo');
+      const text = document.getElementById('entryText');
+      video.src = data.video;
+      text.textContent = data.text;
+      screen.style.display = 'flex';
+      video.play();
+      setTimeout(() => { 
+        screen.style.display = 'none'; 
+      }, data.duration * 1000);
+    });
+
+    // تحديث الغرفة
+    socket.on('roomUpdate', (room) => {
+      currentRoom = room;
+      updateMics(room.mics);
+      updateUsers(room.users);
+      document.getElementById('userCount').textContent = room.users.length;
+      document.getElementById('totalUsers').textContent = room.users.length;
+    });
+
+    // رسم المايكات
+    function updateMics(mics) {
+      const grid = document.getElementById('micsGrid');
+      grid.innerHTML = '';
+      myMicIndex = -1;
+      
+      mics.forEach((mic, idx) => {
+        const div = document.createElement('div');
+        div.className = 'mic';
+        
+        if (mic === 'closed') {
+          div.classList.add('closed');
+          div.innerHTML = `
+            <span class="mic-number">${idx + 1}</span>
+            <div class="mic-icon">🔒</div>
+            <div class="mic-name">مغلق</div>
+          `;
+        } else if (mic) {
+          const user = currentRoom.users.find(u => u.socketId === mic);
+          if (user) {
+            div.classList.add('taken');
+            if (user.level === '10000 TOP') div.classList.add('owner');
+            if (mic === socket.id) { 
+              myMicIndex = idx; 
+              document.getElementById('reactions').style.display = 'flex';
+              document.getElementById('micBtn').innerHTML = '<span class="footer-btn-icon">🔽</span><span>نزول مايك</span>';
+            }
+            div.innerHTML = `
+              <span class="mic-number">${idx + 1}</span>
+              <div class="mic-icon">🎤</div>
+              <div class="mic-name">${user.username}</div>
+            `;
+            div.onclick = () => {
+              if (mic === socket.id) socket.emit('leaveMic', { roomId });
+            };
+          }
+        } else {
+          div.innerHTML = `
+            <span class="mic-number">${idx + 1}</span>
+            <div class="mic-icon">🎤</div>
+            <div class="mic-name">فاضي</div>
+          `;
+          div.onclick = () => socket.emit('takeMic', { roomId, micIndex: idx });
+        }
+        grid.appendChild(div);
+      });
+      
+      if (myMicIndex === -1) {
+        document.getElementById('reactions').style.display = 'none';
+        document.getElementById('micBtn').innerHTML = '<span class="footer-btn-icon">🎤</span><span>صعود مايك</span>';
+      }
+    }
+
+    // تحديث قائمة المتواجدين
+    function updateUsers(users) {
+      const list = document.getElementById('usersList');
+      list.innerHTML = '';
+      users.forEach(u => {
+        const div = document.createElement('div');
+        div.className = 'user-item';
+        let actions = '';
+        if (myUser?.email === 'm1234ahmad@gmail.com' && u.userId !== myUser._id) {
+          actions = `<div class="admin-actions">
+            <button class="admin-btn" onclick="adminAction('KICK','${u.userId}')">طرد</button>
+            <button class="admin-btn" onclick="adminAction('CLOSE_MIC','${u.userId}')">غلق مايك</button>
+          </div>`;
+        }
+        div.innerHTML = `
+          <span>
+            ${u.username} 
+            <span class="user-level">${u.level}</span>
+            ${u.vip > 0 ? '<span class="user-vip">VIP' + u.vip + '</span>' : ''}
+          </span>
+          ${actions}
+        `;
+        list.appendChild(div);
+      });
+    }
+
+    // اوامر الادمن
+    function adminAction(action, targetUserId) {
+      if (confirm('متأكد من ' + (action === 'KICK' ? 'الطرد' : 'غلق المايك') + '؟')) {
+        socket.emit('adminAction', { action, targetUserId, roomId });
+      }
+    }
+
+    // زر المايك
+    document.getElementById('micBtn').onclick = () => {
+      if (myMicIndex >= 0) {
+        socket.emit('leaveMic', { roomId });
+      } else {
+        const emptyMic = currentRoom.mics.findIndex(m => m === null);
+        if (emptyMic >= 0) {
+          socket.emit('takeMic', { roomId, micIndex: emptyMic });
+        } else {
+          alert('كل المايكات محجوزة');
+        }
+      }
+    };
+
+    // ارسال رياكشن
+    function sendReaction(emoji) {
+      console.log('Reaction:', emoji);
+    }
+
+    // سكرول للمتواجدين
+    function scrollToUsers() {
+      document.querySelector('.users-list').scrollIntoView({ behavior: 'smooth' });
+    }
+
+    // جلب بياناتي
+    fetch('/api/me', { headers: { 'Authorization': 'Bearer ' + token } })
+      .then(r => r.json())
+      .then(u => {
+        if (u.error) return location.href = '/';
+        myUser = u;
+      })
+      .catch(() => location.href = '/');
+
+    // اذا انقطع الاتصال
+    socket.on('disconnect', () => {
+      alert('انقطع الاتصال بالسيرفر');
+    });
+  </script>
+</body>
+</html>
