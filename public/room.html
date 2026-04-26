@@ -13,17 +13,11 @@
       position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
       background: #000; z-index: 9999; display: none; 
       justify-content: center; align-items: center; flex-direction: column; 
-      cursor: pointer;
     }
     .entry-video { width: 100%; max-width: 400px; border-radius: 15px; box-shadow: 0 0 30px #FFD700; }
     .entry-text { 
       color: #FFD700; font-size: 26px; font-weight: bold; margin-top: 25px; 
       text-shadow: 0 0 20px #FFD700; animation: textPulse 1s infinite; 
-    }
-    .entry-hint {
-      color: #FFD700; margin-top: 20px; font-size: 16px; 
-      animation: textPulse 1s infinite; background: rgba(255,215,0,0.1);
-      padding: 10px 20px; border-radius: 20px; border: 1px solid #FFD700;
     }
     @keyframes textPulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.6; } }
     
@@ -153,10 +147,9 @@
   </style>
 </head>
 <body>
-  <div class="entry-screen" id="entryScreen" onclick="playEntryVideo()">
+  <div class="entry-screen" id="entryScreen">
     <video class="entry-video" id="entryVideo" playsinline></video>
     <div class="entry-text" id="entryText"></div>
-    <div class="entry-hint">🔊 اضغط للتشغيل مع الصوت</div>
   </div>
 
   <div class="header">
@@ -216,36 +209,51 @@
     let myUser = null;
     let currentRoom = null;
     let myMicIndex = -1;
-    let entryVideoData = null;
 
     if (!token) {
       alert('لازم تسجل دخول اول');
       location.href = '/';
     }
 
+    // خدعة تشغيل الصوت تلقائي: نشغل صوت وهمي اول ما يلمس الصفحة
+    document.body.addEventListener('touchstart', () => {
+      const audio = new Audio();
+      audio.play().catch(() => {});
+    }, { once: true });
+    
+    document.body.addEventListener('click', () => {
+      const audio = new Audio();
+      audio.play().catch(() => {});
+    }, { once: true });
+
     socket.emit('joinRoom', { roomId, token });
 
     socket.on('ownerEntry', (data) => {
-      entryVideoData = data;
       const screen = document.getElementById('entryScreen');
       const video = document.getElementById('entryVideo');
       const text = document.getElementById('entryText');
+      
       video.src = data.video;
-      video.load();
+      video.muted = false; // شغل الصوت
       text.textContent = data.text;
       screen.style.display = 'flex';
-    });
-
-    function playEntryVideo() {
-      const screen = document.getElementById('entryScreen');
-      const video = document.getElementById('entryVideo');
-      video.muted = false;
-      video.play().catch(e => console.log('خطأ تشغيل:', e));
+      
+      // نشغل الفيديو دغري مع الصوت
+      video.play().then(() => {
+        console.log('الفيديو اشتغل مع الصوت');
+      }).catch(e => {
+        console.log('المتصفح منع التشغيل التلقائي:', e);
+        // اذا المتصفح منع، نشغله كتم ونشيل الكتم بعد ثانية
+        video.muted = true;
+        video.play();
+        setTimeout(() => { video.muted = false; }, 100);
+      });
+      
       setTimeout(() => { 
         screen.style.display = 'none'; 
         video.pause();
-      }, entryVideoData.duration * 1000);
-    }
+      }, data.duration * 1000);
+    });
 
     socket.on('roomUpdate', (room) => {
       currentRoom = room;
