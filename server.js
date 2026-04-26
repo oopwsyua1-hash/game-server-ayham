@@ -17,23 +17,23 @@ const io = new Server(server, {
     }
 });
 
-const PORT = process.env.PORT || 3000;
-const JWT_SECRET = 'ayham-secret-key-2024';
+const PORT = process.env.PORT || 10000;
+const JWT_SECRET = process.env.JWT_SECRET || 'ayham-secret-key-2024';
 
 // Middleware
 app.use(cors());
 app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
 
-// MongoDB Connection
-const mongoURI = process.env.MONGODB_URI;
+// MongoDB Connection - عدلته يقرأ MONGO_URI
+const mongoURI = process.env.MONGO_URI;
 if (!mongoURI) {
-    console.log('❌ MONGODB_URI مو موجود بالـ Environment Variables');
+    console.log('❌ MONGO_URI مو موجود بالـ Environment Variables');
     process.exit(1);
 }
 mongoose.connect(mongoURI)
-   .then(() => console.log('✅ MongoDB Connected - السيرفر شغال'))
-   .catch(err => {
+  .then(() => console.log('✅ MongoDB Connected - السيرفر شغال'))
+  .catch(err => {
         console.log('❌ MongoDB Error:', err.message);
         process.exit(1);
     });
@@ -52,7 +52,7 @@ const userSchema = new mongoose.Schema({
 });
 const User = mongoose.model('User', userSchema);
 
-// ===== كود الغرف الجديد =====
+// ===== كود الغرف =====
 let rooms = {};
 const DEFAULT_ROOM = '10000';
 if (!rooms[DEFAULT_ROOM]) {
@@ -112,7 +112,7 @@ app.post('/api/login', async (req, res) => {
         res.json({
             token,
             user: { username: user.username, lastName: user.lastName, email: user.email, country: user.country, age: user.age, gender: user.gender },
-            redirectUrl: '/room/10000' // ضفت هاد السطر عشان يحول عالغرفة بعد تسجيل الدخول
+            redirectUrl: '/room/10000'
         });
     } catch (error) {
         console.log(error);
@@ -147,12 +147,11 @@ app.get('/me', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'me.html'));
 });
 
-// صفحة الغرفة - جديد
 app.get('/room/:roomId', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'room.html'));
 });
 
-// ===== Socket.io للغرفة =====
+// ===== Socket.io =====
 io.on('connection', (socket) => {
     console.log('مستخدم جديد اتصل:', socket.id);
 
@@ -234,7 +233,6 @@ io.on('connection', (socket) => {
         }
     });
 });
-// ===== نهاية Socket.io =====
 
 server.listen(PORT, () => {
     console.log(`🚀 Server running on port ${PORT}`);
