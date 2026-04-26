@@ -7,44 +7,268 @@
 <script src="/socket.io/socket.io.js"></script>
 <style>
 * { margin: 0; padding: 0; box-sizing: border-box; }
-body { font-family: 'Segoe UI', sans-serif; background: #0a0a14; color: #fff; }
-#entryOverlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #000; z-index: 9999; justify-content: center; align-items: center; }
+body {
+    font-family: 'Segoe UI', sans-serif;
+    background: #0a0a14;
+    color: #fff;
+    padding-bottom: 80px;
+}
+
+#entryOverlay {
+    display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    background: #000; z-index: 9999; justify-content: center; align-items: center;
+}
 #entryVideo { width: 100%; height: 100%; object-fit: cover; }
-#entryText { position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%); color: #FFD700; font-size: 28px; font-weight: bold; text-shadow: 0 0 20px #FFD700; animation: pulse 1s infinite; text-align: center; }
+#entryText {
+    position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%);
+    color: #FFD700; font-size: 28px; font-weight: bold;
+    text-shadow: 0 0 20px #FFD700; animation: pulse 1s infinite; text-align: center;
+}
 @keyframes pulse { 0%,100% { scale: 1; } 50% { scale: 1.1; } }
-.header { background: #141428; padding: 15px; border-bottom: 2px solid #ff00ff; }
-.container { padding: 20px; max-width: 600px; margin: 0 auto; }
-.mics-grid { display: grid; grid-template-columns: repeat(5,1fr); gap: 8px; margin: 20px 0; }
-.mic-slot { background: #141428; padding: 10px; border-radius: 10px; text-align: center; cursor: pointer; border: 2px solid #1a1a2e; min-height: 80px; font-size: 11px; }
+
+/* ===== شعار الاسد النابض - حصري للمالك ===== */
+.lion-header {
+    width: 100%;
+    height: 120px;
+    background: #000;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border-bottom: 2px solid #FFD700;
+    animation: headerGlow 3s ease-in-out infinite;
+}
+@keyframes headerGlow {
+    0%, 100% { border-color: #FFD700; }
+    50% { border-color: #FFA500; }
+}
+.lion-img {
+    width: 100px;
+    height: 100px;
+    animation: lionPulse 2s ease-in-out infinite;
+    filter: drop-shadow(0 0 15px #FFD700);
+}
+@keyframes lionPulse {
+    0%, 100% { transform: scale(1); filter: drop-shadow(0 0 15px #FFD700); }
+    50% { transform: scale(1.1); filter: drop-shadow(0 0 30px #FFA500); }
+}
+
+.header {
+    background: #141428;
+    padding: 10px 15px;
+    border-bottom: 1px solid #ff00ff;
+    text-align: center;
+}
+.header h1 { font-size: 18px; }
+
+.container { padding: 15px; max-width: 600px; margin: 0 auto; }
+
+/* ===== المايكات اصغر ===== */
+.mics-grid {
+    display: grid;
+    grid-template-columns: repeat(5,1fr);
+    gap: 6px;
+    margin: 15px 0;
+}
+.mic-slot {
+    background: #141428;
+    padding: 6px 3px;
+    border-radius: 8px;
+    text-align: center;
+    cursor: pointer;
+    border: 2px solid #1a1a2e;
+    min-height: 65px;
+    font-size: 10px;
+    position: relative;
+    transition: all 0.2s;
+}
+.mic-slot:hover { transform: scale(1.05); }
 .mic-slot.taken { background: #2d1b69; border-color: #a855f7; }
 .mic-slot.closed { background: #3a1a1a; border-color: #ff0000; cursor: not-allowed; }
-.mic-slot.owner { background: linear-gradient(135deg, #FFD700, #FFA500); color: #000; font-weight: bold; box-shadow: 0 0 20px #FFD700; }
-.users-list { background: #141428; padding: 15px; border-radius: 10px; margin-top: 20px; }
-.user-row { display: flex; justify-content: space-between; padding: 8px; border-bottom: 1px solid #1a1a2e; font-size: 14px; align-items: center; }
-.admin-btn { background: #ef4444; border: none; color: #fff; padding: 4px 8px; border-radius: 5px; cursor: pointer; margin: 0 2px; font-size: 11px; }
+.mic-slot.owner {
+    background: linear-gradient(135deg, #FFD700, #FFA500);
+    color: #000; font-weight: bold;
+    box-shadow: 0 0 15px #FFD700;
+    animation: ownerGlow 1.5s infinite;
+}
+@keyframes ownerGlow {
+    0%, 100% { box-shadow: 0 0 15px #FFD700; }
+    50% { box-shadow: 0 0 25px #FFA500; }
+}
+.mic-slot.mic-icon { font-size: 16px; }
+.mic-slot.mic-name {
+    font-size: 9px;
+    margin-top: 2px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* ===== انميشن التفاعل عالمايك ===== */
+.reaction-anim {
+    position: absolute;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 30px;
+    animation: floatUp 2s ease-out forwards;
+    pointer-events: none;
+    z-index: 10;
+}
+@keyframes floatUp {
+    0% { opacity: 1; transform: translate(-50%, -50%) scale(0.5); }
+    100% { opacity: 0; transform: translate(-50%, -150%) scale(1.5); }
+}
+
+.users-list {
+    background: #141428;
+    padding: 12px;
+    border-radius: 10px;
+    margin-top: 15px;
+}
+.users-list h3 { font-size: 14px; margin-bottom: 8px; }
+.user-row {
+    display: flex; justify-content: space-between;
+    padding: 6px; border-bottom: 1px solid #1a1a2e;
+    font-size: 13px; align-items: center;
+}
+.admin-btn {
+    background: #ef4444; border: none; color: #fff;
+    padding: 3px 6px; border-radius: 4px;
+    cursor: pointer; margin: 0 2px; font-size: 10px;
+}
+
+/* ===== القائمة السفلية ===== */
+.bottom-menu {
+    position: fixed;
+    bottom: 0; left: 0; right: 0;
+    background: #141428;
+    border-top: 2px solid #ff00ff;
+    display: flex;
+    justify-content: space-around;
+    padding: 8px 5px;
+    z-index: 100;
+}
+.menu-btn {
+    flex: 1;
+    background: #1a1a2e;
+    border: 1px solid #333;
+    border-radius: 8px;
+    color: #fff;
+    padding: 8px 4px;
+    margin: 0 3px;
+    font-size: 11px;
+    cursor: pointer;
+    text-align: center;
+    transition: all 0.2s;
+}
+.menu-btn:active { background: #ff00ff; }
+.menu-btn.owner-btn {
+    background: linear-gradient(90deg, #FFD700, #FFA500);
+    color: #000;
+    font-weight: bold;
+}
+
+/* ===== ازرار التفاعل ===== */
+.reaction-bar {
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+    margin: 15px 0;
+    flex-wrap: wrap;
+}
+.reaction-btn {
+    background: #1a1a2e;
+    border: 1px solid #ff00ff;
+    border-radius: 50%;
+    width: 45px;
+    height: 45px;
+    font-size: 22px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+.reaction-btn:active {
+    transform: scale(0.9);
+    background: #ff00ff;
+}
+.reaction-btn:disabled {
+    opacity: 0.3;
+    cursor: not-allowed;
+}
 </style>
 </head>
 <body>
+
+<!-- شاشة الدخولية -->
 <div id="entryOverlay">
-    <video id="entryVideo" autoplay></video>
+    <video id="entryVideo" autoplay muted></video>
     <div id="entryText"></div>
 </div>
-<div class="header"><h1>🎤 غرفة السبع الحلبي - 20 مايك</h1></div>
-<div class="container">
-    <div class="mics-grid" id="micsGrid"></div>
-    <div class="users-list"><h3>👥 المتواجدين</h3><div id="usersList"></div></div>
+
+<!-- شعار الاسد - بيطلع بس للمالك 10000 TOP -->
+<div id="lionHeaderContainer"></div>
+
+<div class="header">
+    <h1>🎤 غرفة السبع الحلبي - 20 مايك</h1>
+    <p style="font-size:12px;color:#aaa">ID: 10000</p>
 </div>
+
+<div class="container">
+    <!-- ازرار التفاعل - تظهر بس اذا ع المايك -->
+    <div class="reaction-bar" id="reactionBar" style="display:none;">
+        <button class="reaction-btn" onclick="sendReaction('😂')">😂</button>
+        <button class="reaction-btn" onclick="sendReaction('😍')">😍</button>
+        <button class="reaction-btn" onclick="sendReaction('❤️')">❤️</button>
+        <button class="reaction-btn" onclick="sendReaction('🎉')">🎉</button>
+        <button class="reaction-btn" onclick="sendReaction('😢')">😢</button>
+    </div>
+
+    <!-- المايكات -->
+    <div class="mics-grid" id="micsGrid"></div>
+
+    <!-- المتواجدين -->
+    <div class="users-list">
+        <h3>👥 المتواجدين</h3>
+        <div id="usersList"></div>
+    </div>
+</div>
+
+<!-- القائمة السفلية -->
+<div class="bottom-menu">
+    <button class="menu-btn" onclick="showUsers()">👥 المتواجدين</button>
+    <button class="menu-btn" id="adminBtn" style="display:none;" onclick="showAdminPanel()">👑 الادمن</button>
+    <button class="menu-btn" id="ownerBtn" style="display:none;" onclick="showOwnerPanel()">⚙️ صاحب الغرفة</button>
+    <button class="menu-btn" onclick="createRoom()">➕ انشاء غرفة</button>
+    <button class="menu-btn" id="micBtn" onclick="toggleMic()">🎤 صعود مايك</button>
+</div>
+
 <script>
 const socket = io();
 const token = localStorage.getItem('token');
 const urlParams = new URLSearchParams(window.location.search);
 const ROOM_ID = urlParams.get('roomId') || '10000';
 let myUserId = null;
+let mySocketId = null;
 let isOwner = false;
+let isOnMic = false;
+let myMicIndex = -1;
+
+// WebRTC للصوت - الكل يسمع الكل
+let localStream = null;
+let peerConnections = {};
 
 if (!token) location.href = '/';
+
+async function initAudio() {
+    try {
+        localStream = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
+    } catch (err) {
+        console.log('المايك مرفوض:', err);
+    }
+}
+initAudio();
+
 socket.emit('joinRoom', { roomId: ROOM_ID, token });
 
+// دخولية المالك
 socket.on('ownerEntry', (data) => {
     const overlay = document.getElementById('entryOverlay');
     const video = document.getElementById('entryVideo');
@@ -56,42 +280,80 @@ socket.on('ownerEntry', (data) => {
     setTimeout(() => overlay.style.display = 'none', data.duration * 1000);
 });
 
+// تحديث الغرفة
 socket.on('roomUpdate', (roomData) => {
     const micsGrid = document.getElementById('micsGrid');
     const usersList = document.getElementById('usersList');
     micsGrid.innerHTML = '';
     usersList.innerHTML = '';
 
+    mySocketId = socket.id;
+    isOnMic = false;
+    myMicIndex = -1;
+
+    // اظهر شعار الاسد بس اذا انت المالك 10000 TOP
+    const lionContainer = document.getElementById('lionHeaderContainer');
+    const currentUser = roomData.users.find(u => u.socketId === socket.id);
+
+    if (currentUser && currentUser.level === "10000 TOP") {
+        lionContainer.innerHTML = `
+            <div class="lion-header">
+                <img class="lion-img" src="https://files.catbox.moe/00z108.gif" alt="السبع الحلبي">
+            </div>
+        `;
+    } else {
+        lionContainer.innerHTML = '';
+    }
+
+    // رسم المايكات
     for (let i = 0; i < 20; i++) {
         const micDiv = document.createElement('div');
         micDiv.className = 'mic-slot';
+        micDiv.id = `mic-${i}`;
         const micData = roomData.mics[i];
 
         if (micData === 'closed') {
             micDiv.classList.add('closed');
-            micDiv.innerHTML = '🔒<br>مغلق';
+            micDiv.innerHTML = '<div class="mic-icon">🔒</div><div class="mic-name">مغلق</div>';
         } else if (micData) {
             const userOnMic = roomData.users.find(u => u.socketId === micData);
             if (userOnMic) {
                 micDiv.classList.add('taken');
-                micDiv.innerHTML = `🎤<br>${userOnMic.username}<br>${userOnMic.level}`;
+                micDiv.innerHTML = `<div class="mic-icon">🎤</div><div class="mic-name">${userOnMic.username}</div>`;
+
                 if (userOnMic.level === "10000 TOP") {
                     micDiv.classList.add('owner');
-                    if (userOnMic.userId === myUserId) isOwner = true;
                 }
                 if (userOnMic.socketId === socket.id) {
+                    isOnMic = true;
+                    myMicIndex = i;
                     micDiv.onclick = () => socket.emit('leaveMic', { roomId: ROOM_ID });
                 }
             }
         } else {
-            micDiv.innerHTML = '🎤<br>فارغ';
+            micDiv.innerHTML = '<div class="mic-icon">🎤</div><div class="mic-name">فارغ</div>';
             micDiv.onclick = () => socket.emit('takeMic', { roomId: ROOM_ID, micIndex: i });
         }
         micsGrid.appendChild(micDiv);
     }
 
+    // اظهر ازرار التفاعل اذا ع المايك
+    document.getElementById('reactionBar').style.display = isOnMic? 'flex' : 'none';
+    document.getElementById('micBtn').textContent = isOnMic? '⬇️ نزول مايك' : '🎤 صعود مايك';
+
+    // رسم المتواجدين
     roomData.users.forEach(user => {
         if (!myUserId) myUserId = user.userId;
+
+        // تحقق اذا انت المالك
+        if (user.level === "10000 TOP" && user.userId === myUserId) {
+            isOwner = true;
+            document.getElementById('adminBtn').style.display = 'block';
+            document.getElementById('ownerBtn').style.display = 'block';
+            document.getElementById('adminBtn').classList.add('owner-btn');
+            document.getElementById('ownerBtn').classList.add('owner-btn');
+        }
+
         const row = document.createElement('div');
         row.className = 'user-row';
         row.innerHTML = `<span>${user.username} - ${user.level} ${user.level === "10000 TOP"? '👑' : ''}</span>
@@ -103,9 +365,113 @@ socket.on('roomUpdate', (roomData) => {
     });
 });
 
+// استقبال التفاعلات
+socket.on('reaction', ({ micIndex, emoji }) => {
+    const micEl = document.getElementById(`mic-${micIndex}`);
+    if (micEl) {
+        const anim = document.createElement('div');
+        anim.className = 'reaction-anim';
+        anim.textContent = emoji;
+        micEl.appendChild(anim);
+        setTimeout(() => anim.remove(), 2000);
+    }
+});
+
+// ارسال تفاعل
+function sendReaction(emoji) {
+    if (!isOnMic || myMicIndex === -1) return;
+    socket.emit('sendReaction', { roomId: ROOM_ID, micIndex: myMicIndex, emoji });
+}
+
+// زر صعود/نزول مايك
+function toggleMic() {
+    if (isOnMic) {
+        socket.emit('leaveMic', { roomId: ROOM_ID });
+    } else {
+        // دور على اول مايك فاضي
+        const emptyMic = Array.from(document.querySelectorAll('.mic-slot')).findIndex(m =>!m.classList.contains('taken') &&!m.classList.contains('closed'));
+        if (emptyMic!== -1) {
+            socket.emit('takeMic', { roomId: ROOM_ID, micIndex: emptyMic });
+        } else {
+            alert('كل المايكات مليانة');
+        }
+    }
+}
+
 function adminAction(action, userId) {
     socket.emit('adminAction', { action, targetUserId: userId, roomId: ROOM_ID });
 }
+
+function createRoom() {
+    fetch('/api/create-room', {
+        method: 'POST',
+        headers: { 'Authorization': 'Bearer ' + token }
+    }).then(r => r.json()).then(data => {
+        if (data.success) location.href = '/room?roomId=' + data.roomId;
+        else alert(data.error || 'عندك غرفة من قبل');
+    });
+}
+
+function showUsers() {
+    document.querySelector('.users-list').scrollIntoView({ behavior: 'smooth' });
+}
+
+function showAdminPanel() {
+    alert('لوحة الادمن: طرد + غلق مايك موجودة جنب كل مستخدم');
+}
+
+function showOwnerPanel() {
+    alert('صلاحيات صاحب الغرفة: طرد + غلق مايك + فتح مايك');
+}
+
+// WebRTC Signaling - الكل يسمع الكل
+socket.on('voiceOffer', async ({ from, offer }) => {
+    const pc = new RTCPeerConnection({
+        iceServers: [{ urls: 'stun:stun.l.google.com:19302' }]
+    });
+    peerConnections[from] = pc;
+
+    if (localStream) {
+        localStream.getTracks().forEach(track => pc.addTrack(track, localStream));
+    }
+
+    pc.ontrack = (event) => {
+        const audio = new Audio();
+        audio.srcObject = event.streams[0];
+        audio.autoplay = true;
+    };
+
+    await pc.setRemoteDescription(offer);
+    const answer = await pc.createAnswer();
+    await pc.setLocalDescription(answer);
+    socket.emit('voiceAnswer', { to: from, answer });
+});
+
+socket.on('voiceAnswer', async ({ from, answer }) => {
+    await peerConnections[from]?.setRemoteDescription(answer);
+});
+
+socket.on('iceCandidate', ({ from, candidate }) => {
+    peerConnections[from]?.addIceCandidate(new RTCIceCandidate(candidate));
+});
+
+// لما تطلع عالمايك، ابعت offer للكل
+socket.on('userTookMic', ({ socketId }) => {
+    if (socketId!== socket.id && localStream) {
+        const pc = new RTCPeerConnection({
+            iceServers: [{ urls: 'stun:stun.l.google.com:19302' }]
+        });
+        peerConnections[socketId] = pc;
+        localStream.getTracks().forEach(track => pc.addTrack(track, localStream));
+        pc.onicecandidate = (e) => {
+            if (e.candidate) socket.emit('iceCandidate', { to: socketId, candidate: e.candidate });
+        };
+        pc.createOffer().then(offer => {
+            pc.setLocalDescription(offer);
+            socket.emit('voiceOffer', { to: socketId, offer });
+        });
+    }
+});
 </script>
 </body>
 </html>
