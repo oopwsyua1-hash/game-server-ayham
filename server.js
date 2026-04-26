@@ -9,16 +9,20 @@ require('dotenv').config();
 
 const app = express();
 const server = http.createServer(app);
-const io = new Server(server, { cors: { origin: "*" } });
+const io = new Server(server, {
+    cors: { origin: "*" },
+    pingTimeout: 60000,
+    pingInterval: 25000
+});
 
 app.use(cors());
 app.use(express.json());
 app.use(express.static('public'));
 
-// امسح ايميلك هون
-const OWNER_EMAIL = process.env.OWNER_EMAIL || 'ضع_ايميلك_هنا@gmail.com';
+// عدّل ايميلك هون مباشرة اذا ما عندك.env
+const OWNER_EMAIL = process.env.OWNER_EMAIL || 'ايميلك@gmail.com';
 const OWNER_ENTRY_VIDEO = 'https://files.catbox.moe/v0ec0k.mp4';
-const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key';
+const JWT_SECRET = process.env.JWT_SECRET || 'sabaa-gold-secret-2024';
 
 mongoose.connect(process.env.MONGO_URI || 'mongodb://localhost:27017/sabaa');
 
@@ -82,7 +86,7 @@ async function isOwner(userId) {
     return user && user.email === OWNER_EMAIL;
 }
 
-// تسجيل
+// تسجيل حساب جديد
 app.post('/api/register', async (req, res) => {
     try {
         const { username, email, password } = req.body;
@@ -105,13 +109,14 @@ app.post('/api/register', async (req, res) => {
         await user.save();
 
         const token = jwt.sign({ userId: user._id }, JWT_SECRET);
-        res.json({ token, user: { username: user.username, email: user.email, level: user.level } });
+        res.json({ token, user: { username: user.username, email: user.email, level: user.level, vip: user.vip } });
     } catch (error) {
+        console.log(error);
         res.status(500).json({ message: 'خطأ بالسيرفر' });
     }
 });
 
-// دخول
+// تسجيل دخول
 app.post('/api/login', async (req, res) => {
     try {
         const { email, password } = req.body;
@@ -128,11 +133,12 @@ app.post('/api/login', async (req, res) => {
         const token = jwt.sign({ userId: user._id }, JWT_SECRET);
         res.json({ token, user: { username: user.username, email: user.email, level: user.level, vip: user.vip } });
     } catch (error) {
+        console.log(error);
         res.status(500).json({ message: 'خطأ بالسيرفر' });
     }
 });
 
-// بروفايل
+// جلب البروفايل
 app.get('/api/profile', authMiddleware, async (req, res) => {
     try {
         const user = await User.findById(req.userId);
@@ -185,7 +191,7 @@ app.post('/api/admin/unban', authMiddleware, async (req, res) => {
     }
 });
 
-// البلاغات - بس للمالك
+// جلب البلاغات - بس للمالك
 app.get('/api/admin/reports', authMiddleware, async (req, res) => {
     try {
         if (!await isOwner(req.userId)) return res.status(403).json({ message: 'ماعندك صلاحية' });
@@ -251,13 +257,18 @@ io.on('connection', (socket) => {
 
             rooms[roomId].users.push(userData);
 
-            // اذا انت المالك ابعت الدخولية
+            // دخولية المالك + تنبيه الادارة الرسمي
             if (user.email === OWNER_EMAIL) {
                 io.to(roomId).emit('ownerEntry', {
                     video: OWNER_ENTRY_VIDEO,
                     duration: 13,
                     text: '👑 دخول حساب الادارة الرسمي 👑',
                     username: user.username
+                });
+
+                io.to(roomId).emit('newMessage', {
+                    username: 'النظام',
+                    message: `👑 ${user.username} - دخول حساب الادارة الرسمي 👑`
                 });
             }
 
@@ -274,9 +285,9 @@ io.on('connection', (socket) => {
         const user = room.users.find(u => u.socketId === socket.id);
         if (!room ||!user) return;
 
-        // بس المالك او اذا المالك سمح
-        if (user.email!== OWNER_EMAIL && room.mics[micIndex]!== 'waiting_' + user.userId) {
-            return socket.emit('error', { message: 'لازم اذن من المالك' });
+        // بس المالك بيصعد عالطول، الباقي لازم اذن
+        if (user.email!== OWNER_EMAIL) {
+            return socket.emit('error', { message: 'لازم اذن من صاحب الوكالة' });
         }
 
         room.mics[micIndex] = socket.id;
@@ -295,6 +306,7 @@ io.on('connection', (socket) => {
             case 'REMOVE_MIC':
                 const idx = room.mics.indexOf(targetUser.socketId);
                 if (idx!== -1) room.mics[idx] = null;
+                io.to(targetUser.socketId).emit('removedFromMic');
                 break;
             case 'FORCE_MIC':
                 room.mics[micIndex] = targetUser.socketId;
@@ -306,6 +318,9 @@ io.on('connection', (socket) => {
                 break;
             case 'MUTE_MIC':
                 io.to(targetUser.socketId).emit('muted');
+                break;
+            case 'ADD_ADMIN':
+                await Room.findByIdAndUpdate(room.dbId, { $addToSet: { admins: targetUserId } });
                 break;
         }
         io.to(roomId).emit('roomUpdate', room);
@@ -329,8 +344,10 @@ io.on('connection', (socket) => {
             if (userIndex!== -1) {
                 const micIndex = room.mics.indexOf(socket.id);
                 if (micIndex!== -1) room.mics[micIndex] = null;
+                const username = room.users[userIndex].username;
                 room.users.splice(userIndex, 1);
                 io.to(roomId).emit('roomUpdate', room);
+                io.to(roomId).emit('userLeft', { username });
             }
         }
     });
