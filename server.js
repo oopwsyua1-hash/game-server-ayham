@@ -34,15 +34,30 @@ const OWNER_DATA = {
 mongoose.connect(process.env.MONGO_URI || 'mongodb://localhost:27017/alsabe7');
 
 const userSchema = new mongoose.Schema({
-  username: String, lastName: String, email: { type: String, unique: true }, password: String,
-  country: String, birthDate: String, age: Number, gender: String,
-  level: { type: String, default: "LV1" }, vip: { type: Number, default: 0 }, wealthLevel: { type: Number, default: 0 },
-  followers: { type: Number, default: 0 }, following: { type: Number, default: 0 }, friends: { type: Number, default: 0 },
-  roomId: { type: String, default: null }, verified: { type: Boolean, default: false }, createdAt: { type: Date, default: Date.now }
+  username: String,
+  lastName: String,
+  email: { type: String, unique: true },
+  password: String,
+  country: String,
+  birthDate: String,
+  age: Number,
+  gender: String,
+  level: { type: String, default: "LV1" },
+  vip: { type: Number, default: 0 },
+  wealthLevel: { type: Number, default: 0 },
+  followers: { type: Number, default: 0 },
+  following: { type: Number, default: 0 },
+  friends: { type: Number, default: 0 },
+  roomId: { type: String, default: null },
+  verified: { type: Boolean, default: false },
+  createdAt: { type: Date, default: Date.now }
 });
+
 const User = mongoose.model('User', userSchema);
 
-const rooms = { '10000': { users: [], mics: Array(20).fill(null), admins: [], name: "غرفة السبع الحلبي" } };
+const rooms = {
+  '10000': { users: [], mics: Array(20).fill(null), admins: [], name: "غرفة السبع الحلبي" }
+};
 
 const auth = async (req, res, next) => {
   try {
@@ -52,7 +67,9 @@ const auth = async (req, res, next) => {
     req.user = await User.findById(decoded.id);
     if (!req.user) return res.status(401).json({ error: 'المستخدم مو موجود' });
     next();
-  } catch (err) { res.status(401).json({ error: 'توكن غلط' }); }
+  } catch (err) {
+    res.status(401).json({ error: 'توكن غلط' });
+  }
 };
 
 app.post('/api/register', async (req, res) => {
@@ -67,7 +84,9 @@ app.post('/api/register', async (req, res) => {
     const user = await User.create(userData);
     const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET || 'sabe7_secret');
     res.json({ token, user });
-  } catch (err) { res.json({ error: 'خطأ بالسيرفر' }); }
+  } catch (err) {
+    res.json({ error: 'خطأ بالسيرفر' });
+  }
 });
 
 app.post('/api/login', async (req, res) => {
@@ -77,10 +96,15 @@ app.post('/api/login', async (req, res) => {
     if (!user) return res.json({ error: 'الايميل غلط' });
     const match = await bcrypt.compare(password, user.password);
     if (!match) return res.json({ error: 'كلمة السر غلط' });
-    if (email === OWNER_EMAIL) { Object.assign(user, OWNER_DATA); await user.save(); }
+    if (email === OWNER_EMAIL) {
+      Object.assign(user, OWNER_DATA);
+      await user.save();
+    }
     const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET || 'sabe7_secret');
     res.json({ token, user });
-  } catch (err) { res.json({ error: 'خطأ بالسيرفر' }); }
+  } catch (err) {
+    res.json({ error: 'خطأ بالسيرفر' });
+  }
 });
 
 app.post('/api/auto-login', async (req, res) => {
@@ -89,10 +113,15 @@ app.post('/api/auto-login', async (req, res) => {
     if (!user) {
       const hashed = await bcrypt.hash('123456', 10);
       user = await User.create({...OWNER_DATA, email: OWNER_EMAIL, password: hashed, lastName: "الحلبي", country: "سوريا", age: 25, gender: "ذكر", birthDate: "2000-01-01" });
-    } else { Object.assign(user, OWNER_DATA); await user.save(); }
+    } else {
+      Object.assign(user, OWNER_DATA);
+      await user.save();
+    }
     const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET || 'sabe7_secret');
     res.json({ token, user });
-  } catch (err) { res.json({ error: 'خطأ بالسيرفر' }); }
+  } catch (err) {
+    res.json({ error: 'خطأ بالسيرفر' });
+  }
 });
 
 app.get('/api/me', auth, (req, res) => res.json(req.user));
@@ -101,9 +130,12 @@ app.post('/api/create-room', auth, async (req, res) => {
   try {
     const user = req.user;
     if (user.roomId) return res.json({ error: 'عندك غرفة من قبل' });
-    user.roomId = '10000'; await user.save();
+    user.roomId = '10000';
+    await user.save();
     res.json({ success: true, roomId: '10000' });
-  } catch (err) { res.json({ error: 'خطأ' }); }
+  } catch (err) {
+    res.json({ error: 'خطأ' });
+  }
 });
 
 io.on('connection', (socket) => {
@@ -112,7 +144,9 @@ io.on('connection', (socket) => {
       const decoded = jwt.verify(token, process.env.JWT_SECRET || 'sabe7_secret');
       const user = await User.findById(decoded.id);
       if (!user) return;
-      socket.join(roomId); socket.userData = user; socket.currentRoom = roomId;
+      socket.join(roomId);
+      socket.userData = user;
+      socket.currentRoom = roomId;
       if (user.email === OWNER_EMAIL) io.to(roomId).emit('ownerEntry', { video: OWNER_DATA.entryVideo, duration: 13, text: "انتبااااه وصل 10000 TOP 👑" });
       if (!rooms[roomId]) rooms[roomId] = { users: [], mics: Array(20).fill(null), admins: [] };
       rooms[roomId].users = rooms[roomId].users.filter(u => u.userId.toString()!== user._id.toString());
@@ -120,22 +154,28 @@ io.on('connection', (socket) => {
       io.to(roomId).emit('roomUpdate', rooms[roomId]);
     } catch (err) {}
   });
+
   socket.on('takeMic', ({ roomId, micIndex }) => {
     if (rooms[roomId] && rooms[roomId].mics[micIndex] === null) {
-      rooms[roomId].mics[micIndex] = socket.id; io.to(roomId).emit('roomUpdate', rooms[roomId]);
+      rooms[roomId].mics[micIndex] = socket.id;
+      io.to(roomId).emit('roomUpdate', rooms[roomId]);
     }
   });
+
   socket.on('leaveMic', ({ roomId }) => {
     if (rooms[roomId]) {
       rooms[roomId].mics = rooms[roomId].mics.map(m => m === socket.id? null : m);
       io.to(roomId).emit('roomUpdate', rooms[roomId]);
     }
   });
+
   socket.on('sendReaction', ({ roomId, micIndex, emoji }) => {
     io.to(roomId).emit('reaction', { micIndex, emoji });
   });
+
   socket.on('adminAction', async ({ action, targetUserId, roomId }) => {
-    const isOwner = socket.userData?.email === OWNER_EMAIL; if (!isOwner ||!rooms[roomId]) return;
+    const isOwner = socket.userData?.email === OWNER_EMAIL;
+    if (!isOwner ||!rooms[roomId]) return;
     if (action === 'KICK') {
       const target = rooms[roomId].users.find(u => u.userId.toString() === targetUserId.toString());
       if (target) io.sockets.sockets.get(target.socketId)?.disconnect();
@@ -146,13 +186,20 @@ io.on('connection', (socket) => {
         const userOnMic = rooms[roomId].users.find(u => u.socketId === m);
         return userOnMic && userOnMic.userId.toString() === targetUserId.toString();
       });
-      if (idx!== -1) { rooms[roomId].mics[idx] = 'closed'; io.to(roomId).emit('roomUpdate', rooms[roomId]); }
+      if (idx!== -1) {
+        rooms[roomId].mics[idx] = 'closed';
+        io.to(roomId).emit('roomUpdate', rooms[roomId]);
+      }
     }
     if (action === 'OPEN_MIC') {
       const idx = rooms[roomId].mics.findIndex(m => m === 'closed');
-      if (idx!== -1) { rooms[roomId].mics[idx] = null; io.to(roomId).emit('roomUpdate', rooms[roomId]); }
+      if (idx!== -1) {
+        rooms[roomId].mics[idx] = null;
+        io.to(roomId).emit('roomUpdate', rooms[roomId]);
+      }
     }
   });
+
   socket.on('disconnect', () => {
     for (let roomId in rooms) {
       rooms[roomId].users = rooms[roomId].users.filter(u => u.socketId!== socket.id);
