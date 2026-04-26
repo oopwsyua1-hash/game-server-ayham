@@ -1,16 +1,164 @@
-<link rel="manifest" href="/manifest.json">
-<meta name="theme-color" content="#ff00ff">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="السبع الحلبي">
-<link rel="apple-touch-icon" href="https://i.imgur.com/TqZFqXw.png">
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>السبع الحلبي 10000</title>
+  
+  <!-- PWA للتطبيق -->
+  <link rel="manifest" href="/manifest.json">
+  <meta name="theme-color" content="#ff00ff">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="السبع الحلبي">
+  <link rel="apple-touch-icon" href="https://i.imgur.com/TqZFqXw.png">
+  
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { 
+      font-family: 'Segoe UI', sans-serif; 
+      background: linear-gradient(135deg, #0a0a14, #1a1a2e); 
+      color: #fff; 
+      display: flex; 
+      justify-content: center; 
+      align-items: center; 
+      min-height: 100vh;
+      padding: 20px;
+    }
+    .login-box { 
+      background: #141428; 
+      padding: 40px 30px; 
+      border-radius: 20px; 
+      box-shadow: 0 0 40px rgba(255,0,255,0.4);
+      border: 2px solid #ff00ff;
+      width: 100%;
+      max-width: 400px;
+      text-align: center;
+    }
+    .logo {
+      width: 100px; height: 100px; border-radius: 50%;
+      margin: 0 auto 20px;
+      animation: logoGlow 2s ease infinite;
+      filter: drop-shadow(0 0 20px #FFD700);
+      border: 3px solid #FFD700;
+    }
+    @keyframes logoGlow {
+      0%, 100% { transform: scale(1); filter: drop-shadow(0 0 15px #FFD700); }
+      50% { transform: scale(1.1); filter: drop-shadow(0 0 30px #ff00ff); }
+    }
+    h1 { 
+      color: #ff00ff; 
+      margin-bottom: 10px; 
+      font-size: 28px;
+      text-shadow: 0 0 15px #ff00ff;
+    }
+    .subtitle {
+      color: #FFD700; 
+      margin-bottom: 30px; 
+      font-size: 14px;
+    }
+    input { 
+      width: 100%; 
+      padding: 15px; 
+      margin: 10px 0; 
+      border: 2px solid #333; 
+      background: #0a0a14; 
+      color: #fff; 
+      border-radius: 12px; 
+      font-size: 16px;
+      transition: 0.3s;
+    }
+    input:focus {
+      border-color: #ff00ff;
+      outline: none;
+      box-shadow: 0 0 15px rgba(255,0,255,0.5);
+    }
+    .login-btn { 
+      width: 100%; 
+      padding: 15px; 
+      margin-top: 15px; 
+      background: linear-gradient(135deg, #ff00ff, #a855f7); 
+      border: none; 
+      border-radius: 12px; 
+      color: white; 
+      font-size: 18px; 
+      font-weight: bold;
+      cursor: pointer; 
+      transition: 0.3s;
+    }
+    .login-btn:hover { 
+      transform: translateY(-3px);
+      box-shadow: 0 5px 20px rgba(255,0,255,0.6);
+    }
+    .owner-btn {
+      background: linear-gradient(135deg, #FFD700, #ff00ff);
+      color: #000;
+      margin-top: 15px;
+    }
+  </style>
+</head>
+<body>
+  <div class="login-box">
+    <img class="logo" src="https://i.imgur.com/TqZFqXw.png" alt="السبع الحلبي">
+    <h1>السبع الحلبي</h1>
+    <div class="subtitle">👑 ادارة عامة 10000 TOP</div>
+    
+    <input type="email" id="email" placeholder="الايميل" value="m1234ahmad@gmail.com">
+    <input type="password" id="password" placeholder="كلمة السر" value="007007007">
+    
+    <button class="login-btn" onclick="login()">تسجيل دخول</button>
+    <button class="login-btn owner-btn" id="ownerBtn">👑 دخول المالك مباشر</button>
+  </div>
 
-<script>
-if ('serviceWorker' in navigator) {
-  window.addEventListener('load', () => {
-    navigator.serviceWorker.register('/sw.js')
-      .then((reg) => console.log('Service Worker مسجل'))
-      .catch((err) => console.log('Service Worker فشل:', err));
-  });
-}
-</script>
+  <script>
+    // تسجيل Service Worker للتطبيق
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('/sw.js')
+          .then((reg) => console.log('Service Worker مسجل'))
+          .catch((err) => console.log('Service Worker فشل:', err));
+      });
+    }
+
+    async function login() {
+      const email = document.getElementById('email').value;
+      const password = document.getElementById('password').value;
+      const res = await fetch('/api/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password })
+      });
+      const data = await res.json();
+      if (data.token) {
+        localStorage.setItem('token', data.token);
+        location.href = '/me';
+      } else {
+        alert('خطأ: ' + (data.error || 'فشل تسجيل الدخول'));
+      }
+    }
+
+    // دخول المالك + فك قفل الصوت للتطبيق
+    document.getElementById('ownerBtn').addEventListener('click', async () => {
+      // فك قفل الصوت عشان التطبيق
+      const ctx = new (window.AudioContext || window.webkitAudioContext)();
+      await ctx.resume();
+      const osc = ctx.createOscillator();
+      osc.connect(ctx.destination);
+      osc.start();
+      osc.stop();
+      localStorage.setItem('audioUnlocked', 'true');
+      
+      const res = await fetch('/api/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: 'm1234ahmad@gmail.com', password: '007007007' })
+      });
+      const data = await res.json();
+      if (data.token) {
+        localStorage.setItem('token', data.token);
+        location.href = '/me';
+      }
+    });
+  </script>
+</body>
+</html>
