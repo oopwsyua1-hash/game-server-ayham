@@ -1,46 +1,38 @@
-const CACHE_NAME = 'al-sabe7-v2'; // بس تعدل الكود غير الرقم لـ v3, v4...
+const CACHE_NAME = 'alsabe7-v1';
+const urlsToCache = [
+  '/',
+  '/me',
+  '/room.html',
+  'https://i.imgur.com/TqZFqXw.png',
+  'https://files.catbox.moe/ue0s54.mp4'
+];
 
-self.addEventListener('install', event => {
-  self.skipWaiting(); // فعل النسخة الجديدة فوراً بدون ما تستنى
+self.addEventListener('install', (event) => {
   event.waitUntil(
-    caches.open(CACHE_NAME).then(cache => {
-      return cache.addAll([
-        '/',
-        '/me',
-        '/socket.io/socket.io.js'
-      ]);
-    })
+    caches.open(CACHE_NAME)
+      .then((cache) => cache.addAll(urlsToCache))
   );
 });
 
-self.addEventListener('activate', event => {
+self.addEventListener('fetch', (event) => {
+  event.respondWith(
+    caches.match(event.request)
+      .then((response) => {
+        return response || fetch(event.request);
+      })
+  );
+});
+
+self.addEventListener('activate', (event) => {
   event.waitUntil(
-    caches.keys().then(cacheNames => {
+    caches.keys().then((cacheNames) => {
       return Promise.all(
-        cacheNames.map(cache => {
-          if (cache !== CACHE_NAME) {
-            console.log('SW: Deleting old cache', cache);
-            return caches.delete(cache); // امسح اي كاش قديم
+        cacheNames.map((cacheName) => {
+          if (cacheName !== CACHE_NAME) {
+            return caches.delete(cacheName);
           }
         })
       );
-    }).then(() => self.clients.claim())
-  );
-});
-
-self.addEventListener('fetch', event => {
-  // صفحات HTML: جيب من النت اولاً، اذا فشل جيب من الكاش
-  if (event.request.mode === 'navigate') {
-    event.respondWith(
-      fetch(event.request).catch(() => caches.match(event.request))
-    );
-    return;
-  }
-  
-  // باقي الملفات: كاش اولاً
-  event.respondWith(
-    caches.match(event.request).then(response => {
-      return response || fetch(event.request);
     })
   );
 });
