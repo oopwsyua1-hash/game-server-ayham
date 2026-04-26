@@ -1,285 +1,240 @@
 const express = require('express');
-const http = require('http');
-const { Server } = require('socket.io');
 const mongoose = require('mongoose');
+const cors = require('cors');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
-const cors = require('cors');
+const path = require('path');
+const http = require('http');
+const { Server } = require('socket.io');
 require('dotenv').config();
 
 const app = express();
 const server = http.createServer(app);
-const io = new Server(server, {
-    cors: { origin: "*" },
-    pingTimeout: 60000,
-    pingInterval: 25000
-});
+const io = new Server(server, { cors: { origin: "*" } });
 
+const PORT = process.env.PORT || 3000;
+const JWT_SECRET = 'ayham-secret-key-2024';
+
+// Middleware
 app.use(cors());
 app.use(express.json());
-app.use(express.static('public'));
+app.use(express.static(path.join(__dirname, 'public')));
 
-const OWNER_EMAIL = process.env.OWNER_EMAIL || 'ايميلك@gmail.com';
-const OWNER_ENTRY_VIDEO = 'https://files.catbox.moe/v0ec0k.mp4';
-const JWT_SECRET = process.env.JWT_SECRET || 'sabaa-gold-secret-2024';
+// MongoDB Connection
+const mongoURI = process.env.MONGODB_URI;
+if (!mongoURI) {
+  console.log('❌ MONGODB_URI مو موجود بالـ Environment Variables');
+  process.exit(1);
+}
+mongoose.connect(mongoURI)
+ .then(() => console.log('✅ MongoDB Connected - السيرفر شغال'))
+ .catch(err => {
+    console.log('❌ MongoDB Error:', err.message);
+    process.exit(1);
+  });
 
-mongoose.connect(process.env.MONGO_URI || 'mongodb://localhost:27017/sabaa');
-
+// User Schema - معدل مع الايديات الفخمة
 const userSchema = new mongoose.Schema({
-    username: { type: String, required: true, unique: true },
-    email: { type: String, required: true, unique: true },
-    password: { type: String, required: true },
-    bio: { type: String, maxlength: 60, default: '' },
-    profilePic: { type: String, default: '' },
-    coverPic: { type: String, default: '' },
-    points: { type: Number, default: 0 },
-    wins: { type: Number, default: 0 },
-    games: { type: Number, default: 0 },
-    level: { type: Number, default: 1 },
-    vip: { type: Number, default: 0 },
-    banned: { type: Boolean, default: false },
-    banReason: { type: String, default: '' },
-    createdAt: { type: Date, default: Date.now },
-    lastSeen: { type: Date, default: Date.now }
-});
-
-const roomSchema = new mongoose.Schema({
-    roomId: { type: String, unique: true },
-    name: { type: String, default: 'وكالة السبع السوري' },
-    ownerId: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
-    agencyPic: { type: String, default: '' },
-    agencyCover: { type: String, default: '' },
-    maxMics: { type: Number, default: 20 },
-    bannedUsers: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
-    admins: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
-    createdAt: { type: Date, default: Date.now }
-});
-
-const reportSchema = new mongoose.Schema({
-    reporterId: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
-    reportedId: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
-    reason: String,
-    roomId: String,
-    createdAt: { type: Date, default: Date.now },
-    status: { type: String, default: 'pending' }
+  username: { type: String, required: true },
+  lastName: { type: String, required: true },
+  email: { type: String, required: true, unique: true },
+  password: { type: String, required: true },
+  country: { type: String, required: true },
+  birthDate: { type: String, required: true },
+  age: { type: Number, required: true },
+  gender: { type: String, required: true },
+  // الاضافات الجديدة للوكالة
+  vipId: { type: Number, unique: true, default: () => Math.floor(100 + Math.random() * 900) },
+  displayName: { type: String, default: function() { return this.username + ' ' + this.lastName; } },
+  bio: { type: String, default: 'مرحبا بالكل في وكالتي الخاصة' },
+  avatar: { type: String, default: '/uploads/default.png' },
+  agencyBg: { type: String, default: '/uploads/bg.jpg' },
+  agencyDecor: { type: String, default: '' },
+  coins: { type: Number, default: 0 },
+  vip: { type: Number, default: 0 },
+  wealthLevel: { type: Number, default: 0 },
+  popularity: { type: Number, default: 0 },
+  followers: { type: Number, default: 0 },
+  following: { type: Number, default: 0 },
+  friends: { type: Number, default: 0 },
+  ownerGoldenEntry: { type: Boolean, default: false }, // الك بس يا سبع
+  createdAt: { type: Date, default: Date.now }
 });
 
 const User = mongoose.model('User', userSchema);
-const Room = mongoose.model('Room', roomSchema);
-const Report = mongoose.model('Report', reportSchema);
 
-function authMiddleware(req, res, next) {
-    const token = req.headers.authorization?.split(' ')[1];
-    if (!token) return res.status(401).json({ message: 'مافي توكن' });
-    try {
-        const decoded = jwt.verify(token, JWT_SECRET);
-        req.userId = decoded.userId;
-        next();
-    } catch (error) {
-        res.status(401).json({ message: 'توكن غلط' });
-    }
-}
-
-async function isOwner(userId) {
-    const user = await User.findById(userId);
-    return user && user.email === OWNER_EMAIL;
-}
-
+// Register API - نفس تبعك مع الاضافات
 app.post('/api/register', async (req, res) => {
-    try {
-        const { username, email, password } = req.body;
-        const existingUser = await User.findOne({ $or: [{ email }, { username }] });
-        if (existingUser) return res.status(400).json({ message: 'الايميل او الاسم مستخدم' });
-
-        const hashedPassword = await bcrypt.hash(password, 10);
-        const isOwnerAccount = email === OWNER_EMAIL;
-
-        const user = new User({
-            username,
-            email,
-            password: hashedPassword,
-            level: isOwnerAccount? 10000 : 1,
-            vip: isOwnerAccount? 10 : 0
-        });
-        await user.save();
-
-        const token = jwt.sign({ userId: user._id }, JWT_SECRET);
-        res.json({ token, user: { username: user.username, email: user.email, level: user.level, vip: user.vip } });
-    } catch (error) {
-        res.status(500).json({ message: 'خطأ بالسيرفر' });
+  try {
+    const { username, lastName, email, password, country, birthDate, age, gender } = req.body;
+    const existingUser = await User.findOne({ email });
+    if (existingUser) {
+      return res.status(400).json({ error: 'الايميل مستخدم من قبل' });
     }
+    const hashedPassword = await bcrypt.hash(password, 10);
+    const newUser = new User({
+      username, lastName, email, password: hashedPassword,
+      country, birthDate, age, gender,
+      displayName: username + ' ' + lastName
+    });
+    await newUser.save();
+    const token = jwt.sign({ userId: newUser._id }, JWT_SECRET);
+    res.json({
+      token,
+      user: {
+        username, lastName, email, country, age, gender,
+        vipId: newUser.vipId, displayName: newUser.displayName
+      }
+    });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ error: 'خطأ بالسيرفر' });
+  }
 });
 
+// Login API - نفس تبعك
 app.post('/api/login', async (req, res) => {
-    try {
-        const { email, password } = req.body;
-        const user = await User.findOne({ email });
-        if (!user) return res.status(400).json({ message: 'الحساب مو موجود' });
-        if (user.banned) return res.status(403).json({ message: 'حسابك مبند: ' + user.banReason });
-
-        const validPassword = await bcrypt.compare(password, user.password);
-        if (!validPassword) return res.status(400).json({ message: 'كلمة السر غلط' });
-
-        user.lastSeen = new Date();
-        await user.save();
-
-        const token = jwt.sign({ userId: user._id }, JWT_SECRET);
-        res.json({ token, user: { username: user.username, email: user.email, level: user.level, vip: user.vip } });
-    } catch (error) {
-        res.status(500).json({ message: 'خطأ بالسيرفر' });
+  try {
+    const { email, password } = req.body;
+    const user = await User.findOne({ email });
+    if (!user) {
+      return res.status(400).json({ error: 'الايميل او كلمة السر غلط' });
     }
+    const isValidPassword = await bcrypt.compare(password, user.password);
+    if (!isValidPassword) {
+      return res.status(400).json({ error: 'الايميل او كلمة السر غلط' });
+    }
+    const token = jwt.sign({ userId: user._id }, JWT_SECRET);
+    res.json({
+      token,
+      user: {
+        username: user.username,
+        lastName: user.lastName,
+        email: user.email,
+        country: user.country,
+        age: user.age,
+        gender: user.gender,
+        vipId: user.vipId,
+        displayName: user.displayName,
+        _id: user._id
+      }
+    });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ error: 'خطأ بالسيرفر' });
+  }
 });
 
-app.get('/api/profile', authMiddleware, async (req, res) => {
-    try {
-        const user = await User.findById(req.userId);
-        if (!user) return res.status(404).json({ message: 'اليوزر مو موجود' });
-        user.lastSeen = new Date();
-        await user.save();
-        res.json(user);
-    } catch (error) {
-        res.status(500).json({ message: 'خطأ بالسيرفر' });
-    }
+// API جديد عشان me.html
+app.get('/api/me', async (req, res) => {
+  try {
+    const token = req.headers.authorization?.split(' ')[1];
+    if (!token) return res.status(401).json({ error: 'مافي توكن' });
+    const decoded = jwt.verify(token, JWT_SECRET);
+    const user = await User.findById(decoded.userId).select('-password');
+    if (!user) return res.status(404).json({ error: 'اليوزر مو موجود' });
+    res.json(user);
+  } catch (error) {
+    res.status(401).json({ error: 'توكن غلط او منتهي' });
+  }
 });
 
-app.post('/api/profile/update', authMiddleware, async (req, res) => {
-    try {
-        const { bio, profilePic, coverPic } = req.body;
-        const user = await User.findById(req.userId);
-        if (bio!== undefined) user.bio = bio.substring(0, 60);
-        if (profilePic!== undefined) user.profilePic = profilePic;
-        if (coverPic!== undefined) user.coverPic = coverPic;
-        await user.save();
-        res.json({ message: 'تم التحديث', user });
-    } catch (error) {
-        res.status(500).json({ message: 'خطأ بالسيرفر' });
-    }
+// Routes للصفحات - نفس تبعك
+app.get('/', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
-app.post('/api/admin/ban', authMiddleware, async (req, res) => {
-    try {
-        if (!await isOwner(req.userId)) return res.status(403).json({ message: 'ماعندك صلاحية' });
-        const { targetUserId, reason } = req.body;
-        await User.findByIdAndUpdate(targetUserId, { banned: true, banReason: reason });
-        io.emit('userBanned', { userId: targetUserId });
-        res.json({ message: 'تم تبنيد الحساب' });
-    } catch (error) {
-        res.status(500).json({ message: 'خطأ بالسيرفر' });
-    }
+app.get('/login', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'login.html'));
 });
 
-app.get('/api/admin/reports', authMiddleware, async (req, res) => {
-    try {
-        if (!await isOwner(req.userId)) return res.status(403).json({ message: 'ماعندك صلاحية' });
-        const reports = await Report.find().populate('reporterId reportedId').sort({ createdAt: -1 });
-        res.json(reports);
-    } catch (error) {
-        res.status(500).json({ message: 'خطأ بالسيرفر' });
-    }
-});
-
-// خلي /me يفتح me.html عشان ما يطلع Cannot GET /me
 app.get('/me', (req, res) => {
-    res.sendFile(__dirname + '/public/me.html');
+  res.sendFile(path.join(__dirname, 'public', 'me.html'));
 });
 
+// راوت جديد للغرفة
 app.get('/room', (req, res) => {
-    res.sendFile(__dirname + '/public/room.html');
+  res.sendFile(path.join(__dirname, 'public', 'room.html'));
 });
 
-const rooms = {};
+// ============ Socket.io للوكالة ============
+const liveRooms = new Map();
 
 io.on('connection', (socket) => {
-    socket.on('joinRoom', async ({ roomId, token }) => {
-        try {
-            const decoded = jwt.verify(token, JWT_SECRET);
-            const user = await User.findById(decoded.userId);
-            if (!user || user.banned) return socket.emit('kicked');
+  // انشاء غرفة
+  socket.on('create-room', async ({userId}) => {
+    const user = await User.findById(userId);
+    const roomId = `room_${userId}`;
 
-            socket.join(roomId);
-            socket.userId = user._id.toString();
-            socket.roomId = roomId;
+    if(!liveRooms.has(roomId)) {
+      liveRooms.set(roomId, {
+        owner: userId,
+        ownerData: user,
+        seats: 4,
+        agencyOpen: false,
+        agencyRunning: false,
+        allowMic: false,
+        members: new Map([[userId, user]]),
+        banned: new Set(),
+        admins: new Set([userId]),
+        chat: []
+      });
+    }
+    socket.join(roomId);
+    // دخولية ذهبية 13 ثانية للمالك
+    if(user.ownerGoldenEntry || user.vipId === 777) {
+      io.to(roomId).emit('golden-entry', {userId, duration: 13000});
+    }
+    socket.emit('room-data', liveRooms.get(roomId));
+  });
 
-            if (!rooms[roomId]) {
-                let room = await Room.findOne({ roomId });
-                if (!room) {
-                    room = new Room({ roomId, ownerId: user._id });
-                    await room.save();
-                }
-                rooms[roomId] = {
-                    users: [],
-                    mics: Array(20).fill(null),
-                    maxMics: 20,
-                    dbId: room._id
-                };
-            }
+  // دخول غرفة
+  socket.on('join-room', async ({roomId, userId}) => {
+    const room = liveRooms.get(roomId);
+    const user = await User.findById(userId);
+    if(room &&!room.banned.has(userId) && room.agencyOpen) {
+      socket.join(roomId);
+      room.members.set(userId, user);
+      io.to(roomId).emit('room-update', room);
+    }
+  });
 
-            const userData = {
-                userId: user._id,
-                username: user.username,
-                level: user.level,
-                vip: user.vip,
-                socketId: socket.id,
-                bio: user.bio,
-                profilePic: user.profilePic,
-                isOwner: user.email === OWNER_EMAIL
-            };
+  // تحديث اعدادات
+  socket.on('update-room', ({roomId, userId, updates}) => {
+    const room = liveRooms.get(roomId);
+    if(room && room.owner === userId) {
+      Object.assign(room, updates);
+      io.to(roomId).emit('room-update', room);
+    }
+  });
 
-            rooms[roomId].users.push(userData);
+  // تفاعل 3D كبير
+  socket.on('big-reaction', ({roomId, userId, reaction}) => {
+    io.to(roomId).emit('show-reaction', {userId, reaction, time: Date.now()});
+  });
 
-            if (user.email === OWNER_EMAIL) {
-                io.to(roomId).emit('ownerEntry', {
-                    video: OWNER_ENTRY_VIDEO,
-                    duration: 13,
-                    text: '👑 دخول حساب الادارة الرسمي 👑',
-                    username: user.username
-                });
+  // شات الوكالة
+  socket.on('agency-msg', ({roomId, userId, msg}) => {
+    const room = liveRooms.get(roomId);
+    const user = room.members.get(userId);
+    const msgData = {userId, vipId: user.vipId, name: user.displayName, msg, time: Date.now()};
+    room.chat.push(msgData);
+    io.to(roomId).emit('new-msg', msgData);
+  });
 
-                io.to(roomId).emit('newMessage', {
-                    username: 'النظام',
-                    message: `👑 ${user.username} - دخول حساب الادارة الرسمي 👑`
-                });
-            }
-
-            io.to(roomId).emit('roomUpdate', rooms[roomId]);
-        } catch (error) {
-            console.log('Join room error:', error);
-        }
-    });
-
-    socket.on('takeMic', async ({ roomId, micIndex }) => {
-        const room = rooms[roomId];
-        const user = room.users.find(u => u.socketId === socket.id);
-        if (!room ||!user) return;
-        if (user.email!== OWNER_EMAIL) return socket.emit('error', { message: 'لازم اذن من صاحب الوكالة' });
-        room.mics[micIndex] = socket.id;
-        io.to(roomId).emit('roomUpdate', room);
-    });
-
-    socket.on('sendMessage', ({ roomId, message }) => {
-        const room = rooms[roomId];
-        const user = room.users.find(u => u.socketId === socket.id);
-        if (!user) return;
-        io.to(roomId).emit('newMessage', { username: user.username, message, userId: user.userId });
-    });
-
-    socket.on('sendReaction', ({ roomId, micIndex, emoji }) => {
-        io.to(roomId).emit('reaction', { micIndex, emoji });
-    });
-
-    socket.on('disconnect', () => {
-        for (const roomId in rooms) {
-            const room = rooms[roomId];
-            const userIndex = room.users.findIndex(u => u.socketId === socket.id);
-            if (userIndex!== -1) {
-                const micIndex = room.mics.indexOf(socket.id);
-                if (micIndex!== -1) room.mics[micIndex] = null;
-                room.users.splice(userIndex, 1);
-                io.to(roomId).emit('roomUpdate', room);
-            }
-        }
-    });
+  // طرد
+  socket.on('kick-member', ({roomId, ownerId, targetId}) => {
+    const room = liveRooms.get(roomId);
+    if(room && room.owner === ownerId) {
+      room.banned.add(targetId);
+      room.members.delete(targetId);
+      io.to(roomId).emit('member-kicked', targetId);
+      io.to(roomId).emit('room-update', room);
+    }
+  });
 });
 
-const PORT = process.env.PORT || 3000;
-server.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+// شغل السيرفر
+server.listen(PORT, () => {
+  console.log(`🚀 Server + Socket شغال على بورت ${PORT}`);
+});
