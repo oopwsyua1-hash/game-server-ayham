@@ -11,7 +11,8 @@ body {
     font-family: 'Segoe UI', sans-serif;
     background: #0a0a14;
     color: #fff;
-    padding-bottom: 80px;
+    padding-bottom: 140px;
+    overflow-x: hidden;
 }
 
 #entryOverlay {
@@ -26,193 +27,608 @@ body {
 }
 @keyframes pulse { 0%,100% { scale: 1; } 50% { scale: 1.1; } }
 
-/* ===== شعار الاسد النابض - حصري للمالك ===== */
+.top-bar {
+    background: rgba(10,10,20,0.95);
+    backdrop-filter: blur(10px);
+    padding: 8px 12px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid #333;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+}
+.room-info { text-align: center; flex: 1; }
+.room-name { font-size: 14px; font-weight: bold; }
+.room-meta { font-size: 11px; color: #aaa; }
+.room-id { color: #FFD700; }
+.heat-badge {
+    background: linear-gradient(90deg, #ff4500, #ff8c00);
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-size: 11px;
+    display: inline-block;
+    margin-top: 2px;
+}
+.top-icons { display: flex; gap: 10px; font-size: 18px; }
+.icon-btn { cursor: pointer; }
+
 .lion-header {
     width: 100%;
-    height: 120px;
-    background: #000;
+    height: 100px;
     display: flex;
     justify-content: center;
     align-items: center;
-    border-bottom: 2px solid #FFD700;
-    animation: headerGlow 3s ease-in-out infinite;
-}
-@keyframes headerGlow {
-    0%, 100% { border-color: #FFD700; }
-    50% { border-color: #FFA500; }
+    margin-top: 5px;
+    background: radial-gradient(circle, rgba(255,215,0,0.1) 0%, transparent 70%);
 }
 .lion-img {
-    width: 100px;
-    height: 100px;
+    width: 90px;
+    height: 90px;
     animation: lionPulse 2s ease-in-out infinite;
     filter: drop-shadow(0 0 15px #FFD700);
 }
 @keyframes lionPulse {
-    0%, 100% { transform: scale(1); filter: drop-shadow(0 0 15px #FFD700); }
-    50% { transform: scale(1.1); filter: drop-shadow(0 0 30px #FFA500); }
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.08); }
 }
 
-.header {
-    background: #141428;
-    padding: 10px 15px;
-    border-bottom: 1px solid #ff00ff;
-    text-align: center;
+.container { padding: 10px; max-width: 500px; margin: 0 auto; }
+
+/* ===== عداد المايكات + زر فتح ===== */
+.mic-controls {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin: 10px 0;
+    padding: 8px 12px;
+    background: rgba(20,20,40,0.8);
+    border-radius: 10px;
 }
-.header h1 { font-size: 18px; }
+.mic-count { font-size: 13px; color: #FFD700; }
+.add-mic-btn {
+    background: linear-gradient(90deg, #00ff88, #00cc6a);
+    border: none;
+    border-radius: 8px;
+    padding: 6px 12px;
+    color: #000;
+    font-weight: bold;
+    cursor: pointer;
+    font-size: 12px;
+    display: none;
+}
+.add-mic-btn.show { display: block; }
 
-.container { padding: 15px; max-width: 600px; margin: 0 auto; }
-
-/* ===== المايكات اصغر ===== */
 .mics-grid {
     display: grid;
-    grid-template-columns: repeat(5,1fr);
-    gap: 6px;
-    margin: 15px 0;
+    grid-template-columns: repeat(4,1fr);
+    gap: 8px;
+    margin: 10px 0;
 }
 .mic-slot {
-    background: #141428;
-    padding: 6px 3px;
-    border-radius: 8px;
-    text-align: center;
-    cursor: pointer;
-    border: 2px solid #1a1a2e;
-    min-height: 65px;
-    font-size: 10px;
+    background: linear-gradient(135deg, #2d1b69 0%, #1a1a2e 100%);
+    border: 2px solid #FFD700;
+    aspect-ratio: 1/1.2;
+    border-radius: 12px;
     position: relative;
-    transition: all 0.2s;
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding: 5px;
+    box-shadow: 0 0 10px rgba(255,215,0,0.3);
 }
-.mic-slot:hover { transform: scale(1.05); }
-.mic-slot.taken { background: #2d1b69; border-color: #a855f7; }
-.mic-slot.closed { background: #3a1a1a; border-color: #ff0000; cursor: not-allowed; }
-.mic-slot.owner {
-    background: linear-gradient(135deg, #FFD700, #FFA500);
-    color: #000; font-weight: bold;
-    box-shadow: 0 0 15px #FFD700;
-    animation: ownerGlow 1.5s infinite;
+.mic-slot.active {
+    border: 2px solid;
+    border-image: linear-gradient(45deg, #ff00ff, #00ffff, #ff00ff) 1;
+    animation: rainbow 3s linear infinite;
 }
-@keyframes ownerGlow {
-    0%, 100% { box-shadow: 0 0 15px #FFD700; }
-    50% { box-shadow: 0 0 25px #FFA500; }
+@keyframes rainbow {
+    0% { filter: hue-rotate(0deg); }
+    100% { filter: hue-rotate(360deg); }
 }
-.mic-slot.mic-icon { font-size: 16px; }
-.mic-slot.mic-name {
+.mic-slot.closed {
+    filter: brightness(0.4);
+    cursor: not-allowed;
+    border-color: #ff0000;
+}
+.mic-avatar {
+    width: 50%;
+    height: 50%;
+    border-radius: 50%;
+    border: 2px solid #FFD700;
+    margin: 15% auto 0;
+    object-fit: cover;
+    background: #1a1a2e;
+}
+.mic-icon {
+    font-size: 28px;
+    text-align: center;
+    margin-top: 20%;
+}
+.mic-lock {
+    font-size: 28px;
+    text-align: center;
+    margin-top: 20%;
+}
+.mic-label {
+    background: rgba(0,0,0,0.7);
     font-size: 9px;
-    margin-top: 2px;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-}
-
-/* ===== انميشن التفاعل عالمايك ===== */
-.reaction-anim {
-    position: absolute;
-    top: 50%; left: 50%;
-    transform: translate(-50%, -50%);
-    font-size: 30px;
-    animation: floatUp 2s ease-out forwards;
-    pointer-events: none;
-    z-index: 10;
-}
-@keyframes floatUp {
-    0% { opacity: 1; transform: translate(-50%, -50%) scale(0.5); }
-    100% { opacity: 0; transform: translate(-50%, -150%) scale(1.5); }
-}
-
-.users-list {
-    background: #141428;
-    padding: 12px;
+    text-align: center;
     border-radius: 10px;
-    margin-top: 15px;
+    padding: 2px;
 }
-.users-list h3 { font-size: 14px; margin-bottom: 8px; }
-.user-row {
-    display: flex; justify-content: space-between;
-    padding: 6px; border-bottom: 1px solid #1a1a2e;
-    font-size: 13px; align-items: center;
+.mic-number {
+    position: absolute;
+    bottom: 2px;
+    right: 4px;
+    font-size: 10px;
+    color: #aaa;
 }
-.admin-btn {
-    background: #ef4444; border: none; color: #fff;
-    padding: 3px 6px; border-radius: 4px;
-    cursor: pointer; margin: 0 2px; font-size: 10px;
+.mic-heart {
+    position: absolute;
+    bottom: 2px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(0,0,0,0.8);
+    border-radius: 10px;
+    padding: 1px 6px;
+    font-size: 10px;
 }
 
-/* ===== القائمة السفلية ===== */
+.stats-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin: 10px 0;
+    gap: 8px;
+}
+.stat-item {
+    background: rgba(20,20,40,0.8);
+    border-radius: 20px;
+    padding: 5px 12px;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 12px;
+}
+.top3 {
+    display: flex;
+    gap: 5px;
+}
+.crown {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 10px;
+}
+.crown.gold { background: #FFD700; color: #000; }
+.crown.silver { background: #C0C0C0; color: #000; }
+.crown.bronze { background: #CD7F32; color: #000; }
+
+.join-alert {
+    background: linear-gradient(90deg, #00c851, #007e33);
+    padding: 6px 12px;
+    border-radius: 20px;
+    margin: 10px 0;
+    font-size: 12px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    animation: slideIn 0.5s;
+}
+@keyframes slideIn {
+    from { transform: translateX(100%); opacity: 0; }
+    to { transform: translateX(0); opacity: 1; }
+}
+.join-alert img {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+}
+
+.king-section {
+    background: rgba(20,20,40,0.6);
+    border-radius: 15px;
+    padding: 15px;
+    margin: 15px 0;
+    text-align: center;
+    position: relative;
+    border: 1px solid #333;
+}
+.king-frame {
+    width: 180px;
+    height: 180px;
+    margin: 0 auto;
+    background: radial-gradient(circle, rgba(255,215,0,0.2) 0%, transparent 70%);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.king-img {
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    border: 3px solid #FFD700;
+    object-fit: cover;
+    box-shadow: 0 0 20px #FFD700;
+}
+.king-text {
+    background: rgba(0,0,0,0.8);
+    border-radius: 10px;
+    padding: 10px;
+    margin-top: 10px;
+    font-size: 12px;
+    line-height: 1.6;
+}
+.king-text.title {
+    color: #FFD700;
+    font-size: 14px;
+    font-weight: bold;
+    margin-bottom: 5px;
+}
+
+/* ===== الشات ===== */
+.chat-container {
+    background: rgba(20,20,40,0.6);
+    border-radius: 15px;
+    padding: 10px;
+    margin: 15px 0;
+    max-height: 300px;
+    display: flex;
+    flex-direction: column;
+}
+.chat-messages {
+    flex: 1;
+    overflow-y: auto;
+    margin-bottom: 10px;
+    max-height: 200px;
+}
+.chat-msg {
+    padding: 6px 10px;
+    margin: 5px 0;
+    border-radius: 10px;
+    font-size: 13px;
+    word-wrap: break-word;
+}
+.chat-msg.user {
+    background: rgba(255,0,255,0.2);
+    text-align: right;
+}
+.chat-msg.other {
+    background: rgba(26,26,46,0.8);
+    text-align: left;
+}
+.chat-msg img {
+    max-width: 200px;
+    border-radius: 8px;
+    margin-top: 5px;
+}
+.chat-msg .username {
+    color: #FFD700;
+    font-weight: bold;
+    font-size: 11px;
+}
+.chat-input-area {
+    display: flex;
+    gap: 5px;
+}
+.chat-input {
+    flex: 1;
+    background: #1a1a2e;
+    border: 1px solid #333;
+    border-radius: 20px;
+    padding: 8px 15px;
+    color: #fff;
+    font-size: 13px;
+    outline: none;
+}
+.chat-btn {
+    background: #ff00ff;
+    border: none;
+    border-radius: 50%;
+    width: 35px;
+    height: 35px;
+    color: #fff;
+    cursor: pointer;
+    font-size: 16px;
+}
+.emoji-picker {
+    display: none;
+    position: absolute;
+    bottom: 50px;
+    background: rgba(20,20,40,0.98);
+    border: 1px solid #333;
+    border-radius: 10px;
+    padding: 10px;
+    grid-template-columns: repeat(6,1fr);
+    gap: 5px;
+    z-index: 200;
+}
+.emoji-picker.show { display: grid; }
+.emoji-item {
+    font-size: 24px;
+    cursor: pointer;
+    padding: 5px;
+    text-align: center;
+}
+.emoji-item:hover { background: rgba(255,0,255,0.3); border-radius: 5px; }
+
 .bottom-menu {
     position: fixed;
     bottom: 0; left: 0; right: 0;
-    background: #141428;
-    border-top: 2px solid #ff00ff;
+    background: rgba(20,20,40,0.95);
+    backdrop-filter: blur(10px);
+    border-top: 1px solid #333;
     display: flex;
     justify-content: space-around;
     padding: 8px 5px;
     z-index: 100;
 }
 .menu-btn {
-    flex: 1;
-    background: #1a1a2e;
-    border: 1px solid #333;
-    border-radius: 8px;
+    background: transparent;
+    border: none;
     color: #fff;
-    padding: 8px 4px;
-    margin: 0 3px;
-    font-size: 11px;
+    font-size: 20px;
     cursor: pointer;
-    text-align: center;
-    transition: all 0.2s;
+    padding: 5px;
+    position: relative;
 }
-.menu-btn:active { background: #ff00ff; }
-.menu-btn.owner-btn {
-    background: linear-gradient(90deg, #FFD700, #FFA500);
-    color: #000;
-    font-weight: bold;
+.menu-btn.gift {
+    background: linear-gradient(135deg, #ff6b6b, #ee5a24);
+    border-radius: 50%;
+    width: 45px;
+    height: 45px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.menu-btn.chat {
+    background: linear-gradient(135deg, #a55eea, #8854d0);
+    border-radius: 50%;
+    width: 45px;
+    height: 45px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.notif-badge {
+    position: absolute;
+    top: -2px;
+    right: -2px;
+    background: #ff0000;
+    color: #fff;
+    border-radius: 50%;
+    width: 16px;
+    height: 16px;
+    font-size: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
-/* ===== ازرار التفاعل ===== */
 .reaction-bar {
     display: flex;
     justify-content: center;
     gap: 8px;
-    margin: 15px 0;
+    margin: 10px 0;
     flex-wrap: wrap;
 }
 .reaction-btn {
-    background: #1a1a2e;
+    background: rgba(26,26,46,0.8);
     border: 1px solid #ff00ff;
     border-radius: 50%;
-    width: 45px;
-    height: 45px;
-    font-size: 22px;
+    width: 40px;
+    height: 40px;
+    font-size: 20px;
     cursor: pointer;
+}
+.reaction-btn:active { transform: scale(0.9); }
+
+.reaction-anim {
+    position: absolute;
+    top: 30%; left: 50%;
+    transform: translateX(-50%);
+    font-size: 35px;
+    animation: floatUp 2s ease-out forwards;
+    pointer-events: none;
+    z-index: 10;
+}
+@keyframes floatUp {
+    0% { opacity: 1; transform: translateX(-50%) scale(0.5); }
+    100% { opacity: 0; transform: translateX(-50%) translateY(-50px) scale(1.5); }
+}
+
+.context-menu {
+    position: fixed;
+    background: rgba(20,20,40,0.98);
+    border: 2px solid #ff00ff;
+    border-radius: 10px;
+    padding: 8px;
+    z-index: 1000;
+    min-width: 180px;
+    display: none;
+    box-shadow: 0 0 20px rgba(255,0,255,0.5);
+}
+.context-menu.show { display: block; }
+.context-menu-item {
+    padding: 10px 15px;
+    cursor: pointer;
+    border-radius: 6px;
+    font-size: 13px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
     transition: all 0.2s;
 }
-.reaction-btn:active {
-    transform: scale(0.9);
-    background: #ff00ff;
+.context-menu-item:hover { background: rgba(255,0,255,0.3); }
+.context-menu-item.danger { color: #ff4444; }
+.context-menu-item.danger:hover { background: rgba(255,68,68,0.3); }
+
+.search-bar {
+    background: rgba(20,20,40,0.8);
+    border-radius: 20px;
+    padding: 8px 15px;
+    margin: 10px 0;
+    display: flex;
+    align-items: center;
+    gap: 8px;
 }
-.reaction-btn:disabled {
-    opacity: 0.3;
-    cursor: not-allowed;
+.search-bar input {
+    background: transparent;
+    border: none;
+    color: #fff;
+    flex: 1;
+    outline: none;
+    font-size: 13px;
+}
+.search-bar input::placeholder { color: #666; }
+
+.admin-panel {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: rgba(10,10,20,0.98);
+    border: 2px solid #FFD700;
+    border-radius: 15px;
+    padding: 20px;
+    z-index: 2000;
+    width: 90%;
+    max-width: 400px;
+    display: none;
+}
+.admin-panel.show { display: block; }
+.admin-panel h3 {
+    color: #FFD700;
+    margin-bottom: 15px;
+    text-align: center;
+}
+.admin-panel input,.admin-panel textarea {
+    width: 100%;
+    background: #1a1a2e;
+    border: 1px solid #333;
+    border-radius: 8px;
+    padding: 10px;
+    color: #fff;
+    margin-bottom: 10px;
+    font-size: 13px;
+}
+.admin-panel button {
+    width: 100%;
+    background: linear-gradient(90deg, #FFD700, #FFA500);
+    border: none;
+    border-radius: 8px;
+    padding: 12px;
+    color: #000;
+    font-weight: bold;
+    cursor: pointer;
+    margin-top: 10px;
+}
+.close-panel {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    background: #ff4444;
+    border: none;
+    border-radius: 50%;
+    width: 30px;
+    height: 30px;
+    color: #fff;
+    cursor: pointer;
+    font-size: 18px;
 }
 </style>
 </head>
 <body>
 
-<!-- شاشة الدخولية -->
 <div id="entryOverlay">
     <video id="entryVideo" autoplay muted></video>
     <div id="entryText"></div>
 </div>
 
-<!-- شعار الاسد - بيطلع بس للمالك 10000 TOP -->
-<div id="lionHeaderContainer"></div>
-
-<div class="header">
-    <h1>🎤 غرفة السبع الحلبي - 20 مايك</h1>
-    <p style="font-size:12px;color:#aaa">ID: 10000</p>
+<div class="top-bar">
+    <div class="icon-btn" onclick="showAdminPanel()">⚙️</div>
+    <div class="icon-btn" style="background:#ff8c00;border-radius:50%;width:30px;height:30px;display:flex;align-items:center;justify-content:center;">📢</div>
+    <div class="room-info">
+        <div class="room-name" id="roomName">غرفة السبع الحلبي</div>
+        <div class="room-meta">
+            <span class="room-id" id="roomMeta">Lv.16 🔹 11152823 ID</span>
+            <div class="heat-badge">↑ 10+ 🔥</div>
+        </div>
+    <div class="icon-btn" style="background:#FFD700;border-radius:8px;padding:5px 8px;color:#000;font-size:11px;">حرة</div>
 </div>
 
+<div id="lionHeaderContainer"></div>
+
 <div class="container">
-    <!-- ازرار التفاعل - تظهر بس اذا ع المايك -->
+    <div class="search-bar" id="searchBar" style="display:none;">
+        <span>🔍</span>
+        <input type="text" id="searchInput" placeholder="بحث بالايدي او الاسم...">
+        <button onclick="searchUser()" style="background:#ff00ff;border:none;border-radius:5px;padding:5px 10px;color:#fff;">بحث</button>
+    </div>
+
+    <div class="mic-controls">
+        <div class="mic-count" id="micCount">المايكات: 4/20</div>
+        <button class="add-mic-btn" id="addMicBtn" onclick="addMicSlot()">➕ فتح مايك</button>
+    </div>
+
+    <div class="mics-grid" id="micsGrid"></div>
+
+    <div class="stats-bar">
+        <div class="stat-item" id="userCount">👥 0</div>
+        <div class="stat-item">💎 0</div>
+        <div class="top3">
+            <div class="crown bronze">3</div>
+            <div class="crown silver">2</div>
+            <div class="crown gold">1</div>
+        </div>
+    </div>
+
+    <div id="joinAlertContainer"></div>
+
+    <div class="king-section" id="kingSection" style="display:none;">
+        <div class="king-frame">
+            <img class="king-img" src="https://i.imgur.com/DefaultAvatar.png" alt="السبع">
+        </div>
+        <div class="king-text">
+            <div class="title">وكالة السبع السوري</div>
+            <div id="roomDesc">مرحباً بكم في غرفة دردشة! نتمنى لكم أوقات طيبة والتعرف على أصدقاء جدد.</div>
+        </div>
+    </div>
+
+    <div class="chat-container">
+        <div class="chat-messages" id="chatMessages"></div>
+        <div style="position:relative;">
+            <div class="emoji-picker" id="emojiPicker">
+                <div class="emoji-item" onclick="insertEmoji('😂')">😂</div>
+                <div class="emoji-item" onclick="insertEmoji('😍')">😍</div>
+                <div class="emoji-item" onclick="insertEmoji('❤️')">❤️</div>
+                <div class="emoji-item" onclick="insertEmoji('🎉')">🎉</div>
+                <div class="emoji-item" onclick="insertEmoji('😢')">😢</div>
+                <div class="emoji-item" onclick="insertEmoji('👍')">👍</div>
+                <div class="emoji-item" onclick="insertEmoji('🔥')">🔥</div>
+                <div class="emoji-item" onclick="insertEmoji('👑')">👑</div>
+                <div class="emoji-item" onclick="insertEmoji('💎')">💎</div>
+                <div class="emoji-item" onclick="insertEmoji('🌹')">🌹</div>
+                <div class="emoji-item" onclick="insertEmoji('🎁')">🎁</div>
+                <div class="emoji-item" onclick="insertEmoji('😘')">😘</div>
+            </div>
+            <div class="chat-input-area">
+                <button class="chat-btn" onclick="toggleEmojiPicker()">😊</button>
+                <button class="chat-btn" onclick="document.getElementById('imageInput').click()">📷</button>
+                <input type="file" id="imageInput" accept="image/*" style="display:none;" onchange="sendImage(event)">
+                <input type="text" class="chat-input" id="chatInput" placeholder="اكتب رسالة..." onkeypress="if(event.key==='Enter')sendMessage()">
+                <button class="chat-btn" onclick="sendMessage()">➤</button>
+            </div>
+        </div>
+    </div>
+
     <div class="reaction-bar" id="reactionBar" style="display:none;">
         <button class="reaction-btn" onclick="sendReaction('😂')">😂</button>
         <button class="reaction-btn" onclick="sendReaction('😍')">😍</button>
@@ -220,24 +636,27 @@ body {
         <button class="reaction-btn" onclick="sendReaction('🎉')">🎉</button>
         <button class="reaction-btn" onclick="sendReaction('😢')">😢</button>
     </div>
-
-    <!-- المايكات -->
-    <div class="mics-grid" id="micsGrid"></div>
-
-    <!-- المتواجدين -->
-    <div class="users-list">
-        <h3>👥 المتواجدين</h3>
-        <div id="usersList"></div>
-    </div>
 </div>
 
-<!-- القائمة السفلية -->
 <div class="bottom-menu">
-    <button class="menu-btn" onclick="showUsers()">👥 المتواجدين</button>
-    <button class="menu-btn" id="adminBtn" style="display:none;" onclick="showAdminPanel()">👑 الادمن</button>
-    <button class="menu-btn" id="ownerBtn" style="display:none;" onclick="showOwnerPanel()">⚙️ صاحب الغرفة</button>
-    <button class="menu-btn" onclick="createRoom()">➕ انشاء غرفة</button>
-    <button class="menu-btn" id="micBtn" onclick="toggleMic()">🎤 صعود مايك</button>
+    <button class="menu-btn gift">🎁<span class="notif-badge">4</span></button>
+    <button class="menu-btn chat" onclick="toggleMic()">🎤</button>
+    <button class="menu-btn">💬<span class="notif-badge">•</span></button>
+    <button class="menu-btn">😊</button>
+    <button class="menu-btn">🔊</button>
+    <button class="menu-btn">ارسال</button>
+</div>
+
+<div class="context-menu" id="contextMenu"></div>
+
+<div class="admin-panel" id="adminPanel">
+    <button class="close-panel" onclick="closeAdminPanel()">×</button>
+    <h3>⚙️ ادارة الغرفة</h3>
+    <input type="text" id="roomNameInput" placeholder="اسم الغرفة">
+    <input type="text" id="roomImageInput" placeholder="رابط صورة الغرفة">
+    <textarea id="roomDescInput" rows="3" placeholder="وصف الغرفة"></textarea>
+    <button onclick="saveRoomSettings()">حفظ التعديلات</button>
+    <button onclick="showReports()" style="background:#ff4444;">📋 البلاغات</button>
 </div>
 
 <script>
@@ -246,14 +665,14 @@ const token = localStorage.getItem('token');
 const urlParams = new URLSearchParams(window.location.search);
 const ROOM_ID = urlParams.get('roomId') || '10000';
 let myUserId = null;
-let mySocketId = null;
 let isOwner = false;
 let isOnMic = false;
 let myMicIndex = -1;
-
-// WebRTC للصوت - الكل يسمع الكل
+let selectedUserId = null;
 let localStream = null;
 let peerConnections = {};
+let mutedUsers = new Set();
+let maxMics = 4;
 
 if (!token) location.href = '/';
 
@@ -261,14 +680,13 @@ async function initAudio() {
     try {
         localStream = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
     } catch (err) {
-        console.log('المايك مرفوض:', err);
+        console.log('المايك مرفوض');
     }
 }
 initAudio();
 
 socket.emit('joinRoom', { roomId: ROOM_ID, token });
 
-// دخولية المالك
 socket.on('ownerEntry', (data) => {
     const overlay = document.getElementById('entryOverlay');
     const video = document.getElementById('entryVideo');
@@ -280,33 +698,35 @@ socket.on('ownerEntry', (data) => {
     setTimeout(() => overlay.style.display = 'none', data.duration * 1000);
 });
 
-// تحديث الغرفة
 socket.on('roomUpdate', (roomData) => {
     const micsGrid = document.getElementById('micsGrid');
-    const usersList = document.getElementById('usersList');
     micsGrid.innerHTML = '';
-    usersList.innerHTML = '';
+    document.getElementById('userCount').textContent = `👥 ${roomData.users.length}`;
+    maxMics = roomData.maxMics || 4;
+    document.getElementById('micCount').textContent = `المايكات: ${maxMics}/20`;
 
-    mySocketId = socket.id;
-    isOnMic = false;
-    myMicIndex = -1;
-
-    // اظهر شعار الاسد بس اذا انت المالك 10000 TOP
-    const lionContainer = document.getElementById('lionHeaderContainer');
     const currentUser = roomData.users.find(u => u.socketId === socket.id);
+    if (currentUser) myUserId = currentUser.userId;
 
+    if (roomData.name) document.getElementById('roomName').textContent = roomData.name;
+    if (roomData.desc) document.getElementById('roomDesc').textContent = roomData.desc;
+
+    const lionContainer = document.getElementById('lionHeaderContainer');
     if (currentUser && currentUser.level === "10000 TOP") {
+        isOwner = true;
         lionContainer.innerHTML = `
             <div class="lion-header">
                 <img class="lion-img" src="https://files.catbox.moe/00z108.gif" alt="السبع الحلبي">
             </div>
         `;
+        document.getElementById('kingSection').style.display = 'block';
+        document.getElementById('searchBar').style.display = 'flex';
+        document.getElementById('addMicBtn').classList.add('show');
     } else {
         lionContainer.innerHTML = '';
     }
 
-    // رسم المايكات
-    for (let i = 0; i < 20; i++) {
+    for (let i = 0; i < maxMics; i++) {
         const micDiv = document.createElement('div');
         micDiv.className = 'mic-slot';
         micDiv.id = `mic-${i}`;
@@ -314,58 +734,191 @@ socket.on('roomUpdate', (roomData) => {
 
         if (micData === 'closed') {
             micDiv.classList.add('closed');
-            micDiv.innerHTML = '<div class="mic-icon">🔒</div><div class="mic-name">مغلق</div>';
+            micDiv.innerHTML = `
+                <div class="mic-lock">🔒</div>
+                <div class="mic-label">عضو</div>
+                <div class="mic-number">${i+1}</div>
+            `;
         } else if (micData) {
             const userOnMic = roomData.users.find(u => u.socketId === micData);
             if (userOnMic) {
-                micDiv.classList.add('taken');
-                micDiv.innerHTML = `<div class="mic-icon">🎤</div><div class="mic-name">${userOnMic.username}</div>`;
-
-                if (userOnMic.level === "10000 TOP") {
-                    micDiv.classList.add('owner');
-                }
+                micDiv.classList.add('active');
+                const avatarUrl = userOnMic.avatar || 'https://i.imgur.com/DefaultAvatar.png';
+                const isMuted = mutedUsers.has(userOnMic.userId);
+                micDiv.innerHTML = `
+                    <img class="mic-avatar" src="${avatarUrl}" alt="">
+                    <div class="mic-heart">${isMuted? '🔇' : '0 ❤️'}</div>
+                    <div class="mic-number">${i+1}</div>
+                `;
                 if (userOnMic.socketId === socket.id) {
                     isOnMic = true;
                     myMicIndex = i;
-                    micDiv.onclick = () => socket.emit('leaveMic', { roomId: ROOM_ID });
+                }
+                if (isOwner) {
+                    micDiv.onclick = (e) => showContextMenu(e, userOnMic, true, i);
                 }
             }
         } else {
-            micDiv.innerHTML = '<div class="mic-icon">🎤</div><div class="mic-name">فارغ</div>';
+            micDiv.innerHTML = `
+                <div class="mic-icon">➕</div>
+                <div class="mic-label">عضو</div>
+                <div class="mic-number">${i+1}</div>
+            `;
             micDiv.onclick = () => socket.emit('takeMic', { roomId: ROOM_ID, micIndex: i });
         }
         micsGrid.appendChild(micDiv);
     }
 
-    // اظهر ازرار التفاعل اذا ع المايك
     document.getElementById('reactionBar').style.display = isOnMic? 'flex' : 'none';
-    document.getElementById('micBtn').textContent = isOnMic? '⬇️ نزول مايك' : '🎤 صعود مايك';
-
-    // رسم المتواجدين
-    roomData.users.forEach(user => {
-        if (!myUserId) myUserId = user.userId;
-
-        // تحقق اذا انت المالك
-        if (user.level === "10000 TOP" && user.userId === myUserId) {
-            isOwner = true;
-            document.getElementById('adminBtn').style.display = 'block';
-            document.getElementById('ownerBtn').style.display = 'block';
-            document.getElementById('adminBtn').classList.add('owner-btn');
-            document.getElementById('ownerBtn').classList.add('owner-btn');
-        }
-
-        const row = document.createElement('div');
-        row.className = 'user-row';
-        row.innerHTML = `<span>${user.username} - ${user.level} ${user.level === "10000 TOP"? '👑' : ''}</span>
-            <div>${isOwner && user.level!== "10000 TOP"? `
-                <button class="admin-btn" onclick="adminAction('KICK', '${user.userId}')">طرد</button>
-                <button class="admin-btn" onclick="adminAction('CLOSE_MIC', '${user.userId}')">غلق</button>` : ''}
-            </div>`;
-        usersList.appendChild(row);
-    });
 });
 
-// استقبال التفاعلات
+socket.on('userJoined', (data) => {
+    const container = document.getElementById('joinAlertContainer');
+    const alert = document.createElement('div');
+    alert.className = 'join-alert';
+    alert.innerHTML = `
+        <img src="${data.avatar || 'https://i.imgur.com/DefaultAvatar.png'}" alt="">
+        <span>${data.username} انضم للغرفة</span>
+    `;
+    container.appendChild(alert);
+    setTimeout(() => alert.remove(), 4000);
+});
+
+function addMicSlot() {
+    if (!isOwner) return;
+    if (maxMics >= 20) {
+        alert('وصلت للحد الاقصى 20 مايك');
+        return;
+    }
+    socket.emit('addMicSlot', { roomId: ROOM_ID });
+}
+
+function showContextMenu(e, user, onMic, micIndex) {
+    e.stopPropagation();
+    const menu = document.getElementById('contextMenu');
+    selectedUserId = user.userId;
+
+    let menuHTML = `
+        <div style="padding:10px;border-bottom:1px solid #333;margin-bottom:5px;font-weight:bold;">
+            ${user.username}<br><span style="font-size:11px;color:#aaa;">ID: ${user.userId}</span>
+        </div>
+    `;
+
+    if (onMic) {
+        menuHTML += `
+            <div class="context-menu-item danger" onclick="adminAction('REMOVE_MIC', '${user.userId}')">
+                ⬇️ نزول من المايك
+            </div>
+            <div class="context-menu-item danger" onclick="adminAction('CLOSE_MIC', '${user.userId}', ${micIndex})">
+                🔒 اغلاق المايك
+            </div>
+            <div class="context-menu-item danger" onclick="adminAction('MUTE_MIC', '${user.userId}')">
+                🔇 كتم المايك
+            </div>
+        `;
+    } else {
+        menuHTML += `
+            <div class="context-menu-item" onclick="adminAction('FORCE_MIC', '${user.userId}')">
+                🎤 صعود للمايك
+            </div>
+            <div class="context-menu-item danger" onclick="adminAction('KICK', '${user.userId}')">
+                🚫 طرد العضو
+            </div>
+        `;
+    }
+
+    menuHTML += `
+        <div class="context-menu-item" onclick="adminAction('MEMBERSHIP', '${user.userId}')">
+            ⭐ تفعيل عضوية
+        </div>
+    `;
+
+    menu.innerHTML = menuHTML;
+    menu.style.left = e.pageX + 'px';
+    menu.style.top = e.pageY + 'px';
+    menu.classList.add('show');
+
+    setTimeout(() => {
+        document.onclick = () => menu.classList.remove('show');
+    }, 100);
+}
+
+function adminAction(action, userId, micIndex = null) {
+    socket.emit('adminAction', {
+        action,
+        targetUserId: userId,
+        roomId: ROOM_ID,
+        micIndex
+    });
+    document.getElementById('contextMenu').classList.remove('show');
+}
+
+function searchUser() {
+    const query = document.getElementById('searchInput').value;
+    if (query) socket.emit('searchUser', { roomId: ROOM_ID, query });
+}
+
+function showAdminPanel() {
+    if (!isOwner) return;
+    document.getElementById('adminPanel').classList.add('show');
+}
+
+function closeAdminPanel() {
+    document.getElementById('adminPanel').classList.remove('show');
+}
+
+function saveRoomSettings() {
+    const name = document.getElementById('roomNameInput').value;
+    const image = document.getElementById('roomImageInput').value;
+    const desc = document.getElementById('roomDescInput').value;
+    socket.emit('updateRoomSettings', { roomId: ROOM_ID, name, image, desc });
+    closeAdminPanel();
+}
+
+function showReports() {
+    socket.emit('getReports', { roomId: ROOM_ID });
+}
+
+socket.on('userMuted', ({ userId }) => {
+    mutedUsers.add(userId);
+    socket.emit('joinRoom', { roomId: ROOM_ID, token });
+});
+
+socket.on('userUnmuted', ({ userId }) => {
+    mutedUsers.delete(userId);
+    socket.emit('joinRoom', { roomId: ROOM_ID, token });
+});
+
+socket.on('muted', () => {
+    alert('تم كتمك من الادارة');
+});
+
+socket.on('kicked', () => {
+    alert('تم طردك من الغرفة');
+    location.href = '/';
+});
+
+socket.on('forcedToMic', ({ micIndex }) => {
+    alert('الادارة رفعتك للمايك رقم ' + (micIndex + 1));
+});
+
+socket.on('membershipActivated', () => {
+    alert('تم تفعيل العضوية المميزة لك ⭐');
+});
+
+socket.on('searchResults', (results) => {
+    if (results.length === 0) {
+        alert('لا يوجد نتائج');
+    } else {
+        alert('تم العثور على ' + results.length + ' مستخدم');
+    }
+});
+
+function sendReaction(emoji) {
+    if (!isOnMic || myMicIndex === -1) return;
+    socket.emit('sendReaction', { roomId: ROOM_ID, micIndex: myMicIndex, emoji });
+}
+
 socket.on('reaction', ({ micIndex, emoji }) => {
     const micEl = document.getElementById(`mic-${micIndex}`);
     if (micEl) {
@@ -377,101 +930,26 @@ socket.on('reaction', ({ micIndex, emoji }) => {
     }
 });
 
-// ارسال تفاعل
-function sendReaction(emoji) {
-    if (!isOnMic || myMicIndex === -1) return;
-    socket.emit('sendReaction', { roomId: ROOM_ID, micIndex: myMicIndex, emoji });
-}
-
-// زر صعود/نزول مايك
 function toggleMic() {
     if (isOnMic) {
         socket.emit('leaveMic', { roomId: ROOM_ID });
     } else {
-        // دور على اول مايك فاضي
-        const emptyMic = Array.from(document.querySelectorAll('.mic-slot')).findIndex(m =>!m.classList.contains('taken') &&!m.classList.contains('closed'));
+        const emptyMic = Array.from(document.querySelectorAll('.mic-slot')).findIndex(m =>!m.classList.contains('active') &&!m.classList.contains('closed'));
         if (emptyMic!== -1) {
             socket.emit('takeMic', { roomId: ROOM_ID, micIndex: emptyMic });
-        } else {
-            alert('كل المايكات مليانة');
         }
     }
 }
 
-function adminAction(action, userId) {
-    socket.emit('adminAction', { action, targetUserId: userId, roomId: ROOM_ID });
-}
-
-function createRoom() {
-    fetch('/api/create-room', {
-        method: 'POST',
-        headers: { 'Authorization': 'Bearer ' + token }
-    }).then(r => r.json()).then(data => {
-        if (data.success) location.href = '/room?roomId=' + data.roomId;
-        else alert(data.error || 'عندك غرفة من قبل');
-    });
-}
-
-function showUsers() {
-    document.querySelector('.users-list').scrollIntoView({ behavior: 'smooth' });
-}
-
-function showAdminPanel() {
-    alert('لوحة الادمن: طرد + غلق مايك موجودة جنب كل مستخدم');
-}
-
-function showOwnerPanel() {
-    alert('صلاحيات صاحب الغرفة: طرد + غلق مايك + فتح مايك');
-}
-
-// WebRTC Signaling - الكل يسمع الكل
-socket.on('voiceOffer', async ({ from, offer }) => {
-    const pc = new RTCPeerConnection({
-        iceServers: [{ urls: 'stun:stun.l.google.com:19302' }]
-    });
-    peerConnections[from] = pc;
-
-    if (localStream) {
-        localStream.getTracks().forEach(track => pc.addTrack(track, localStream));
+// الشات
+function sendMessage() {
+    const input = document.getElementById('chatInput');
+    const msg = input.value.trim();
+    if (msg) {
+        socket.emit('sendMessage', { roomId: ROOM_ID, message: msg });
+        input.value = '';
     }
+}
 
-    pc.ontrack = (event) => {
-        const audio = new Audio();
-        audio.srcObject = event.streams[0];
-        audio.autoplay = true;
-    };
-
-    await pc.setRemoteDescription(offer);
-    const answer = await pc.createAnswer();
-    await pc.setLocalDescription(answer);
-    socket.emit('voiceAnswer', { to: from, answer });
-});
-
-socket.on('voiceAnswer', async ({ from, answer }) => {
-    await peerConnections[from]?.setRemoteDescription(answer);
-});
-
-socket.on('iceCandidate', ({ from, candidate }) => {
-    peerConnections[from]?.addIceCandidate(new RTCIceCandidate(candidate));
-});
-
-// لما تطلع عالمايك، ابعت offer للكل
-socket.on('userTookMic', ({ socketId }) => {
-    if (socketId!== socket.id && localStream) {
-        const pc = new RTCPeerConnection({
-            iceServers: [{ urls: 'stun:stun.l.google.com:19302' }]
-        });
-        peerConnections[socketId] = pc;
-        localStream.getTracks().forEach(track => pc.addTrack(track, localStream));
-        pc.onicecandidate = (e) => {
-            if (e.candidate) socket.emit('iceCandidate', { to: socketId, candidate: e.candidate });
-        };
-        pc.createOffer().then(offer => {
-            pc.setLocalDescription(offer);
-            socket.emit('voiceOffer', { to: socketId, offer });
-        });
-    }
-});
-</script>
-</body>
-</html>
+function sendImage(event) {
+    const file = event.target
