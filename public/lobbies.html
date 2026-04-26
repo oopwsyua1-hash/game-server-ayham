@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>السبع الحلبي</title>
+<script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;font-family:Arial,sans-serif}
+body{background:#1a1a1a;color:#fff;direction:rtl}
+.container{max-width:800px;margin:0 auto;padding:15px}
+.card{background:#2a2a2a;border-radius:12px;padding:20px;margin-bottom:15px;box-shadow:0 4px 12px rgba(0,0,0,.4)}
+input,button{width:100%;padding:12px;margin:8px 0;border-radius:8px;border:0;font-size:15px}
+input{background:#333;color:#fff}
+button{background:#8b5cf6;color:#fff;cursor:pointer;font-weight:bold}
+button:hover{background:#7c3aed}
+.btn-red{background:#dc2626}.btn-red:hover{background:#b91c1c}
+.btn-green{background:#16a34a}.btn-green:hover{background:#15803d}
+.btn-purple{background:#8b5cf6}.btn-purple:hover{background:#7c3aed}
+.hidden{display:none}
+.profile{display:flex;align-items:center;gap:10px;margin-bottom:15px}
+.profile img{width:50px;height:50px;border-radius:50%;border:2px solid gold}
+.tabs{display:flex;gap:5px;margin-bottom:15px}
+.tab{flex:1;padding:10px;text-align:center;background:#333;border-radius:8px;cursor:pointer}
+.tab.active{background:#8b5cf6}
+.game-box{background:#333;padding:15px;border-radius:10px;margin-bottom:15px}
+.game-result{margin-top:15px;padding:15px;border-radius:8px;text-align:center;font-weight:bold;font-size:18px}
+.win{background:#16a34a}.lose{background:#dc2626}
+.room-item{background:#333;padding:12px;border-radius:8px;margin:8px 0;display:flex;justify-content:space-between;align-items:center}
+.flex-btn{display:flex;gap:8px}
+.flex-btn button{flex:1}
+</style>
+</head>
+<body>
+<div class="container">
+    <div id="login" class="card">
+        <h2>السبع الحلبي 👑</h2>
+        <input id="username" placeholder="اسم المستخدم">
+        <input id="password" type="password" placeholder="كلمة السر">
+        <button onclick="login()">دخول</button>
+        <button class="btn-green" onclick="register()">حساب جديد</button>
+    </div>
+
+    <div id="main" class="hidden">
+        <div class="card">
+            <div class="profile">
+                <img id="avatar" src="https://i.pravatar.cc/50" alt="">
+                <div>
+                    <div id="name" style="font-weight:bold"></div>
+                    <div style="color:gold">💰 <span id="coins">0</span></div>
+                    <div style="color:#0ea5e9">🎯 تارجت: <span id="target">0</span></div>
+                </div>
+            </div>
+            <button class="btn-red" onclick="logout()">خروج</button>
+        </div>
+
+        <div class="tabs">
+            <div class="tab active" onclick="showTab('game')">🎰 العاب</div>
+            <div class="tab" onclick="showTab('rooms')">🏠 رومات</div>
+        </div>
+
+        <!-- صفحة الألعاب -->
+        <div id="game" class="card">
+            <h3>🎰 العاب السبع الحلبي - 6 العاب</h3>
+            
+            <div class="game-box">
+                <h4>🎲 1. ضربة حظ 50/50</h4>
+                <input id="betLuck" placeholder="مبلغ الرهان" type="number" value="1000">
+                <button class="btn-purple" onclick="playLuck()">العب ضربة حظ - ربح ×2</button>
+            </div>
+
+            <div class="game-box">
+                <h4>🐪 2. سباق جمال</h4>
+                <input id="betCamel" placeholder="مبلغ الرهان" type="number" value="1000">
+                <div class="flex-btn">
+                    <button onclick="playCamel(1)">جمل 1 🐪</button>
+                    <button onclick="playCamel(2)">جمل 2 🐪</button>
+                    <button onclick="playCamel(3)">جمل 3 🐪</button>
+                </div>
+                <p style="color:#888;font-size:12px">ربح ×3</p>
+            </div>
+
+            <div class="game-box">
+                <h4>⚽ 3. كاس العالم</h4>
+                <input id="betWorldcup" placeholder="مبلغ الرهان" type="number" value="1000">
+                <div class="flex-btn" style="flex-wrap:wrap">
+                    <button onclick="playWorldcup('brazil')">🇧🇷</button>
+                    <button onclick="playWorldcup('argentina')">🇦🇷</button>
+                    <button onclick="playWorldcup('germany')">🇩🇪</button>
+                    <button onclick="playWorldcup('france')">🇫🇷</button>
+                </div>
+                <p style="color:#888;font-size:12px">ربح ×4</p>
+            </div>
+
+            <div class="game-box">
+                <h4>✂️ 4. حجر ورقة مقص</h4>
+                <input id="betRps" placeholder="مبلغ الرهان" type="number" value="1000">
+                <div class="flex-btn">
+                    <button onclick="playRps('rock')">🪨 حجر</button>
+                    <button onclick="playRps('paper')">📄 ورقة</button>
+                    <button onclick="playRps('scissors')">✂️ مقص</button>
+                </div>
+                <p style="color:#888;font-size:12px">ربح ×2 + تعادل بيرجع الرهان</p>
+            </div>
+
+            <div class="game-box">
+                <h4>🎡 5. عجلة الحظ</h4>
+                <input id="betWheel" placeholder="مبلغ الرهان" type="number" value="1000">
+                <button class="btn-purple" onclick="playWheel()">لف العجلة</button>
+                <p style="color:#888;font-size:12px">X0 - X0.5 - X1 - X2 - X5</p>
+            </div>
+
+            <div class="game-box">
+                <h4>🎲 6. نرد الحظ</h4>
+                <input id="betDice" placeholder="مبلغ الرهان" type="number" value="1000">
+                <div class="flex-btn" style="flex-wrap:wrap">
+                    <button onclick="playDice(1)">1</button>
+                    <button onclick="playDice(2)">2</button>
+                    <button onclick="playDice(3)">3</button>
+                    <button onclick="playDice(4)">4</button>
+                    <button onclick="playDice(5)">5</button>
+                    <button onclick="playDice(6)">6</button>
+                </div>
+                <p style="color:#888;font-size:12px">اختار رقم واربح ×6</p>
+            </div>
+
+            <div class="game-result" id="gameResult"></div>
+            <p style="color:gold;font-size:14px;margin-top:15px;text-align:center">⚠️ خسارة = رصيدك صفر | حد المليون = 300 الف</p>
+        </div>
+
+        <!-- صفحة الرومات -->
+        <div id="rooms" class="card hidden">
+            <h3>🏠 رومات الدردشة</h3>
+            <div id="roomsList"></div>
+        </div>
+    </div>
+</div>
+
+<script>
+const SERVER = 'https://abu-nmr-alhlepiai.onrender.com';
+let token = localStorage.getItem('token');
+let user = null;
+
+if(token) checkLogin();
+
+async function checkLogin(){
+    try{
+        const res = await fetch(SERVER+'/me',{headers:{'Authorization':'Bearer '+token}});
+        if(res.ok){ user = await res.json(); showMain(); loadRooms(); }
+        else{ localStorage.removeItem('token'); token=null; }
+    }catch{}
+}
+
+async function register(){
+    const username = document.getElementById('username').value;
+    const password = document.getElementById('password').value;
+    if(!username || !password){ alert('عبي البيانات'); return; }
+    const res = await fetch(SERVER+'/register',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({username,password})});
+    const data = await res.json();
+    alert(data.msg);
+}
+
+async function login(){
+    const username = document.getElementById('username').value;
+    const password = document.getElementById('password').value;
+    if(!username || !password){ alert('عبي البيانات'); return; }
+    const res = await fetch(SERVER+'/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({username,password})});
+    const data = await res.json();
+    if(data.token){ token=data.token; localStorage.setItem('token',token); user=data.user; showMain(); loadRooms(); }
+    else{ alert(data.msg); }
+}
+
+function showMain(){
+    document.getElementById('login').classList.add('hidden');
+    document.getElementById('main').classList.remove('hidden');
+    document.getElementById('name').innerText = user.username;
+    document.getElementById('coins').innerText = user.coins.toLocaleString();
+    document.getElementById('target').innerText = user.targetCoins.toLocaleString();
+    document.getElementById('avatar').src = `https://i.pravatar.cc/50?u=${user.username}`;
+}
+
+function showTab(tab){
+    document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+    document.querySelector(`.tab[onclick="showTab('${tab}')"]`).classList.add('active');
+    document.getElementById('game').classList.add('hidden');
+    document.getElementById('rooms').classList.add('hidden');
+    document.getElementById(tab).classList.remove('hidden');
+}
+
+async function playLuck(){
+    const bet = document.getElementById('betLuck').value;
+    if(!bet || bet < 100){ alert('اقل رهان 100'); return; }
+    if(!confirm(`تراهن بـ ${parseInt(bet).toLocaleString()}؟ اذا خسرت صفر!`)) return;
+    document.getElementById('gameResult').innerText = '🎲 جاري اللعب...';
+    const res = await fetch(SERVER+'/game/luck',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({token, bet})});
+    const data = await res.json();
+    document.getElementById('gameResult').innerHTML = `<div class="${data.win?'win':'lose'}">${data.msg}</div>`;
+    if(data.user){ user = data.user; showMain(); }
+}
+
+async function playCamel(camelId){
+    const bet = document.getElementById('betCamel').value;
+    if(!bet || bet < 100){ alert('اقل رهان 100'); return; }
+    if(!confirm(`تراهن بـ ${parseInt(bet).toLocaleString()} على الجمل ${camelId}؟`)) return;
+    document.getElementById('gameResult').innerText = '🐪 السباق شغال...';
+    const res = await fetch(SERVER+'/game/camel',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({token, bet, camelId})});
+    const data = await res.json();
+    document.getElementById('gameResult').innerHTML = `<div class="${data.win?'win':'lose'}">${data.msg}</div>`;
+    if(data.user){ user = data.user; showMain(); }
+}
+
+async function playWorldcup(team){
+    const bet = document.getElementById('betWorldcup').value;
+    if(!bet || bet < 100){ alert('اقل رهان 100'); return; }
+    if(!confirm(`تراهن بـ ${parseInt(bet).toLocaleString()} على ${team}؟`)) return;
+    document.getElementById('gameResult').innerText = '⚽ المباراة شغالة...';
+    const res = await fetch(SERVER+'/game/worldcup',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({token, bet, team})});
+    const data = await res.json();
+    document.getElementById('gameResult').innerHTML = `<div class="${data.win?'win':'lose'}">${data.msg}</div>`;
+    if(data.user){ user = data.user; showMain(); }
+}
+
+async function playRps(choice){
+    const bet = document.getElementById('betRps').value;
+    if(!bet || bet < 100){ alert('اقل رهان 100'); return; }
+    document.getElementById('gameResult').innerText = '✂️ جاري اللعب...';
+    const res = await fetch(SERVER+'/game/rps',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({token, bet, choice})});
+    const data = await res.json();
+    const emoji = {rock:'🪨',paper:'📄',scissors:'✂️'};
+    const resultClass = data.win ? 'win' : data.draw ? '' : 'lose';
+    document.getElementById('gameResult').innerHTML = `<div class="${resultClass}">${data.msg}<br>البوت اختار: ${emoji[data.botChoice]}</div>`;
+    if(data.user){ user = data.user; showMain(); }
+}
+
+async function playWheel(){
+    const bet = document.getElementById('betWheel').value;
+    if(!bet || bet < 100){ alert('اقل رهان 100'); return; }
+    if(!confirm(`تراهن بـ ${parseInt(bet).toLocaleString()} على العجلة؟`)) return;
+    document.getElementById('gameResult').innerText = '🎡 العجلة بتلف...';
+    const res = await fetch(SERVER+'/game/wheel',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({token, bet})});
+    const data = await res.json();
+    document.getElementById('gameResult').innerHTML = `<div class="${data.win?'win':'lose'}">${data.msg}</div>`;
+    if(data.user){ user = data.user; showMain(); }
+}
+
+async function playDice(number){
+    const bet = document.getElementById('betDice').value;
+    if(!bet || bet < 100){ alert('اقل رهان 100'); return; }
+    if(!confirm(`تراهن بـ ${parseInt(bet).toLocaleString()} على الرقم ${number}؟`)) return;
+    document.getElementById('gameResult').innerText = '🎲 النرد بيتدحرج...';
+    const res = await fetch(SERVER+'/game/dice',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({token, bet, number})});
+    const data = await res.json();
+    document.getElementById('gameResult').innerHTML = `<div class="${data.win?'win':'lose'}">${data.msg}</div>`;
+    if(data.user){ user = data.user; showMain(); }
+}
+
+async function loadRooms(){
+    const res = await fetch(SERVER+'/rooms');
+    const rooms = await res.json();
+    document.getElementById('roomsList').innerHTML = rooms.map(r=>`
+        <div class="room-item">
+            <div>${r.name}</div>
+            <button onclick="alert('قريباً')">دخول</button>
+        </div>
+    `).join('');
+}
+
+function logout(){
+    localStorage.removeItem('token');
+    location.reload();
+}
+</script>
+</body>
+  </html>
