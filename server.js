@@ -61,7 +61,198 @@ async function createDefaultRooms() {
   }
 }
 createDefaultRooms();
+// ===== نظام الألعاب - 6 العاب كاملة =====
 
+// 1. ضربة حظ 50/50
+app.post('/game/luck', async (req, res) => {
+  try {
+    const { token, bet } = req.body;
+    const betAmount = parseInt(bet);
+    if(!betAmount || betAmount < 100) return res.json({ msg: 'اقل رهان 100' });
+    
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const user = await User.findById(decoded.id);
+    if(user.coins < betAmount) return res.json({ msg: 'رصيدك ما بيكفي' });
+    
+    user.coins -= betAmount;
+    const win = Math.random() < 0.5;
+    
+    if(win) {
+      const winAmount = betAmount * 2;
+      user.coins += winAmount;
+      user.earnedCoins += betAmount;
+      if(user.coins >= 1000000) user.coins = 300000;
+      await user.save();
+      res.json({ msg: `مبروك ربحت ${winAmount.toLocaleString()}! 🎉`, win: true, user });
+    } else {
+      user.coins = 0;
+      await user.save();
+      res.json({ msg: `خسرت! رصيدك صفر 😢`, win: false, user });
+    }
+  } catch { res.status(400).json({ msg: 'خطأ' }); }
+});
+
+// 2. سباق جمال - 3 جمال
+app.post('/game/camel', async (req, res) => {
+  try {
+    const { token, bet, camelId } = req.body;
+    const betAmount = parseInt(bet);
+    if(!betAmount || betAmount < 100) return res.json({ msg: 'اقل رهان 100' });
+    if(![1,2,3].includes(camelId)) return res.json({ msg: 'اختار جمل 1-3' });
+    
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const user = await User.findById(decoded.id);
+    if(user.coins < betAmount) return res.json({ msg: 'رصيدك ما بيكفي' });
+    
+    user.coins -= betAmount;
+    const winner = Math.floor(Math.random() * 3) + 1;
+    const win = camelId === winner;
+    
+    if(win) {
+      const winAmount = betAmount * 3;
+      user.coins += winAmount;
+      user.earnedCoins += betAmount * 2;
+      if(user.coins >= 1000000) user.coins = 300000;
+      await user.save();
+      res.json({ msg: `الجمل ${winner} فاز! ربحت ${winAmount.toLocaleString()} 🐪🏆`, win: true, winner, user });
+    } else {
+      user.coins = 0;
+      await user.save();
+      res.json({ msg: `الجمل ${winner} فاز! خسرت وصار رصيدك صفر 😢`, win: false, winner, user });
+    }
+  } catch { res.status(400).json({ msg: 'خطأ' }); }
+});
+
+// 3. كاس العالم - 4 فرق
+app.post('/game/worldcup', async (req, res) => {
+  try {
+    const { token, bet, team } = req.body;
+    const betAmount = parseInt(bet);
+    const teams = ['brazil','argentina','germany','france'];
+    if(!betAmount || betAmount < 100) return res.json({ msg: 'اقل رهان 100' });
+    if(!teams.includes(team)) return res.json({ msg: 'اختار فريق' });
+    
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const user = await User.findById(decoded.id);
+    if(user.coins < betAmount) return res.json({ msg: 'رصيدك ما بيكفي' });
+    
+    user.coins -= betAmount;
+    const winner = teams[Math.floor(Math.random() * 4)];
+    const win = team === winner;
+    const flags = {brazil:'🇧🇷', argentina:'🇦🇷', germany:'🇩🇪', france:'🇫🇷'};
+    
+    if(win) {
+      const winAmount = betAmount * 4;
+      user.coins += winAmount;
+      user.earnedCoins += betAmount * 3;
+      if(user.coins >= 1000000) user.coins = 300000;
+      await user.save();
+      res.json({ msg: `${flags[winner]} فاز! ربحت ${winAmount.toLocaleString()} 🏆`, win: true, winner, user });
+    } else {
+      user.coins = 0;
+      await user.save();
+      res.json({ msg: `${flags[winner]} فاز! خسرت وصار رصيدك صفر 😢`, win: false, winner, user });
+    }
+  } catch { res.status(400).json({ msg: 'خطأ' }); }
+});
+
+// 4. حجر ورقة مقص
+app.post('/game/rps', async (req, res) => {
+  try {
+    const { token, bet, choice } = req.body;
+    const betAmount = parseInt(bet);
+    const choices = ['rock','paper','scissors'];
+    if(!betAmount || betAmount < 100) return res.json({ msg: 'اقل رهان 100' });
+    if(!choices.includes(choice)) return res.json({ msg: 'اختار صح' });
+    
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const user = await User.findById(decoded.id);
+    if(user.coins < betAmount) return res.json({ msg: 'رصيدك ما بيكفي' });
+    
+    user.coins -= betAmount;
+    const botChoice = choices[Math.floor(Math.random() * 3)];
+    const rules = { rock: 'scissors', paper: 'rock', scissors: 'paper' };
+    
+    if(choice === botChoice) {
+      user.coins += betAmount;
+      await user.save();
+      return res.json({ msg: `تعادل! رجعلك رهانك 🤝`, draw: true, botChoice, user });
+    } else if(rules[choice] === botChoice) {
+      const winAmount = betAmount * 2;
+      user.coins += winAmount;
+      user.earnedCoins += betAmount;
+      if(user.coins >= 1000000) user.coins = 300000;
+      await user.save();
+      res.json({ msg: `ربحت! ${choice} بتغلب ${botChoice} 🎉`, win: true, botChoice, user });
+    } else {
+      user.coins = 0;
+      await user.save();
+      res.json({ msg: `خسرت! ${botChoice} بتغلب ${choice} 😢 رصيدك صفر`, win: false, botChoice, user });
+    }
+  } catch { res.status(400).json({ msg: 'خطأ' }); }
+});
+
+// 5. عجلة الحظ - 6 خانات
+app.post('/game/wheel', async (req, res) => {
+  try {
+    const { token, bet } = req.body;
+    const betAmount = parseInt(bet);
+    if(!betAmount || betAmount < 100) return res.json({ msg: 'اقل رهان 100' });
+    
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const user = await User.findById(decoded.id);
+    if(user.coins < betAmount) return res.json({ msg: 'رصيدك ما بيكفي' });
+    
+    user.coins -= betAmount;
+    const multipliers = [0, 0, 0.5, 1, 2, 5];
+    const result = multipliers[Math.floor(Math.random() * 6)];
+    
+    if(result === 0) {
+      user.coins = 0;
+      await user.save();
+      res.json({ msg: `العجلة وقفت على X0! خسرت وصار رصيدك صفر 😢`, win: false, multiplier: 0, user });
+    } else {
+      const winAmount = Math.floor(betAmount * result);
+      user.coins += winAmount;
+      if(result > 1) user.earnedCoins += Math.floor(betAmount * (result - 1));
+      if(user.coins >= 1000000) user.coins = 300000;
+      await user.save();
+      res.json({ msg: `العجلة وقفت على X${result}! ربحت ${winAmount.toLocaleString()} 🎡`, win: true, multiplier: result, user });
+    }
+  } catch { res.status(400).json({ msg: 'خطأ' }); }
+});
+
+// 6. نرد الحظ - اختار رقم 1-6
+app.post('/game/dice', async (req, res) => {
+  try {
+    const { token, bet, number } = req.body;
+    const betAmount = parseInt(bet);
+    const chosenNumber = parseInt(number);
+    if(!betAmount || betAmount < 100) return res.json({ msg: 'اقل رهان 100' });
+    if(chosenNumber < 1 || chosenNumber > 6) return res.json({ msg: 'اختار رقم 1-6' });
+    
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const user = await User.findById(decoded.id);
+    if(user.coins < betAmount) return res.json({ msg: 'رصيدك ما بيكفي' });
+    
+    user.coins -= betAmount;
+    const diceResult = Math.floor(Math.random() * 6) + 1;
+    const win = chosenNumber === diceResult;
+    
+    if(win) {
+      const winAmount = betAmount * 6;
+      user.coins += winAmount;
+      user.earnedCoins += betAmount * 5;
+      if(user.coins >= 1000000) user.coins = 300000;
+      await user.save();
+      res.json({ msg: `النرد طلع ${diceResult}! ربحت ${winAmount.toLocaleString()} 🎲🏆`, win: true, diceResult, user });
+    } else {
+      user.coins = 0;
+      await user.save();
+      res.json({ msg: `النرد طلع ${diceResult}! خسرت وصار رصيدك صفر 😢`, win: false, diceResult, user });
+    }
+  } catch { res.status(400).json({ msg: 'خطأ' }); }
+});
 // تسجيل حساب جديد
 app.post('/register', async (req, res) => {
   try {
