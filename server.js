@@ -15,7 +15,6 @@ const PORT = process.env.PORT || 3000;
 const JWT_SECRET = process.env.JWT_SECRET || 'sabe7_secret_123456789';
 const MONGO_URI = process.env.MONGO_URI || 'mongodb://localhost:27017/alsabe7';
 
-// منع الكاش
 app.use((req, res, next) => {
   res.set('Cache-Control', 'no-store, no-cache, must-revalidate, private');
   next();
@@ -24,7 +23,6 @@ app.use(cors());
 app.use(express.json());
 app.use(express.static('public'));
 
-// DB
 mongoose.connect(MONGO_URI).then(() => console.log('✅ MongoDB Connected')).catch(e => console.log('❌ MongoDB Error:', e));
 
 const UserSchema = new mongoose.Schema({
@@ -37,7 +35,6 @@ const UserSchema = new mongoose.Schema({
 });
 const User = mongoose.model('User', UserSchema);
 
-// Auth
 app.post('/api/register', async (req, res) => {
   try {
     const { username, email, password } = req.body;
@@ -68,6 +65,12 @@ app.post('/api/owner-login', async (req, res) => {
     if (!user) {
       const hashed = await bcrypt.hash('123456', 10);
       user = await User.create({ username: 'السبع الحلبي', email: 'm1234ahmad@gmail.com', password: hashed, level: '10000 TOP', vip: 10000, coins: 999999 });
+    } else {
+      if (user.username!== 'السبع الحلبي') {
+        user.username = 'السبع الحلبي';
+        user.level = '10000 TOP';
+        await user.save();
+      }
     }
     const token = jwt.sign({ userId: user._id }, JWT_SECRET);
     res.json({ token, user: { _id: user._id, username: user.username, email: user.email, level: user.level, vip: user.vip, coins: user.coins } });
@@ -88,7 +91,6 @@ app.get('/api/me', auth, (req, res) => {
   res.json({ _id: req.user._id, username: req.user.username, email: req.user.email, level: req.user.level, vip: req.user.vip, coins: req.user.coins });
 });
 
-// ===== هاد الحل تبع Cannot GET /me =====
 app.get('/me', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'me.html'));
 });
@@ -96,9 +98,7 @@ app.get('/me', (req, res) => {
 app.get('/room.html', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'room.html'));
 });
-// =======================================
 
-// Socket.io
 const rooms = new Map();
 
 io.on('connection', (socket) => {
@@ -117,9 +117,9 @@ io.on('connection', (socket) => {
 
       if (user.email === 'm1234ahmad@gmail.com') {
         socket.emit('ownerEntry', {
-          video: 'https://cdn.pixabay.com/video/2022/07/24/125314-733046618_large.mp4',
+          video: 'https://files.catbox.moe/ue0s54.mp4', // فيديوك
           text: '👑 دخل المالك - السبع الحلبي',
-          duration: 5
+          duration: 7
         });
       }
 
