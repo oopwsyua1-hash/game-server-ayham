@@ -58,12 +58,13 @@ const userSchema = new mongoose.Schema({
   following: { type: Number, default: 0 },
   friends: { type: Number, default: 0 },
   ownerGoldenEntry: { type: Boolean, default: false }, // الك بس يا سبع
+  goldenEntryVideo: { type: String, default: 'https://i.imgur.com/golden-entry.mp4' }, // رابط فيديو الدخولية
   createdAt: { type: Date, default: Date.now }
 });
 
 const User = mongoose.model('User', userSchema);
 
-// Register API - نفس تبعك
+// Register API
 app.post('/api/register', async (req, res) => {
   try {
     const { username, lastName, email, password, country, birthDate, age, gender } = req.body;
@@ -92,7 +93,7 @@ app.post('/api/register', async (req, res) => {
   }
 });
 
-// Login API - نفس تبعك
+// Login API
 app.post('/api/login', async (req, res) => {
   try {
     const { email, password } = req.body;
@@ -125,7 +126,7 @@ app.post('/api/login', async (req, res) => {
   }
 });
 
-// API جديد عشان me.html
+// API للـ me.html
 app.get('/api/me', async (req, res) => {
   try {
     const token = req.headers.authorization?.split(' ')[1];
@@ -139,20 +140,19 @@ app.get('/api/me', async (req, res) => {
   }
 });
 
-// Routes للصفحات - نفس تبعك
+// Routes للصفحات
 app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
 app.get('/login', (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'login.html'));
+  res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
 app.get('/me', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'me.html'));
 });
 
-// راوت جديد للغرفة
 app.get('/room', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'room.html'));
 });
@@ -170,8 +170,8 @@ io.on('connection', (socket) => {
       liveRooms.set(roomId, {
         owner: userId,
         ownerData: user,
-        seats: 4,
-        agencyOpen: false,
+        seats: 12,
+        agencyOpen: true,
         agencyRunning: false,
         allowMic: false,
         members: new Map([[userId, user]]),
@@ -181,20 +181,30 @@ io.on('connection', (socket) => {
       });
     }
     socket.join(roomId);
-    // دخولية ذهبية 13 ثانية للمالك
-    if(user.ownerGoldenEntry || user.vipId === 777) {
-      io.to(roomId).emit('golden-entry', {userId, duration: 13000});
-    }
     socket.emit('room-data', liveRooms.get(roomId));
   });
 
-  // دخول غرفة
+  // دخول غرفة + تشغيل دخولية ذهبية للمالك
   socket.on('join-room', async ({roomId, userId}) => {
     const room = liveRooms.get(roomId);
     const user = await User.findById(userId);
+
     if(room &&!room.banned.has(userId) && room.agencyOpen) {
       socket.join(roomId);
       room.members.set(userId, user);
+
+      // اذا المالك فات = شغل الدخولية الذهبية 13 ثانية لكل الناس
+      if(userId === room.owner && (user.ownerGoldenEntry || user.vipId === 777)) {
+        io.to(roomId).emit('golden-entry-video', {
+          userId,
+          username: user.displayName,
+          vipId: user.vipId,
+          avatar: user.avatar || `https://ui-avatars.com/api/?name=${user.username}&background=a855f7&color=fff`,
+          duration: 13000,
+          videoUrl: user.goldenEntryVideo || 'https://i.imgur.com/golden-entry.mp4'
+        });
+      }
+
       io.to(roomId).emit('room-update', room);
     }
   });
@@ -246,4 +256,5 @@ io.on('connection', (socket) => {
 // شغل السيرفر
 server.listen(PORT, () => {
   console.log(`🚀 Server + Socket شغال على بورت ${PORT}`);
+  console.log(`👑 السبع الحلبي - وكالة الملوك`);
 });
