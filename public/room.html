@@ -1,955 +1,415 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>غرفة السبع الحلبي</title>
-<script src="/socket.io/socket.io.js"></script>
-<style>
-* { margin: 0; padding: 0; box-sizing: border-box; }
-body {
-    font-family: 'Segoe UI', sans-serif;
-    background: #0a0a14;
-    color: #fff;
-    padding-bottom: 140px;
-    overflow-x: hidden;
-}
-
-#entryOverlay {
-    display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-    background: #000; z-index: 9999; justify-content: center; align-items: center;
-}
-#entryVideo { width: 100%; height: 100%; object-fit: cover; }
-#entryText {
-    position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%);
-    color: #FFD700; font-size: 28px; font-weight: bold;
-    text-shadow: 0 0 20px #FFD700; animation: pulse 1s infinite; text-align: center;
-}
-@keyframes pulse { 0%,100% { scale: 1; } 50% { scale: 1.1; } }
-
-.top-bar {
-    background: rgba(10,10,20,0.95);
-    backdrop-filter: blur(10px);
-    padding: 8px 12px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    border-bottom: 1px solid #333;
-    position: sticky;
-    top: 0;
-    z-index: 100;
-}
-.room-info { text-align: center; flex: 1; }
-.room-name { font-size: 14px; font-weight: bold; }
-.room-meta { font-size: 11px; color: #aaa; }
-.room-id { color: #FFD700; }
-.heat-badge {
-    background: linear-gradient(90deg, #ff4500, #ff8c00);
-    padding: 2px 8px;
-    border-radius: 12px;
-    font-size: 11px;
-    display: inline-block;
-    margin-top: 2px;
-}
-.top-icons { display: flex; gap: 10px; font-size: 18px; }
-.icon-btn { cursor: pointer; }
-
-.lion-header {
-    width: 100%;
-    height: 100px;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    margin-top: 5px;
-    background: radial-gradient(circle, rgba(255,215,0,0.1) 0%, transparent 70%);
-}
-.lion-img {
-    width: 90px;
-    height: 90px;
-    animation: lionPulse 2s ease-in-out infinite;
-    filter: drop-shadow(0 0 15px #FFD700);
-}
-@keyframes lionPulse {
-    0%, 100% { transform: scale(1); }
-    50% { transform: scale(1.08); }
-}
-
-.container { padding: 10px; max-width: 500px; margin: 0 auto; }
-
-/* ===== عداد المايكات + زر فتح ===== */
-.mic-controls {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin: 10px 0;
-    padding: 8px 12px;
-    background: rgba(20,20,40,0.8);
-    border-radius: 10px;
-}
-.mic-count { font-size: 13px; color: #FFD700; }
-.add-mic-btn {
-    background: linear-gradient(90deg, #00ff88, #00cc6a);
-    border: none;
-    border-radius: 8px;
-    padding: 6px 12px;
-    color: #000;
-    font-weight: bold;
-    cursor: pointer;
-    font-size: 12px;
-    display: none;
-}
-.add-mic-btn.show { display: block; }
-
-.mics-grid {
-    display: grid;
-    grid-template-columns: repeat(4,1fr);
-    gap: 8px;
-    margin: 10px 0;
-}
-.mic-slot {
-    background: linear-gradient(135deg, #2d1b69 0%, #1a1a2e 100%);
-    border: 2px solid #FFD700;
-    aspect-ratio: 1/1.2;
-    border-radius: 12px;
-    position: relative;
-    cursor: pointer;
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-    padding: 5px;
-    box-shadow: 0 0 10px rgba(255,215,0,0.3);
-}
-.mic-slot.active {
-    border: 2px solid;
-    border-image: linear-gradient(45deg, #ff00ff, #00ffff, #ff00ff) 1;
-    animation: rainbow 3s linear infinite;
-}
-@keyframes rainbow {
-    0% { filter: hue-rotate(0deg); }
-    100% { filter: hue-rotate(360deg); }
-}
-.mic-slot.closed {
-    filter: brightness(0.4);
-    cursor: not-allowed;
-    border-color: #ff0000;
-}
-.mic-avatar {
-    width: 50%;
-    height: 50%;
-    border-radius: 50%;
-    border: 2px solid #FFD700;
-    margin: 15% auto 0;
-    object-fit: cover;
-    background: #1a1a2e;
-}
-.mic-icon {
-    font-size: 28px;
-    text-align: center;
-    margin-top: 20%;
-}
-.mic-lock {
-    font-size: 28px;
-    text-align: center;
-    margin-top: 20%;
-}
-.mic-label {
-    background: rgba(0,0,0,0.7);
-    font-size: 9px;
-    text-align: center;
-    border-radius: 10px;
-    padding: 2px;
-}
-.mic-number {
-    position: absolute;
-    bottom: 2px;
-    right: 4px;
-    font-size: 10px;
-    color: #aaa;
-}
-.mic-heart {
-    position: absolute;
-    bottom: 2px;
-    left: 50%;
-    transform: translateX(-50%);
-    background: rgba(0,0,0,0.8);
-    border-radius: 10px;
-    padding: 1px 6px;
-    font-size: 10px;
-}
-
-.stats-bar {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin: 10px 0;
-    gap: 8px;
-}
-.stat-item {
-    background: rgba(20,20,40,0.8);
-    border-radius: 20px;
-    padding: 5px 12px;
-    display: flex;
-    align-items: center;
-    gap: 5px;
-    font-size: 12px;
-}
-.top3 {
-    display: flex;
-    gap: 5px;
-}
-.crown {
-    width: 28px;
-    height: 28px;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 10px;
-}
-.crown.gold { background: #FFD700; color: #000; }
-.crown.silver { background: #C0C0C0; color: #000; }
-.crown.bronze { background: #CD7F32; color: #000; }
-
-.join-alert {
-    background: linear-gradient(90deg, #00c851, #007e33);
-    padding: 6px 12px;
-    border-radius: 20px;
-    margin: 10px 0;
-    font-size: 12px;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    animation: slideIn 0.5s;
-}
-@keyframes slideIn {
-    from { transform: translateX(100%); opacity: 0; }
-    to { transform: translateX(0); opacity: 1; }
-}
-.join-alert img {
-    width: 20px;
-    height: 20px;
-    border-radius: 50%;
-}
-
-.king-section {
-    background: rgba(20,20,40,0.6);
-    border-radius: 15px;
-    padding: 15px;
-    margin: 15px 0;
-    text-align: center;
-    position: relative;
-    border: 1px solid #333;
-}
-.king-frame {
-    width: 180px;
-    height: 180px;
-    margin: 0 auto;
-    background: radial-gradient(circle, rgba(255,215,0,0.2) 0%, transparent 70%);
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-.king-img {
-    width: 120px;
-    height: 120px;
-    border-radius: 50%;
-    border: 3px solid #FFD700;
-    object-fit: cover;
-    box-shadow: 0 0 20px #FFD700;
-}
-.king-text {
-    background: rgba(0,0,0,0.8);
-    border-radius: 10px;
-    padding: 10px;
-    margin-top: 10px;
-    font-size: 12px;
-    line-height: 1.6;
-}
-.king-text.title {
-    color: #FFD700;
-    font-size: 14px;
-    font-weight: bold;
-    margin-bottom: 5px;
-}
-
-/* ===== الشات ===== */
-.chat-container {
-    background: rgba(20,20,40,0.6);
-    border-radius: 15px;
-    padding: 10px;
-    margin: 15px 0;
-    max-height: 300px;
-    display: flex;
-    flex-direction: column;
-}
-.chat-messages {
-    flex: 1;
-    overflow-y: auto;
-    margin-bottom: 10px;
-    max-height: 200px;
-}
-.chat-msg {
-    padding: 6px 10px;
-    margin: 5px 0;
-    border-radius: 10px;
-    font-size: 13px;
-    word-wrap: break-word;
-}
-.chat-msg.user {
-    background: rgba(255,0,255,0.2);
-    text-align: right;
-}
-.chat-msg.other {
-    background: rgba(26,26,46,0.8);
-    text-align: left;
-}
-.chat-msg img {
-    max-width: 200px;
-    border-radius: 8px;
-    margin-top: 5px;
-}
-.chat-msg .username {
-    color: #FFD700;
-    font-weight: bold;
-    font-size: 11px;
-}
-.chat-input-area {
-    display: flex;
-    gap: 5px;
-}
-.chat-input {
-    flex: 1;
-    background: #1a1a2e;
-    border: 1px solid #333;
-    border-radius: 20px;
-    padding: 8px 15px;
-    color: #fff;
-    font-size: 13px;
-    outline: none;
-}
-.chat-btn {
-    background: #ff00ff;
-    border: none;
-    border-radius: 50%;
-    width: 35px;
-    height: 35px;
-    color: #fff;
-    cursor: pointer;
-    font-size: 16px;
-}
-.emoji-picker {
-    display: none;
-    position: absolute;
-    bottom: 50px;
-    background: rgba(20,20,40,0.98);
-    border: 1px solid #333;
-    border-radius: 10px;
-    padding: 10px;
-    grid-template-columns: repeat(6,1fr);
-    gap: 5px;
-    z-index: 200;
-}
-.emoji-picker.show { display: grid; }
-.emoji-item {
-    font-size: 24px;
-    cursor: pointer;
-    padding: 5px;
-    text-align: center;
-}
-.emoji-item:hover { background: rgba(255,0,255,0.3); border-radius: 5px; }
-
-.bottom-menu {
-    position: fixed;
-    bottom: 0; left: 0; right: 0;
-    background: rgba(20,20,40,0.95);
-    backdrop-filter: blur(10px);
-    border-top: 1px solid #333;
-    display: flex;
-    justify-content: space-around;
-    padding: 8px 5px;
-    z-index: 100;
-}
-.menu-btn {
-    background: transparent;
-    border: none;
-    color: #fff;
-    font-size: 20px;
-    cursor: pointer;
-    padding: 5px;
-    position: relative;
-}
-.menu-btn.gift {
-    background: linear-gradient(135deg, #ff6b6b, #ee5a24);
-    border-radius: 50%;
-    width: 45px;
-    height: 45px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-.menu-btn.chat {
-    background: linear-gradient(135deg, #a55eea, #8854d0);
-    border-radius: 50%;
-    width: 45px;
-    height: 45px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-.notif-badge {
-    position: absolute;
-    top: -2px;
-    right: -2px;
-    background: #ff0000;
-    color: #fff;
-    border-radius: 50%;
-    width: 16px;
-    height: 16px;
-    font-size: 10px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.reaction-bar {
-    display: flex;
-    justify-content: center;
-    gap: 8px;
-    margin: 10px 0;
-    flex-wrap: wrap;
-}
-.reaction-btn {
-    background: rgba(26,26,46,0.8);
-    border: 1px solid #ff00ff;
-    border-radius: 50%;
-    width: 40px;
-    height: 40px;
-    font-size: 20px;
-    cursor: pointer;
-}
-.reaction-btn:active { transform: scale(0.9); }
-
-.reaction-anim {
-    position: absolute;
-    top: 30%; left: 50%;
-    transform: translateX(-50%);
-    font-size: 35px;
-    animation: floatUp 2s ease-out forwards;
-    pointer-events: none;
-    z-index: 10;
-}
-@keyframes floatUp {
-    0% { opacity: 1; transform: translateX(-50%) scale(0.5); }
-    100% { opacity: 0; transform: translateX(-50%) translateY(-50px) scale(1.5); }
-}
-
-.context-menu {
-    position: fixed;
-    background: rgba(20,20,40,0.98);
-    border: 2px solid #ff00ff;
-    border-radius: 10px;
-    padding: 8px;
-    z-index: 1000;
-    min-width: 180px;
-    display: none;
-    box-shadow: 0 0 20px rgba(255,0,255,0.5);
-}
-.context-menu.show { display: block; }
-.context-menu-item {
-    padding: 10px 15px;
-    cursor: pointer;
-    border-radius: 6px;
-    font-size: 13px;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    transition: all 0.2s;
-}
-.context-menu-item:hover { background: rgba(255,0,255,0.3); }
-.context-menu-item.danger { color: #ff4444; }
-.context-menu-item.danger:hover { background: rgba(255,68,68,0.3); }
-
-.search-bar {
-    background: rgba(20,20,40,0.8);
-    border-radius: 20px;
-    padding: 8px 15px;
-    margin: 10px 0;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-}
-.search-bar input {
-    background: transparent;
-    border: none;
-    color: #fff;
-    flex: 1;
-    outline: none;
-    font-size: 13px;
-}
-.search-bar input::placeholder { color: #666; }
-
-.admin-panel {
-    position: fixed;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    background: rgba(10,10,20,0.98);
-    border: 2px solid #FFD700;
-    border-radius: 15px;
-    padding: 20px;
-    z-index: 2000;
-    width: 90%;
-    max-width: 400px;
-    display: none;
-}
-.admin-panel.show { display: block; }
-.admin-panel h3 {
-    color: #FFD700;
-    margin-bottom: 15px;
-    text-align: center;
-}
-.admin-panel input,.admin-panel textarea {
-    width: 100%;
-    background: #1a1a2e;
-    border: 1px solid #333;
-    border-radius: 8px;
-    padding: 10px;
-    color: #fff;
-    margin-bottom: 10px;
-    font-size: 13px;
-}
-.admin-panel button {
-    width: 100%;
-    background: linear-gradient(90deg, #FFD700, #FFA500);
-    border: none;
-    border-radius: 8px;
-    padding: 12px;
-    color: #000;
-    font-weight: bold;
-    cursor: pointer;
-    margin-top: 10px;
-}
-.close-panel {
-    position: absolute;
-    top: 10px;
-    left: 10px;
-    background: #ff4444;
-    border: none;
-    border-radius: 50%;
-    width: 30px;
-    height: 30px;
-    color: #fff;
-    cursor: pointer;
-    font-size: 18px;
-}
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>وكالة السبع السوري</title>
+    <script src="/socket.io/socket.io.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Tajawal', sans-serif; }
+        body { background: #0a0a0a; color: #fff; overflow: hidden; }
+        
+        /* دخولية المالك */
+        .owner-entry { 
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
+            background: rgba(0,0,0,0.95); z-index: 9999; display: none; 
+            justify-content: center; align-items: center; flex-direction: column;
+        }
+        .owner-entry video { width: 80%; max-width: 600px; border: 3px solid gold; border-radius: 10px; }
+        .owner-entry-text { 
+            font-size: 28px; color: gold; margin-top: 20px; 
+            animation: pulse 1s infinite; text-shadow: 0 0 20px gold;
+        }
+        @keyframes pulse { 0%,100%{transform:scale(1)} 50%{transform:scale(1.1)} }
+        
+        /* الشريط العلوي */
+        .top-bar { 
+            background: linear-gradient(90deg, #1a1a1a, #2a2a2a); 
+            padding: 10px; display: flex; justify-content: space-between; 
+            border-bottom: 2px solid gold; align-items: center;
+        }
+        .room-info { display: flex; align-items: center; gap: 10px; }
+        .room-name { font-size: 18px; color: gold; font-weight: bold; }
+        .room-id { background: #333; padding: 2px 8px; border-radius: 5px; font-size: 12px; }
+        .heat { color: #ff6b6b; font-weight: bold; }
+        .users-count { background: #333; padding: 2px 8px; border-radius: 5px; font-size: 12px; }
+        
+        /* كرسي الملك */
+        .king-chair { 
+            text-align: center; padding: 15px; 
+            background: linear-gradient(180deg, #1a1a1a, #0a0a0a);
+            position: relative; height: 160px;
+        }
+        .king-img { 
+            width: 80px; height: 80px; border-radius: 50%; 
+            border: 3px solid gold; box-shadow: 0 0 20px gold;
+            animation: breathe 3s infinite; object-fit: cover;
+        }
+        @keyframes breathe { 0%,100%{transform:scale(1)} 50%{transform:scale(1.05)} }
+        .king-name { color: gold; font-size: 20px; margin-top: 10px; text-shadow: 0 0 10px gold; }
+        
+        /* المايكات 20 مايك 4x5 */
+        .mics-grid { 
+            display: grid; grid-template-columns: repeat(4, 1fr); 
+            gap: 8px; padding: 10px; max-width: 400px; margin: 0 auto;
+        }
+        .mic { 
+            background: #1a1a1a; border: 2px solid #444; border-radius: 10px; 
+            padding: 8px; text-align: center; position: relative; 
+            height: 85px; cursor: pointer; transition: all 0.3s;
+        }
+        .mic.gold { border-color: gold; box-shadow: 0 0 10px rgba(255,215,0,0.3); }
+        .mic.occupied { border-color: #00ff88; }
+        .mic-number { 
+            position: absolute; top: 2px; right: 2px; background: gold; 
+            color: #000; width: 18px; height: 18px; border-radius: 50%; 
+            font-size: 10px; font-weight: bold; display: flex; 
+            align-items: center; justify-content: center;
+        }
+        .mic-avatar { 
+            width: 40px; height: 40px; border-radius: 50%; 
+            margin: 5px auto; background: #333; border: 2px solid #666;
+            object-fit: cover;
+        }
+        .mic-name { 
+            font-size: 10px; margin-top: 3px; white-space: nowrap; 
+            overflow: hidden; text-overflow: ellipsis;
+        }
+        .mic-lock { position: absolute; top: 2px; left: 2px; font-size: 12px; }
+        .mic-reaction { 
+            position: absolute; top: -15px; left: 50%; transform: translateX(-50%); 
+            font-size: 24px; animation: floatUp 2s forwards;
+        }
+        @keyframes floatUp { 0%{opacity:1;top:-15px} 100%{opacity:0;top:-50px} }
+        .pulse-name { animation: pulseGold 2s infinite; }
+        @keyframes pulseGold { 0%,100%{text-shadow:0 0 5px gold} 50%{text-shadow:0 0 20px gold, 0 0 30px gold} }
+        
+        /* ازرار المالك الخاصة */
+        .owner-panel { 
+            display: none; position: fixed; bottom: 70px; right: 10px; 
+            background: #1a1a1a; border: 2px solid gold; border-radius: 10px; 
+            padding: 10px; z-index: 1000; width: 200px;
+        }
+        .owner-btn { 
+            display: block; width: 100%; margin: 5px 0; padding: 8px; 
+            background: linear-gradient(45deg, #b8860b, #ffd700); 
+            border: none; border-radius: 5px; color: #000; font-weight: bold; cursor: pointer;
+        }
+        .owner-btn:hover { transform: scale(1.05); }
+        
+        /* الشريط السفلي */
+        .bottom-bar { 
+            position: fixed; bottom: 0; width: 100%; background: #1a1a1a; 
+            display: flex; justify-content: space-around; padding: 10px; 
+            border-top: 2px solid gold;
+        }
+        .bottom-btn { 
+            background: #333; border: none; color: #fff; padding: 8px 12px; 
+            border-radius: 20px; cursor: pointer; font-size: 12px;
+        }
+        .bottom-btn:active { background: #555; }
+        
+        /* الدردشة */
+        .chat-box { 
+            position: fixed; bottom: 60px; left: 0; width: 100%; height: 250px; 
+            background: rgba(26,26,26,0.98); display: none; flex-direction: column;
+            border-top: 2px solid gold;
+        }
+        .chat-messages { flex: 1; overflow-y: auto; padding: 10px; }
+        .chat-msg { margin: 5px 0; padding: 5px; background: #222; border-radius: 5px; }
+        .chat-msg b { color: gold; }
+        .chat-input-area { display: flex; padding: 10px; gap: 5px; }
+        .chat-input { flex: 1; padding: 8px; border-radius: 20px; border: 1px solid #444; background: #333; color: #fff; }
+        
+        /* قائمة المستخدمين */
+        .users-list {
+            position: fixed; top: 50px; right: 10px; width: 250px; max-height: 400px;
+            background: #1a1a1a; border: 2px solid gold; border-radius: 10px;
+            display: none; overflow-y: auto; z-index: 1000; padding: 10px;
+        }
+        .user-item { padding: 8px; border-bottom: 1px solid #333; display: flex; justify-content: space-between; }
+        .user-item.owner { color: gold; font-weight: bold; }
+        
+        .error-msg {
+            position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
+            background: #ff3333; color: #fff; padding: 20px; border-radius: 10px;
+            display: none; z-index: 10000; text-align: center;
+        }
+    </style>
 </head>
 <body>
+    <!-- دخولية المالك -->
+    <div class="owner-entry" id="ownerEntry">
+        <video id="entryVideo" autoplay muted></video>
+        <div class="owner-entry-text" id="entryText">👑 دخول حساب الادارة الرسمي 👑</div>
+    </div>
 
-<div id="entryOverlay">
-    <video id="entryVideo" autoplay muted></video>
-    <div id="entryText"></div>
-</div>
+    <!-- رسالة خطأ -->
+    <div class="error-msg" id="errorMsg"></div>
 
-<div class="top-bar">
-    <div class="icon-btn" onclick="showAdminPanel()">⚙️</div>
-    <div class="icon-btn" style="background:#ff8c00;border-radius:50%;width:30px;height:30px;display:flex;align-items:center;justify-content:center;">📢</div>
-    <div class="room-info">
-        <div class="room-name" id="roomName">غرفة السبع الحلبي</div>
-        <div class="room-meta">
-            <span class="room-id" id="roomMeta">Lv.16 🔹 11152823 ID</span>
-            <div class="heat-badge">↑ 10+ 🔥</div>
+    <!-- الشريط العلوي -->
+    <div class="top-bar">
+        <div class="room-info">
+            <span class="room-name">وكالة السبع السوري</span>
+            <span class="room-id" id="roomId">ID: main</span>
         </div>
-    <div class="icon-btn" style="background:#FFD700;border-radius:8px;padding:5px 8px;color:#000;font-size:11px;">حرة</div>
-</div>
-
-<div id="lionHeaderContainer"></div>
-
-<div class="container">
-    <div class="search-bar" id="searchBar" style="display:none;">
-        <span>🔍</span>
-        <input type="text" id="searchInput" placeholder="بحث بالايدي او الاسم...">
-        <button onclick="searchUser()" style="background:#ff00ff;border:none;border-radius:5px;padding:5px 10px;color:#fff;">بحث</button>
+        <div style="display:flex;gap:10px;">
+            <span class="users-count">👥 <span id="usersCount">0</span></span>
+            <span class="heat">🔥 <span id="heatCount">0</span></span>
+        </div>
     </div>
 
-    <div class="mic-controls">
-        <div class="mic-count" id="micCount">المايكات: 4/20</div>
-        <button class="add-mic-btn" id="addMicBtn" onclick="addMicSlot()">➕ فتح مايك</button>
+    <!-- كرسي الملك -->
+    <div class="king-chair">
+        <img src="" class="king-img" id="kingImg">
+        <div class="king-name pulse-name" id="kingName">السبع الحلبي</div>
     </div>
 
+    <!-- المايكات 20 -->
     <div class="mics-grid" id="micsGrid"></div>
 
-    <div class="stats-bar">
-        <div class="stat-item" id="userCount">👥 0</div>
-        <div class="stat-item">💎 0</div>
-        <div class="top3">
-            <div class="crown bronze">3</div>
-            <div class="crown silver">2</div>
-            <div class="crown gold">1</div>
-        </div>
+    <!-- ازرار المالك -->
+    <div class="owner-panel" id="ownerPanel">
+        <button class="owner-btn" onclick="banUser()">🚫 باند حساب</button>
+        <button class="owner-btn" onclick="showReports()">📊 البلاغات</button>
+        <button class="owner-btn" onclick="manageIds()">🆔 نظام الايدي</button>
+        <button class="owner-btn" onclick="fullControl()">⚙️ تحكم كامل</button>
     </div>
 
-    <div id="joinAlertContainer"></div>
+    <!-- قائمة المستخدمين -->
+    <div class="users-list" id="usersList"></div>
 
-    <div class="king-section" id="kingSection" style="display:none;">
-        <div class="king-frame">
-            <img class="king-img" src="https://i.imgur.com/DefaultAvatar.png" alt="السبع">
-        </div>
-        <div class="king-text">
-            <div class="title">وكالة السبع السوري</div>
-            <div id="roomDesc">مرحباً بكم في غرفة دردشة! نتمنى لكم أوقات طيبة والتعرف على أصدقاء جدد.</div>
-        </div>
-    </div>
-
-    <div class="chat-container">
+    <!-- الدردشة -->
+    <div class="chat-box" id="chatBox">
         <div class="chat-messages" id="chatMessages"></div>
-        <div style="position:relative;">
-            <div class="emoji-picker" id="emojiPicker">
-                <div class="emoji-item" onclick="insertEmoji('😂')">😂</div>
-                <div class="emoji-item" onclick="insertEmoji('😍')">😍</div>
-                <div class="emoji-item" onclick="insertEmoji('❤️')">❤️</div>
-                <div class="emoji-item" onclick="insertEmoji('🎉')">🎉</div>
-                <div class="emoji-item" onclick="insertEmoji('😢')">😢</div>
-                <div class="emoji-item" onclick="insertEmoji('👍')">👍</div>
-                <div class="emoji-item" onclick="insertEmoji('🔥')">🔥</div>
-                <div class="emoji-item" onclick="insertEmoji('👑')">👑</div>
-                <div class="emoji-item" onclick="insertEmoji('💎')">💎</div>
-                <div class="emoji-item" onclick="insertEmoji('🌹')">🌹</div>
-                <div class="emoji-item" onclick="insertEmoji('🎁')">🎁</div>
-                <div class="emoji-item" onclick="insertEmoji('😘')">😘</div>
-            </div>
-            <div class="chat-input-area">
-                <button class="chat-btn" onclick="toggleEmojiPicker()">😊</button>
-                <button class="chat-btn" onclick="document.getElementById('imageInput').click()">📷</button>
-                <input type="file" id="imageInput" accept="image/*" style="display:none;" onchange="sendImage(event)">
-                <input type="text" class="chat-input" id="chatInput" placeholder="اكتب رسالة..." onkeypress="if(event.key==='Enter')sendMessage()">
-                <button class="chat-btn" onclick="sendMessage()">➤</button>
-            </div>
+        <div class="chat-input-area">
+            <input type="text" class="chat-input" id="chatInput" placeholder="اكتب رسالة...">
+            <button class="bottom-btn" onclick="sendMessage()">ارسال</button>
         </div>
     </div>
 
-    <div class="reaction-bar" id="reactionBar" style="display:none;">
-        <button class="reaction-btn" onclick="sendReaction('😂')">😂</button>
-        <button class="reaction-btn" onclick="sendReaction('😍')">😍</button>
-        <button class="reaction-btn" onclick="sendReaction('❤️')">❤️</button>
-        <button class="reaction-btn" onclick="sendReaction('🎉')">🎉</button>
-        <button class="reaction-btn" onclick="sendReaction('😢')">😢</button>
+    <!-- الشريط السفلي -->
+    <div class="bottom-bar">
+        <button class="bottom-btn" onclick="toggleChat()">💬 شات</button>
+        <button class="bottom-btn" onclick="toggleMic()">🎤 مايك</button>
+        <button class="bottom-btn" onclick="showEmojis()">😂 ايموجي</button>
+        <button class="bottom-btn" id="ownerBtn" onclick="toggleOwnerPanel()">👑 المالك</button>
+        <button class="bottom-btn" onclick="showUsers()">👥 متواجدين</button>
     </div>
-</div>
-
-<div class="bottom-menu">
-    <button class="menu-btn gift">🎁<span class="notif-badge">4</span></button>
-    <button class="menu-btn chat" onclick="toggleMic()">🎤</button>
-    <button class="menu-btn">💬<span class="notif-badge">•</span></button>
-    <button class="menu-btn">😊</button>
-    <button class="menu-btn">🔊</button>
-    <button class="menu-btn">ارسال</button>
-</div>
-
-<div class="context-menu" id="contextMenu"></div>
-
-<div class="admin-panel" id="adminPanel">
-    <button class="close-panel" onclick="closeAdminPanel()">×</button>
-    <h3>⚙️ ادارة الغرفة</h3>
-    <input type="text" id="roomNameInput" placeholder="اسم الغرفة">
-    <input type="text" id="roomImageInput" placeholder="رابط صورة الغرفة">
-    <textarea id="roomDescInput" rows="3" placeholder="وصف الغرفة"></textarea>
-    <button onclick="saveRoomSettings()">حفظ التعديلات</button>
-    <button onclick="showReports()" style="background:#ff4444;">📋 البلاغات</button>
-</div>
 
 <script>
-const socket = io();
-const token = localStorage.getItem('token');
-const urlParams = new URLSearchParams(window.location.search);
-const ROOM_ID = urlParams.get('roomId') || '10000';
-let myUserId = null;
-let isOwner = false;
-let isOnMic = false;
-let myMicIndex = -1;
-let selectedUserId = null;
-let localStream = null;
-let peerConnections = {};
-let mutedUsers = new Set();
-let maxMics = 4;
+    const socket = io();
+    const token = localStorage.getItem('token');
+    const roomId = new URLSearchParams(window.location.search).get('room') || 'main';
+    let currentUser = null;
+    let isOwner = false;
+    let myMicIndex = -1;
 
-if (!token) location.href = '/';
-
-async function initAudio() {
-    try {
-        localStream = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
-    } catch (err) {
-        console.log('المايك مرفوض');
+    if (!token) {
+        window.location.href = '/login.html';
     }
-}
-initAudio();
 
-socket.emit('joinRoom', { roomId: ROOM_ID, token });
+    document.getElementById('roomId').textContent = 'ID: ' + roomId;
 
-socket.on('ownerEntry', (data) => {
-    const overlay = document.getElementById('entryOverlay');
-    const video = document.getElementById('entryVideo');
-    const text = document.getElementById('entryText');
-    video.src = data.video;
-    text.textContent = data.text;
-    overlay.style.display = 'flex';
-    video.play();
-    setTimeout(() => overlay.style.display = 'none', data.duration * 1000);
-});
-
-socket.on('roomUpdate', (roomData) => {
+    // انشاء 20 مايك
     const micsGrid = document.getElementById('micsGrid');
-    micsGrid.innerHTML = '';
-    document.getElementById('userCount').textContent = `👥 ${roomData.users.length}`;
-    maxMics = roomData.maxMics || 4;
-    document.getElementById('micCount').textContent = `المايكات: ${maxMics}/20`;
-
-    const currentUser = roomData.users.find(u => u.socketId === socket.id);
-    if (currentUser) myUserId = currentUser.userId;
-
-    if (roomData.name) document.getElementById('roomName').textContent = roomData.name;
-    if (roomData.desc) document.getElementById('roomDesc').textContent = roomData.desc;
-
-    const lionContainer = document.getElementById('lionHeaderContainer');
-    if (currentUser && currentUser.level === "10000 TOP") {
-        isOwner = true;
-        lionContainer.innerHTML = `
-            <div class="lion-header">
-                <img class="lion-img" src="https://files.catbox.moe/00z108.gif" alt="السبع الحلبي">
-            </div>
-        `;
-        document.getElementById('kingSection').style.display = 'block';
-        document.getElementById('searchBar').style.display = 'flex';
-        document.getElementById('addMicBtn').classList.add('show');
-    } else {
-        lionContainer.innerHTML = '';
-    }
-
-    for (let i = 0; i < maxMics; i++) {
-        const micDiv = document.createElement('div');
-        micDiv.className = 'mic-slot';
-        micDiv.id = `mic-${i}`;
-        const micData = roomData.mics[i];
-
-        if (micData === 'closed') {
-            micDiv.classList.add('closed');
-            micDiv.innerHTML = `
+    for(let i=0; i<20; i++){
+        micsGrid.innerHTML += `
+            <div class="mic gold" onclick="clickMic(${i})" id="mic${i}">
+                <div class="mic-number">${i+1}</div>
                 <div class="mic-lock">🔒</div>
-                <div class="mic-label">عضو</div>
-                <div class="mic-number">${i+1}</div>
-            `;
-        } else if (micData) {
-            const userOnMic = roomData.users.find(u => u.socketId === micData);
-            if (userOnMic) {
-                micDiv.classList.add('active');
-                const avatarUrl = userOnMic.avatar || 'https://i.imgur.com/DefaultAvatar.png';
-                const isMuted = mutedUsers.has(userOnMic.userId);
-                micDiv.innerHTML = `
-                    <img class="mic-avatar" src="${avatarUrl}" alt="">
-                    <div class="mic-heart">${isMuted? '🔇' : '0 ❤️'}</div>
-                    <div class="mic-number">${i+1}</div>
-                `;
-                if (userOnMic.socketId === socket.id) {
-                    isOnMic = true;
-                    myMicIndex = i;
-                }
-                if (isOwner) {
-                    micDiv.onclick = (e) => showContextMenu(e, userOnMic, true, i);
-                }
-            }
-        } else {
-            micDiv.innerHTML = `
-                <div class="mic-icon">➕</div>
-                <div class="mic-label">عضو</div>
-                <div class="mic-number">${i+1}</div>
-            `;
-            micDiv.onclick = () => socket.emit('takeMic', { roomId: ROOM_ID, micIndex: i });
-        }
-        micsGrid.appendChild(micDiv);
-    }
-
-    document.getElementById('reactionBar').style.display = isOnMic? 'flex' : 'none';
-});
-
-socket.on('userJoined', (data) => {
-    const container = document.getElementById('joinAlertContainer');
-    const alert = document.createElement('div');
-    alert.className = 'join-alert';
-    alert.innerHTML = `
-        <img src="${data.avatar || 'https://i.imgur.com/DefaultAvatar.png'}" alt="">
-        <span>${data.username} انضم للغرفة</span>
-    `;
-    container.appendChild(alert);
-    setTimeout(() => alert.remove(), 4000);
-});
-
-function addMicSlot() {
-    if (!isOwner) return;
-    if (maxMics >= 20) {
-        alert('وصلت للحد الاقصى 20 مايك');
-        return;
-    }
-    socket.emit('addMicSlot', { roomId: ROOM_ID });
-}
-
-function showContextMenu(e, user, onMic, micIndex) {
-    e.stopPropagation();
-    const menu = document.getElementById('contextMenu');
-    selectedUserId = user.userId;
-
-    let menuHTML = `
-        <div style="padding:10px;border-bottom:1px solid #333;margin-bottom:5px;font-weight:bold;">
-            ${user.username}<br><span style="font-size:11px;color:#aaa;">ID: ${user.userId}</span>
-        </div>
-    `;
-
-    if (onMic) {
-        menuHTML += `
-            <div class="context-menu-item danger" onclick="adminAction('REMOVE_MIC', '${user.userId}')">
-                ⬇️ نزول من المايك
-            </div>
-            <div class="context-menu-item danger" onclick="adminAction('CLOSE_MIC', '${user.userId}', ${micIndex})">
-                🔒 اغلاق المايك
-            </div>
-            <div class="context-menu-item danger" onclick="adminAction('MUTE_MIC', '${user.userId}')">
-                🔇 كتم المايك
-            </div>
-        `;
-    } else {
-        menuHTML += `
-            <div class="context-menu-item" onclick="adminAction('FORCE_MIC', '${user.userId}')">
-                🎤 صعود للمايك
-            </div>
-            <div class="context-menu-item danger" onclick="adminAction('KICK', '${user.userId}')">
-                🚫 طرد العضو
+                <img class="mic-avatar" src="">
+                <div class="mic-name">فارغ</div>
             </div>
         `;
     }
 
-    menuHTML += `
-        <div class="context-menu-item" onclick="adminAction('MEMBERSHIP', '${user.userId}')">
-            ⭐ تفعيل عضوية
-        </div>
-    `;
+    // دخول الغرفة
+    socket.emit('joinRoom', { roomId, token });
 
-    menu.innerHTML = menuHTML;
-    menu.style.left = e.pageX + 'px';
-    menu.style.top = e.pageY + 'px';
-    menu.classList.add('show');
-
-    setTimeout(() => {
-        document.onclick = () => menu.classList.remove('show');
-    }, 100);
-}
-
-function adminAction(action, userId, micIndex = null) {
-    socket.emit('adminAction', {
-        action,
-        targetUserId: userId,
-        roomId: ROOM_ID,
-        micIndex
+    // استقبال دخولية المالك
+    socket.on('ownerEntry', (data) => {
+        const entryDiv = document.getElementById('ownerEntry');
+        const video = document.getElementById('entryVideo');
+        const text = document.getElementById('entryText');
+        
+        video.src = data.video;
+        text.textContent = data.text + ' - ' + data.username;
+        entryDiv.style.display = 'flex';
+        video.play();
+        
+        setTimeout(() => {
+            entryDiv.style.display = 'none';
+        }, data.duration * 1000);
     });
-    document.getElementById('contextMenu').classList.remove('show');
-}
 
-function searchUser() {
-    const query = document.getElementById('searchInput').value;
-    if (query) socket.emit('searchUser', { roomId: ROOM_ID, query });
-}
+    // تحديث الغرفة
+    socket.on('roomUpdate', (room) => {
+        const myUser = room.users.find(u => u.socketId === socket.id);
+        if(myUser) {
+            currentUser = myUser;
+            isOwner = myUser.isOwner;
+            document.getElementById('ownerBtn').style.display = isOwner ? 'block' : 'none';
+            if(isOwner) {
+                document.getElementById('kingImg').src = myUser.profilePic || '';
+                document.getElementById('kingName').textContent = myUser.username;
+            }
+        }
+        
+        document.getElementById('usersCount').textContent = room.users.length;
+        
+        // تحديث المايكات
+        room.mics.forEach((mic, i) => {
+            const micDiv = document.getElementById(`mic${i}`);
+            const micAvatar = micDiv.querySelector('.mic-avatar');
+            const micName = micDiv.querySelector('.mic-name');
+            
+            if(mic) {
+                const user = room.users.find(u => u.socketId === mic);
+                if(user) {
+                    micDiv.classList.add('occupied');
+                    micAvatar.src = user.profilePic || '';
+                    micName.textContent = user.username;
+                    if(user.isOwner) micName.classList.add('pulse-name');
+                    else micName.classList.remove('pulse-name');
+                    
+                    if(mic === socket.id) myMicIndex = i;
+                }
+            } else {
+                micDiv.classList.remove('occupied');
+                micAvatar.src = '';
+                micName.textContent = 'فارغ';
+                micName.classList.remove('pulse-name');
+            }
+        });
+        
+        updateUsersList(room.users);
+    });
 
-function showAdminPanel() {
-    if (!isOwner) return;
-    document.getElementById('adminPanel').classList.add('show');
-}
-
-function closeAdminPanel() {
-    document.getElementById('adminPanel').classList.remove('show');
-}
-
-function saveRoomSettings() {
-    const name = document.getElementById('roomNameInput').value;
-    const image = document.getElementById('roomImageInput').value;
-    const desc = document.getElementById('roomDescInput').value;
-    socket.emit('updateRoomSettings', { roomId: ROOM_ID, name, image, desc });
-    closeAdminPanel();
-}
-
-function showReports() {
-    socket.emit('getReports', { roomId: ROOM_ID });
-}
-
-socket.on('userMuted', ({ userId }) => {
-    mutedUsers.add(userId);
-    socket.emit('joinRoom', { roomId: ROOM_ID, token });
-});
-
-socket.on('userUnmuted', ({ userId }) => {
-    mutedUsers.delete(userId);
-    socket.emit('joinRoom', { roomId: ROOM_ID, token });
-});
-
-socket.on('muted', () => {
-    alert('تم كتمك من الادارة');
-});
-
-socket.on('kicked', () => {
-    alert('تم طردك من الغرفة');
-    location.href = '/';
-});
-
-socket.on('forcedToMic', ({ micIndex }) => {
-    alert('الادارة رفعتك للمايك رقم ' + (micIndex + 1));
-});
-
-socket.on('membershipActivated', () => {
-    alert('تم تفعيل العضوية المميزة لك ⭐');
-});
-
-socket.on('searchResults', (results) => {
-    if (results.length === 0) {
-        alert('لا يوجد نتائج');
-    } else {
-        alert('تم العثور على ' + results.length + ' مستخدم');
+    // تحديث قائمة المستخدمين
+    function updateUsersList(users) {
+        const list = document.getElementById('usersList');
+        list.innerHTML = users.map(u => `
+            <div class="user-item ${u.isOwner ? 'owner' : ''}">
+                <span>${u.isOwner ? '👑 ' : ''}${u.username}</span>
+                <span>LV${u.level}</span>
+            </div>
+        `).join('');
     }
-});
 
-function sendReaction(emoji) {
-    if (!isOnMic || myMicIndex === -1) return;
-    socket.emit('sendReaction', { roomId: ROOM_ID, micIndex: myMicIndex, emoji });
-}
+    // ايموجي على المايك
+    socket.on('reaction', ({ micIndex, emoji }) => {
+        const micDiv = document.getElementById(`mic${micIndex}`);
+        const reaction = document.createElement('div');
+        reaction.className = 'mic-reaction';
+        reaction.textContent = emoji;
+        micDiv.appendChild(reaction);
+        setTimeout(() => reaction.remove(), 2000);
+    });
 
-socket.on('reaction', ({ micIndex, emoji }) => {
-    const micEl = document.getElementById(`mic-${micIndex}`);
-    if (micEl) {
-        const anim = document.createElement('div');
-        anim.className = 'reaction-anim';
-        anim.textContent = emoji;
-        micEl.appendChild(anim);
-        setTimeout(() => anim.remove(), 2000);
+    // رسائل جديدة
+    socket.on('newMessage', (data) => {
+        const div = document.createElement('div');
+        div.className = 'chat-msg';
+        div.innerHTML = `<b>${data.username}:</b> ${data.message}`;
+        document.getElementById('chatMessages').appendChild(div);
+        document.getElementById('chatMessages').scrollTop = document.getElementById('chatMessages').scrollHeight;
+    });
+
+    // اخطاء
+    socket.on('error', (data) => {
+        showError(data.message);
+    });
+
+    socket.on('kicked', () => {
+        showError('تم طردك من الغرفة');
+        setTimeout(() => window.location.href = '/', 2000);
+    });
+
+    socket.on('removedFromMic', () => {
+        showError('تم انزالك من المايك');
+    });
+
+    function showError(msg) {
+        const errorDiv = document.getElementById('errorMsg');
+        errorDiv.textContent = msg;
+        errorDiv.style.display = 'block';
+        setTimeout(() => errorDiv.style.display = 'none', 3000);
     }
-});
 
-function toggleMic() {
-    if (isOnMic) {
-        socket.emit('leaveMic', { roomId: ROOM_ID });
-    } else {
-        const emptyMic = Array.from(document.querySelectorAll('.mic-slot')).findIndex(m =>!m.classList.contains('active') &&!m.classList.contains('closed'));
-        if (emptyMic!== -1) {
-            socket.emit('takeMic', { roomId: ROOM_ID, micIndex: emptyMic });
+    function clickMic(index) {
+        socket.emit('takeMic', { roomId, micIndex: index });
+    }
+
+    function toggleOwnerPanel() {
+        if(!isOwner) return showError('هاي بس للمالك');
+        const panel = document.getElementById('ownerPanel');
+        panel.style.display = panel.style.display === 'block'?'none' : 'block';
+    }
+
+    function sendMessage() {
+        const input = document.getElementById('chatInput');
+        if(input.value.trim()) {
+            socket.emit('sendMessage', { roomId, message: input.value });
+            input.value = '';
         }
     }
-}
 
-// الشات
-function sendMessage() {
-    const input = document.getElementById('chatInput');
-    const msg = input.value.trim();
-    if (msg) {
-        socket.emit('sendMessage', { roomId: ROOM_ID, message: msg });
-        input.value = '';
+    document.getElementById('chatInput').addEventListener('keypress', (e) => {
+        if(e.key === 'Enter') sendMessage();
+    });
+
+    function toggleChat() {
+        const chat = document.getElementById('chatBox');
+        chat.style.display = chat.style.display === 'flex'?'none' : 'flex';
     }
-}
 
-function sendImage(event) {
-    const file = event.target
+    function showEmojis() {
+        if(myMicIndex === -1) return showError('لازم تكون على المايك');
+        const emojis = ['😂','😍','❤️','🎉','😢','💨','🫂','💕','🔥','👏'];
+        const emoji = emojis[Math.floor(Math.random()*emojis.length)];
+        socket.emit('sendReaction', { roomId, micIndex: myMicIndex, emoji });
+    }
+
+    function showUsers() {
+        const list = document.getElementById('usersList');
+        list.style.display = list.style.display === 'block'?'none' : 'block';
+    }
+
+    function toggleMic() {
+        showError('الميزة قيد التطوير');
+    }
+
+    function banUser() {
+        const userId = prompt('حط ID المستخدم للباند:');
+        const reason = prompt('سبب الباند:');
+        if(userId && reason) {
+            fetch('/api/admin/ban', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': 'Bearer ' + token
+                },
+                body: JSON.stringify({ targetUserId: userId, reason })
+            }).then(res => res.json()).then(data => showError(data.message));
+        }
+    }
+
+    function showReports() {
+        fetch('/api/admin/reports', {
+            headers: { 'Authorization': 'Bearer ' + token }
+        }).then(res => res.json()).then(reports => {
+            alert('عدد البلاغات: ' + reports.length);
+        });
+    }
+
+    function manageIds() {
+        showError('الميزة قيد التطوير');
+    }
+
+    function fullControl() {
+        showError('الميزة قيد التطوير');
+    }
+</script>
+</body>
+</html>
