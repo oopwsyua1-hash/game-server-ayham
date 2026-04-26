@@ -3,214 +3,475 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>وكالة السبع الحلبي</title>
+<title>غرفة السبع الحلبي</title>
 <script src="/socket.io/socket.io.js"></script>
 <style>
-*{margin:0;padding:0;box-sizing:border-box;font-family:'Cairo',Tahoma}
-body{overflow:hidden;background:#000}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+    font-family: 'Segoe UI', sans-serif;
+    background: #0a0a14;
+    color: #fff;
+    padding-bottom: 80px;
+}
 
-/* الدخولية الذهبية 13 ثانية فيديو */
-.entry-video-overlay{position:fixed;inset:0;background:#000;z-index:99999;display:flex;align-items:center;justify-content:center}
-.entry-video-overlay.hide{display:none}
-.entry-video-overlay video{width:100%;height:100%;object-fit:cover;opacity:0.5}
-.entry-video-info{position:absolute;display:flex;flex-direction:column;align-items:center;gap:20px;z-index:10}
-.entry-video-info img{width:200px;height:200px;border-radius:50%;border:8px solid gold;box-shadow:0 0 60px gold,0 0 100px #ff6b00;animation:avatarEntry 13s ease-in-out}
-@keyframes avatarEntry{0%{transform:scale(0) rotate(0deg)}10%{transform:scale(1.2) rotate(360deg)}90%{transform:scale(1.1)}100%{transform:scale(1);opacity:0}}
-.entry-text{text-align:center}
-.entry-crown{font-size:100px;animation:bounce 1s infinite}
-@keyframes bounce{0%,100%{transform:translateY(0)}50%{transform:translateY(-20px)}}
-.entry-name{font-size:60px;font-weight:900;color:gold;text-shadow:0 0 30px gold,0 0 60px #ff6b00}
-.entry-vip{font-size:40px;color:#fff;background:linear-gradient(45deg,gold,#ff6b00);padding:10px 30px;border-radius:30px;display:inline-block;margin:10px 0}
-.entry-title{font-size:35px;color:#fff;text-shadow:0 0 20px #fff}
+#entryOverlay {
+    display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    background: #000; z-index: 9999; justify-content: center; align-items: center;
+}
+#entryVideo { width: 100%; height: 100%; object-fit: cover; }
+#entryText {
+    position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%);
+    color: #FFD700; font-size: 28px; font-weight: bold;
+    text-shadow: 0 0 20px #FFD700; animation: pulse 1s infinite; text-align: center;
+}
+@keyframes pulse { 0%,100% { scale: 1; } 50% { scale: 1.1; } }
 
-#agency{width:100vw;height:100vh;background:url('https://i.ibb.co/7jXqZ4J/lion-bg.jpg') center/cover;position:relative}
+/* ===== شعار الاسد النابض - حصري للمالك ===== */
+.lion-header {
+    width: 100%;
+    height: 120px;
+    background: #000;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border-bottom: 2px solid #FFD700;
+    animation: headerGlow 3s ease-in-out infinite;
+}
+@keyframes headerGlow {
+    0%, 100% { border-color: #FFD700; }
+    50% { border-color: #FFA500; }
+}
+.lion-img {
+    width: 100px;
+    height: 100px;
+    animation: lionPulse 2s ease-in-out infinite;
+    filter: drop-shadow(0 0 15px #FFD700);
+}
+@keyframes lionPulse {
+    0%, 100% { transform: scale(1); filter: drop-shadow(0 0 15px #FFD700); }
+    50% { transform: scale(1.1); filter: drop-shadow(0 0 30px #FFA500); }
+}
 
-.top-bar{position:absolute;top:0;width:100%;padding:15px 20px;background:linear-gradient(180deg,rgba(0,0,0,0.8),transparent);display:flex;justify-content:space-between;align-items:center;z-index:100}
-.speaker-btn{width:45px;height:45px;background:linear-gradient(45deg,#ffa500,#ff6b00);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:24px;border:3px solid gold}
-.top-center{text-align:center;color:#fff}
-.top-center .title{font-size:14px;opacity:0.8}
-.top-center .id-lv{background:rgba(0,0,0,0.6);padding:5px 15px;border-radius:20px;margin-top:5px;display:inline-block}
-.top-right{width:80px;height:80px;border:4px solid gold;border-radius:15px;overflow:hidden}
-.top-right img{width:100%;height:100%;object-fit:cover}
+.header {
+    background: #141428;
+    padding: 10px 15px;
+    border-bottom: 1px solid #ff00ff;
+    text-align: center;
+}
+.header h1 { font-size: 18px; }
 
-.seats-area{position:absolute;top:120px;left:50%;transform:translateX(-50%);display:grid;grid-template-columns:repeat(4,1fr);gap:15px;width:90%;max-width:600px}
-.gold-seat{aspect-ratio:1;background:url('https://i.ibb.co/3cqJXqZ/gold-seat.png') center/contain no-repeat;position:relative;display:flex;align-items:center;justify-content:center}
-.seat-circle{width:65%;height:65%;border-radius:50%;border:4px solid;animation:rainbowBorder 3s linear infinite;position:relative;overflow:hidden;background:rgba(0,0,0,0.5)}
-@keyframes rainbowBorder{0%{border-color:#ff0000}16%{border-color:#ff7f00}33%{border-color:#ffff00}50%{border-color:#00ff00}66%{border-color:#0000ff}83%{border-color:#4b0082}100%{border-color:#9400d3}}
-.seat-circle.locked::after{content:'🔒';position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:35px;background:rgba(0,0,0,0.7)}
-.seat-circle.empty::after{content:'+';position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:50px;color:gold}
-.seat-circle img{width:100%;height:100%;object-fit:cover}
-.seat-num{position:absolute;bottom:-5px;left:50%;transform:translateX(-50%);background:gold;color:#000;padding:2px 8px;border-radius:10px;font-weight:900;font-size:12px}
+.container { padding: 15px; max-width: 600px; margin: 0 auto; }
 
-.stats-bar{position:absolute;top:380px;left:50%;transform:translateX(-50%);display:flex;gap:20px;align-items:center}
-.people-count{background:rgba(139,0,139,0.8);padding:10px 20px;border-radius:25px;border:2px solid #ff00ff;color:#fff;font-weight:bold;display:flex;align-items:center;gap:8px}
-.ranking{display:flex;gap:5px}
-.rank-badge{width:45px;height:45px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:900;border:3px solid}
-.rank-1{background:linear-gradient(45deg,gold,#ff6b00);border-color:gold}
-.rank-2{background:linear-gradient(45deg,#c0c0c0,#808080);border-color:silver}
-.rank-3{background:linear-gradient(45deg,#cd7f32,#8b4513);border-color:#cd7f32}
+/* ===== المايكات اصغر ===== */
+.mics-grid {
+    display: grid;
+    grid-template-columns: repeat(5,1fr);
+    gap: 6px;
+    margin: 15px 0;
+}
+.mic-slot {
+    background: #141428;
+    padding: 6px 3px;
+    border-radius: 8px;
+    text-align: center;
+    cursor: pointer;
+    border: 2px solid #1a1a2e;
+    min-height: 65px;
+    font-size: 10px;
+    position: relative;
+    transition: all 0.2s;
+}
+.mic-slot:hover { transform: scale(1.05); }
+.mic-slot.taken { background: #2d1b69; border-color: #a855f7; }
+.mic-slot.closed { background: #3a1a1a; border-color: #ff0000; cursor: not-allowed; }
+.mic-slot.owner {
+    background: linear-gradient(135deg, #FFD700, #FFA500);
+    color: #000; font-weight: bold;
+    box-shadow: 0 0 15px #FFD700;
+    animation: ownerGlow 1.5s infinite;
+}
+@keyframes ownerGlow {
+    0%, 100% { box-shadow: 0 0 15px #FFD700; }
+    50% { box-shadow: 0 0 25px #FFA500; }
+}
+.mic-slot.mic-icon { font-size: 16px; }
+.mic-slot.mic-name {
+    font-size: 9px;
+    margin-top: 2px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
 
-.owner-frame{position:absolute;bottom:180px;left:50%;transform:translateX(-50%);width:300px;height:300px}
-.wreath{position:absolute;inset:0;background:url('https://i.ibb.co/0jZqX4J/wreath.png') center/contain no-repeat;animation:rotateSlow 20s linear infinite}
-@keyframes rotateSlow{0%{transform:rotate(0deg)}100%{transform:rotate(360deg)}}
-.owner-photo{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:70%;height:70%;border-radius:50%;overflow:hidden;border:5px solid gold;box-shadow:0 0 40px gold}
-.owner-photo img{width:100%;height:100%;object-fit:cover}
+/* ===== انميشن التفاعل عالمايك ===== */
+.reaction-anim {
+    position: absolute;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 30px;
+    animation: floatUp 2s ease-out forwards;
+    pointer-events: none;
+    z-index: 10;
+}
+@keyframes floatUp {
+    0% { opacity: 1; transform: translate(-50%, -50%) scale(0.5); }
+    100% { opacity: 0; transform: translate(-50%, -150%) scale(1.5); }
+}
 
-.welcome-box{position:absolute;bottom:80px;left:50%;transform:translateX(-50%);width:85%;background:rgba(0,0,0,0.85);padding:15px;border-radius:15px;border:2px solid gold;text-align:center;color:gold}
+.users-list {
+    background: #141428;
+    padding: 12px;
+    border-radius: 10px;
+    margin-top: 15px;
+}
+.users-list h3 { font-size: 14px; margin-bottom: 8px; }
+.user-row {
+    display: flex; justify-content: space-between;
+    padding: 6px; border-bottom: 1px solid #1a1a2e;
+    font-size: 13px; align-items: center;
+}
+.admin-btn {
+    background: #ef4444; border: none; color: #fff;
+    padding: 3px 6px; border-radius: 4px;
+    cursor: pointer; margin: 0 2px; font-size: 10px;
+}
 
-.bottom-bar{position:fixed;bottom:0;width:100%;background:linear-gradient(180deg,transparent,rgba(0,0,0,0.95));padding:15px;display:flex;justify-content:space-around;align-items:center}
-.bottom-btn{width:55px;height:55px;border-radius:15px;display:flex;align-items:center;justify-content:center;font-size:28px;border:none;cursor:pointer}
-.btn-gift{background:linear-gradient(45deg,#ff6b00,#ff0000)}
-.btn-party{background:linear-gradient(45deg,#ff00ff,#9400d3)}
-.btn-chat{background:linear-gradient(45deg,#00bfff,#0080ff)}
-.btn-mic{background:linear-gradient(45deg,#808080,#404040)}
-.btn-speaker{background:linear-gradient(45deg,#808080,#404040)}
+/* ===== القائمة السفلية ===== */
+.bottom-menu {
+    position: fixed;
+    bottom: 0; left: 0; right: 0;
+    background: #141428;
+    border-top: 2px solid #ff00ff;
+    display: flex;
+    justify-content: space-around;
+    padding: 8px 5px;
+    z-index: 100;
+}
+.menu-btn {
+    flex: 1;
+    background: #1a1a2e;
+    border: 1px solid #333;
+    border-radius: 8px;
+    color: #fff;
+    padding: 8px 4px;
+    margin: 0 3px;
+    font-size: 11px;
+    cursor: pointer;
+    text-align: center;
+    transition: all 0.2s;
+}
+.menu-btn:active { background: #ff00ff; }
+.menu-btn.owner-btn {
+    background: linear-gradient(90deg, #FFD700, #FFA500);
+    color: #000;
+    font-weight: bold;
+}
 
-.settings-btn{position:fixed;top:15px;left:15px;background:linear-gradient(45deg,gold,#ff6b00);border:none;padding:12px 25px;border-radius:25px;font-weight:900;color:#000;cursor:pointer;z-index:200;box-shadow:0 0 20px gold}
+/* ===== ازرار التفاعل ===== */
+.reaction-bar {
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+    margin: 15px 0;
+    flex-wrap: wrap;
+}
+.reaction-btn {
+    background: #1a1a2e;
+    border: 1px solid #ff00ff;
+    border-radius: 50%;
+    width: 45px;
+    height: 45px;
+    font-size: 22px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+.reaction-btn:active {
+    transform: scale(0.9);
+    background: #ff00ff;
+}
+.reaction-btn:disabled {
+    opacity: 0.3;
+    cursor: not-allowed;
+}
 </style>
 </head>
 <body>
 
-<div id="entryVideoOverlay" class="entry-video-overlay hide">
-  <video id="entryVideo" autoplay muted loop>
-    <source src="" type="video/mp4">
-  </video>
-  <div class="entry-video-info">
-    <img id="entryAvatar" src="">
-    <div class="entry-text">
-      <div class="entry-crown">👑</div>
-      <div class="entry-name" id="entryName">السبع الحلبي</div>
-      <div class="entry-vip">VIP <span id="entryVipId">777</span></div>
-      <div class="entry-title">دخل الوكالة</div>
-    </div>
-  </div>
+<!-- شاشة الدخولية -->
+<div id="entryOverlay">
+    <video id="entryVideo" autoplay muted></video>
+    <div id="entryText"></div>
 </div>
 
-<div id="agency">
-  <button class="settings-btn" onclick="toggleSettings()">⚙️ اعدادات الوكالة</button>
+<!-- شعار الاسد - بيطلع بس للمالك 10000 TOP -->
+<div id="lionHeaderContainer"></div>
 
-  <div class="top-bar">
-    <div class="speaker-btn">📢</div>
-    <div class="top-center">
-      <div class="title">للتسجيل المضيفات</div>
-      <div class="id-lv">Lv.16 💎 <span id="vipId">000</span> ID</div>
+<div class="header">
+    <h1>🎤 غرفة السبع الحلبي - 20 مايك</h1>
+    <p style="font-size:12px;color:#aaa">ID: 10000</p>
+</div>
+
+<div class="container">
+    <!-- ازرار التفاعل - تظهر بس اذا ع المايك -->
+    <div class="reaction-bar" id="reactionBar" style="display:none;">
+        <button class="reaction-btn" onclick="sendReaction('😂')">😂</button>
+        <button class="reaction-btn" onclick="sendReaction('😍')">😍</button>
+        <button class="reaction-btn" onclick="sendReaction('❤️')">❤️</button>
+        <button class="reaction-btn" onclick="sendReaction('🎉')">🎉</button>
+        <button class="reaction-btn" onclick="sendReaction('😢')">😢</button>
     </div>
-    <div class="top-right">
-      <img src="https://i.ibb.co/3cqJXqZ/frame.png" alt="frame">
+
+    <!-- المايكات -->
+    <div class="mics-grid" id="micsGrid"></div>
+
+    <!-- المتواجدين -->
+    <div class="users-list">
+        <h3>👥 المتواجدين</h3>
+        <div id="usersList"></div>
     </div>
-  </div>
+</div>
 
-  <div class="seats-area" id="seatsArea"></div>
-
-  <div class="stats-bar">
-    <div class="people-count">
-      <span>👥</span>
-      <span id="peopleCount">0</span>
-    </div>
-    <div class="ranking">
-      <div class="rank-badge rank-1">1</div>
-      <div class="rank-badge rank-2">2</div>
-      <div class="rank-badge rank-3">3</div>
-    </div>
-  </div>
-
-  <div class="owner-frame">
-    <div class="wreath"></div>
-    <div class="owner-photo">
-      <img id="ownerImg" src="https://ui-avatars.com/api/?name=السبع&background=a855f7&color=fff" alt="المالك">
-    </div>
-  </div>
-
-  <div class="welcome-box">
-    <div class="emoji">😊</div>
-    <div class="text">مرحباً بكم في وكالة السبع الحلبي! نتمنى لكم أوقات طيبة<br>سيتم الابلاغ وحظر أي مستخدم يخالف لوائح التطبيق</div>
-  </div>
-
-  <div class="bottom-bar">
-    <button class="bottom-btn btn-gift">🎁</button>
-    <button class="bottom-btn btn-party">🎉</button>
-    <button class="bottom-btn btn-chat">💬</button>
-    <button class="bottom-btn btn-mic">🎤</button>
-    <button class="bottom-btn btn-speaker">🔊</button>
-  </div>
+<!-- القائمة السفلية -->
+<div class="bottom-menu">
+    <button class="menu-btn" onclick="showUsers()">👥 المتواجدين</button>
+    <button class="menu-btn" id="adminBtn" style="display:none;" onclick="showAdminPanel()">👑 الادمن</button>
+    <button class="menu-btn" id="ownerBtn" style="display:none;" onclick="showOwnerPanel()">⚙️ صاحب الغرفة</button>
+    <button class="menu-btn" onclick="createRoom()">➕ انشاء غرفة</button>
+    <button class="menu-btn" id="micBtn" onclick="toggleMic()">🎤 صعود مايك</button>
 </div>
 
 <script>
 const socket = io();
-const userId = localStorage.getItem('userId');
 const token = localStorage.getItem('token');
 const urlParams = new URLSearchParams(window.location.search);
-const ownerId = urlParams.get('owner') || userId;
-const roomId = `room_${ownerId}`;
-let roomData = {};
+const ROOM_ID = urlParams.get('roomId') || '10000';
+let myUserId = null;
+let mySocketId = null;
+let isOwner = false;
+let isOnMic = false;
+let myMicIndex = -1;
 
-if(!token) location.href = '/login';
+// WebRTC للصوت - الكل يسمع الكل
+let localStream = null;
+let peerConnections = {};
 
-if(userId === ownerId) {
-  socket.emit('create-room', {userId});
-} else {
-  socket.emit('join-room', {roomId, userId});
+if (!token) location.href = '/';
+
+async function initAudio() {
+    try {
+        localStream = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
+    } catch (err) {
+        console.log('المايك مرفوض:', err);
+    }
 }
+initAudio();
 
-socket.on('golden-entry-video', (data) => {
-  const overlay = document.getElementById('entryVideoOverlay');
-  const video = document.getElementById('entryVideo');
-  const avatar = document.getElementById('entryAvatar');
-  const name = document.getElementById('entryName');
-  const vipId = document.getElementById('entryVipId');
-  
-  video.src = data.videoUrl;
-  avatar.src = data.avatar;
-  name.textContent = data.username;
-  vipId.textContent = data.vipId;
-  
-  overlay.classList.remove('hide');
-  video.play();
-  
-  setTimeout(() => {
-    overlay.classList.add('hide');
-    video.pause();
-    video.src = '';
-  }, data.duration);
+socket.emit('joinRoom', { roomId: ROOM_ID, token });
+
+// دخولية المالك
+socket.on('ownerEntry', (data) => {
+    const overlay = document.getElementById('entryOverlay');
+    const video = document.getElementById('entryVideo');
+    const text = document.getElementById('entryText');
+    video.src = data.video;
+    text.textContent = data.text;
+    overlay.style.display = 'flex';
+    video.play();
+    setTimeout(() => overlay.style.display = 'none', data.duration * 1000);
 });
 
-socket.on('room-data', (data) => {
-  roomData = data;
-  updateUI();
+// تحديث الغرفة
+socket.on('roomUpdate', (roomData) => {
+    const micsGrid = document.getElementById('micsGrid');
+    const usersList = document.getElementById('usersList');
+    micsGrid.innerHTML = '';
+    usersList.innerHTML = '';
+
+    mySocketId = socket.id;
+    isOnMic = false;
+    myMicIndex = -1;
+
+    // اظهر شعار الاسد بس اذا انت المالك 10000 TOP
+    const lionContainer = document.getElementById('lionHeaderContainer');
+    const currentUser = roomData.users.find(u => u.socketId === socket.id);
+
+    if (currentUser && currentUser.level === "10000 TOP") {
+        lionContainer.innerHTML = `
+            <div class="lion-header">
+                <img class="lion-img" src="https://i.imgur.com/حط_رابط_صورتك_هون.png" alt="السبع الحلبي">
+            </div>
+        `;
+    } else {
+        lionContainer.innerHTML = '';
+    }
+
+    // رسم المايكات
+    for (let i = 0; i < 20; i++) {
+        const micDiv = document.createElement('div');
+        micDiv.className = 'mic-slot';
+        micDiv.id = `mic-${i}`;
+        const micData = roomData.mics[i];
+
+        if (micData === 'closed') {
+            micDiv.classList.add('closed');
+            micDiv.innerHTML = '<div class="mic-icon">🔒</div><div class="mic-name">مغلق</div>';
+        } else if (micData) {
+            const userOnMic = roomData.users.find(u => u.socketId === micData);
+            if (userOnMic) {
+                micDiv.classList.add('taken');
+                micDiv.innerHTML = `<div class="mic-icon">🎤</div><div class="mic-name">${userOnMic.username}</div>`;
+
+                if (userOnMic.level === "10000 TOP") {
+                    micDiv.classList.add('owner');
+                }
+                if (userOnMic.socketId === socket.id) {
+                    isOnMic = true;
+                    myMicIndex = i;
+                    micDiv.onclick = () => socket.emit('leaveMic', { roomId: ROOM_ID });
+                }
+            }
+        } else {
+            micDiv.innerHTML = '<div class="mic-icon">🎤</div><div class="mic-name">فارغ</div>';
+            micDiv.onclick = () => socket.emit('takeMic', { roomId: ROOM_ID, micIndex: i });
+        }
+        micsGrid.appendChild(micDiv);
+    }
+
+    // اظهر ازرار التفاعل اذا ع المايك
+    document.getElementById('reactionBar').style.display = isOnMic? 'flex' : 'none';
+    document.getElementById('micBtn').textContent = isOnMic? '⬇️ نزول مايك' : '🎤 صعود مايك';
+
+    // رسم المتواجدين
+    roomData.users.forEach(user => {
+        if (!myUserId) myUserId = user.userId;
+
+        // تحقق اذا انت المالك
+        if (user.level === "10000 TOP" && user.userId === myUserId) {
+            isOwner = true;
+            document.getElementById('adminBtn').style.display = 'block';
+            document.getElementById('ownerBtn').style.display = 'block';
+            document.getElementById('adminBtn').classList.add('owner-btn');
+            document.getElementById('ownerBtn').classList.add('owner-btn');
+        }
+
+        const row = document.createElement('div');
+        row.className = 'user-row';
+        row.innerHTML = `<span>${user.username} - ${user.level} ${user.level === "10000 TOP"? '👑' : ''}</span>
+            <div>${isOwner && user.level!== "10000 TOP"? `
+                <button class="admin-btn" onclick="adminAction('KICK', '${user.userId}')">طرد</button>
+                <button class="admin-btn" onclick="adminAction('CLOSE_MIC', '${user.userId}')">غلق</button>` : ''}
+            </div>`;
+        usersList.appendChild(row);
+    });
 });
 
-socket.on('room-update', (data) => {
-  roomData = data;
-  updateUI();
+// استقبال التفاعلات
+socket.on('reaction', ({ micIndex, emoji }) => {
+    const micEl = document.getElementById(`mic-${micIndex}`);
+    if (micEl) {
+        const anim = document.createElement('div');
+        anim.className = 'reaction-anim';
+        anim.textContent = emoji;
+        micEl.appendChild(anim);
+        setTimeout(() => anim.remove(), 2000);
+    }
 });
 
-function updateUI() {
-  if(roomData.ownerData) {
-    document.getElementById('vipId').textContent = roomData.ownerData.vipId;
-    document.getElementById('ownerImg').src = roomData.ownerData.avatar || `https://ui-avatars.com/api/?name=${roomData.ownerData.username}&background=a855f7&color=fff`;
-  }
-  document.getElementById('peopleCount').textContent = roomData.members?.size || 0;
-  renderSeats();
+// ارسال تفاعل
+function sendReaction(emoji) {
+    if (!isOnMic || myMicIndex === -1) return;
+    socket.emit('sendReaction', { roomId: ROOM_ID, micIndex: myMicIndex, emoji });
 }
 
-function renderSeats() {
-  const area = document.getElementById('seatsArea');
-  area.innerHTML = '';
-  const seats = roomData.seats || 12;
-  
-  for(let i=1; i<=seats; i++) {
-    const seat = document.createElement('div');
-    seat.className = 'gold-seat';
-    const circle = document.createElement('div');
-    circle.className = 'seat-circle empty';
-    if([8,10,11].includes(i)) circle.className = 'seat-circle locked';
-    seat.appendChild(circle);
-    seat.innerHTML += `<div class="seat-num">${i}</div>`;
-    area.appendChild(seat);
-  }
+// زر صعود/نزول مايك
+function toggleMic() {
+    if (isOnMic) {
+        socket.emit('leaveMic', { roomId: ROOM_ID });
+    } else {
+        // دور على اول مايك فاضي
+        const emptyMic = Array.from(document.querySelectorAll('.mic-slot')).findIndex(m =>!m.classList.contains('taken') &&!m.classList.contains('closed'));
+        if (emptyMic!== -1) {
+            socket.emit('takeMic', { roomId: ROOM_ID, micIndex: emptyMic });
+        } else {
+            alert('كل المايكات مليانة');
+        }
+    }
 }
 
-function toggleSettings(){alert('اعدادات الوكالة')}
+function adminAction(action, userId) {
+    socket.emit('adminAction', { action, targetUserId: userId, roomId: ROOM_ID });
+}
+
+function createRoom() {
+    fetch('/api/create-room', {
+        method: 'POST',
+        headers: { 'Authorization': 'Bearer ' + token }
+    }).then(r => r.json()).then(data => {
+        if (data.success) location.href = '/room?roomId=' + data.roomId;
+        else alert(data.error || 'عندك غرفة من قبل');
+    });
+}
+
+function showUsers() {
+    document.querySelector('.users-list').scrollIntoView({ behavior: 'smooth' });
+}
+
+function showAdminPanel() {
+    alert('لوحة الادمن: طرد + غلق مايك موجودة جنب كل مستخدم');
+}
+
+function showOwnerPanel() {
+    alert('صلاحيات صاحب الغرفة: طرد + غلق مايك + فتح مايك');
+}
+
+// WebRTC Signaling - الكل يسمع الكل
+socket.on('voiceOffer', async ({ from, offer }) => {
+    const pc = new RTCPeerConnection({
+        iceServers: [{ urls: 'stun:stun.l.google.com:19302' }]
+    });
+    peerConnections[from] = pc;
+
+    if (localStream) {
+        localStream.getTracks().forEach(track => pc.addTrack(track, localStream));
+    }
+
+    pc.ontrack = (event) => {
+        const audio = new Audio();
+        audio.srcObject = event.streams[0];
+        audio.autoplay = true;
+    };
+
+    await pc.setRemoteDescription(offer);
+    const answer = await pc.createAnswer();
+    await pc.setLocalDescription(answer);
+    socket.emit('voiceAnswer', { to: from, answer });
+});
+
+socket.on('voiceAnswer', async ({ from, answer }) => {
+    await peerConnections[from]?.setRemoteDescription(answer);
+});
+
+socket.on('iceCandidate', ({ from, candidate }) => {
+    peerConnections[from]?.addIceCandidate(new RTCIceCandidate(candidate));
+});
+
+// لما تطلع عالمايك، ابعت offer للكل
+socket.on('userTookMic', ({ socketId }) => {
+    if (socketId!== socket.id && localStream) {
+        const pc = new RTCPeerConnection({
+            iceServers: [{ urls: 'stun:stun.l.google.com:19302' }]
+        });
+        peerConnections[socketId] = pc;
+        localStream.getTracks().forEach(track => pc.addTrack(track, localStream));
+        pc.onicecandidate = (e) => {
+            if (e.candidate) socket.emit('iceCandidate', { to: socketId, candidate: e.candidate });
+        };
+        pc.createOffer().then(offer => {
+            pc.setLocalDescription(offer);
+            socket.emit('voiceOffer', { to: socketId, offer });
+        });
+    }
+});
 </script>
 </body>
 </html>
