@@ -12,7 +12,7 @@ const server = http.createServer(app);
 const io = socketIo(server, { cors: { origin: "*", methods: ["GET", "POST"] } });
 
 const PORT = process.env.PORT || 3000;
-const MONGODB_URI = process.env.MONGODB_URI || 'mongodb+srv://Sabe7:sabe7@cluster0.mlmou5y.mongodb.net/sabe7_chat?retryWrites=true&w=majority&appName=Cluster0';
+const MONGO_URI = process.env.MONGO_URI || 'mongodb+srv://Sabe7:sabe7@cluster0.mlmou5y.mongodb.net/sabe7_chat?retryWrites=true&w=majority&appName=Cluster0';
 const OWNER_EMAIL = 'lion777788@gmail.com';
 const OWNER_DATA = {
     level: "10000 TOP",
@@ -21,10 +21,10 @@ const OWNER_DATA = {
 };
 
 app.use(cors());
-app.use(express.json());
+app.use(express.json({ limit: '10mb' }));
 app.use(express.static(path.join(__dirname, 'public')));
 
-mongoose.connect(MONGODB_URI).then(() => console.log('✅ MongoDB Connected')).catch(err => console.error('❌ MongoDB Error:', err));
+mongoose.connect(MONGO_URI).then(() => console.log('✅ MongoDB Connected')).catch(err => console.error('❌ MongoDB Error:', err));
 
 const UserSchema = new mongoose.Schema({
     username: String,
@@ -61,6 +61,7 @@ app.post('/api/register', async (req, res) => {
         const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET || 'sabe7_secret', { expiresIn: '30d' });
         res.json({ success: true, token, user: { id: user._id, username, level } });
     } catch (err) {
+        console.log(err);
         res.status(500).json({ error: 'خطأ بالسيرفر' });
     }
 });
