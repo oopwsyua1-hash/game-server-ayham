@@ -20,20 +20,20 @@ app.use(cors());
 app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
 
-// MongoDB Connection
-const mongoURI = process.env.MONGODB_URI;
+// MongoDB Connection - يقبل MONGO_URI او MONGODB_URI
+const mongoURI = process.env.MONGODB_URI || process.env.MONGO_URI;
 if (!mongoURI) {
-  console.log('❌ MONGODB_URI مو موجود بالـ Environment Variables');
+  console.log('❌ MONGO_URI او MONGODB_URI مو موجود بالـ Environment Variables');
   process.exit(1);
 }
 mongoose.connect(mongoURI)
- .then(() => console.log('✅ MongoDB Connected - السيرفر شغال'))
- .catch(err => {
+.then(() => console.log('✅ MongoDB Connected - السيرفر شغال'))
+.catch(err => {
     console.log('❌ MongoDB Error:', err.message);
     process.exit(1);
   });
 
-// User Schema - معدل مع الايديات الفخمة
+// User Schema - مع الايديات الفخمة والدخولية الذهبية
 const userSchema = new mongoose.Schema({
   username: { type: String, required: true },
   lastName: { type: String, required: true },
@@ -63,7 +63,7 @@ const userSchema = new mongoose.Schema({
 
 const User = mongoose.model('User', userSchema);
 
-// Register API - نفس تبعك مع الاضافات
+// Register API - نفس تبعك
 app.post('/api/register', async (req, res) => {
   try {
     const { username, lastName, email, password, country, birthDate, age, gender } = req.body;
@@ -83,7 +83,7 @@ app.post('/api/register', async (req, res) => {
       token,
       user: {
         username, lastName, email, country, age, gender,
-        vipId: newUser.vipId, displayName: newUser.displayName
+        vipId: newUser.vipId, displayName: newUser.displayName, _id: newUser._id
       }
     });
   } catch (error) {
@@ -208,7 +208,7 @@ io.on('connection', (socket) => {
     }
   });
 
-  // تفاعل 3D كبير
+  // تفاعل 3D كبير - ستيكرات
   socket.on('big-reaction', ({roomId, userId, reaction}) => {
     io.to(roomId).emit('show-reaction', {userId, reaction, time: Date.now()});
   });
@@ -229,6 +229,15 @@ io.on('connection', (socket) => {
       room.banned.add(targetId);
       room.members.delete(targetId);
       io.to(roomId).emit('member-kicked', targetId);
+      io.to(roomId).emit('room-update', room);
+    }
+  });
+
+  // اعطاء ادمن
+  socket.on('make-admin', ({roomId, ownerId, targetId}) => {
+    const room = liveRooms.get(roomId);
+    if(room && room.owner === ownerId) {
+      room.admins.add(targetId);
       io.to(roomId).emit('room-update', room);
     }
   });
