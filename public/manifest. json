@@ -1,20 +1,24 @@
 {
-  "name": "غرف صوتية",
-  "short_name": "صوتي",
+  "name": "السبع الحلبي 10000",
+  "short_name": "السبع الحلبي",
+  "description": "غرفة السبع الحلبي - 20 مايك مع ادارة عامة",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#111111",
-  "theme_color": "#7c3aed",
+  "background_color": "#0a0a14",
+  "theme_color": "#ff00ff",
+  "orientation": "portrait",
   "icons": [
     {
-      "src": "/icon-192.png",
+      "src": "https://i.imgur.com/TqZFqXw.png",
       "sizes": "192x192",
-      "type": "image/png"
+      "type": "image/png",
+      "purpose": "any"
     },
     {
-      "src": "/icon-512.png",
+      "src": "https://i.imgur.com/TqZFqXw.png",
       "sizes": "512x512",
-      "type": "image/png"
+      "type": "image/png",
+      "purpose": "maskable"
     }
   ]
 }
