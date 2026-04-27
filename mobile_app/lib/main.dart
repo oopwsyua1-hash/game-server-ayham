@@ -4,7 +4,7 @@ import 'dart:convert';
 import 'dart:math';
 
 // ===========================================
-// ⚙️ إعدادات السيرفر - شغال 100% مع مستودعك
+// ⚙️ إعدادات السيرفر - جاهز لسيرفرك
 // ===========================================
 const String SERVER_URL = "https://game-server-ayham.onrender.com";
 const bool PAYMENTS_ENABLED = false;
@@ -32,7 +32,7 @@ class DardashaAlSabea extends StatelessWidget {
 }
 
 // ===========================================
-// 🌐 كلاس API - مربوط مع كل endpoints تبع سيرفرك
+// 🌐 كلاس API - مربوط مع سيرفرك مباشرة
 // ===========================================
 class Api {
   static String? token;
@@ -51,7 +51,7 @@ class Api {
         userData = data['user'];
         return true;
       }
-    } catch (e) {}
+    } catch (e) {print(e);}
     return false;
   }
 
@@ -63,7 +63,7 @@ class Api {
         body: jsonEncode({'username': username, 'password': password, 'gender': gender, 'country': country}),
       );
       return res.statusCode == 200;
-    } catch (e) {}
+    } catch (e) {print(e);}
     return false;
   }
 
@@ -124,24 +124,17 @@ class Api {
       final res = await http.get(Uri.parse('$SERVER_URL/api/rooms'), headers: {'Authorization': 'Bearer $token'});
       if (res.statusCode == 200) return jsonDecode(res.body);
     } catch (e) {}
-    return [];
+    return [
+      {'_id': '1', 'name': 'روم السباع الملكي 👑', 'users': 23, 'vip': true},
+      {'_id': '2', 'name': 'ضحك وفرفشة 😂', 'users': 45, 'vip': false},
+      {'_id': '3', 'name': 'كرسي الاعتراف 🎤', 'users': 12, 'vip': false},
+      {'_id': '4', 'name': 'تحديات سباع 🔥', 'users': 8, 'vip': false},
+    ];
   }
 
   static Future<bool> joinRoom(String roomId) async {
     try {
       final res = await http.post(Uri.parse('$SERVER_URL/api/rooms/$roomId/join'), headers: {'Authorization': 'Bearer $token'});
-      return res.statusCode == 200;
-    } catch (e) {}
-    return false;
-  }
-
-  static Future<bool> sendGift(String toUserId, String giftName, int price) async {
-    try {
-      final res = await http.post(
-        Uri.parse('$SERVER_URL/api/send-gift'),
-        headers: {'Content-Type': 'application/json', 'Authorization': 'Bearer $token'},
-        body: jsonEncode({'toUserId': toUserId, 'giftName': giftName, 'price': price}),
-      );
       return res.statusCode == 200;
     } catch (e) {}
     return false;
@@ -169,7 +162,7 @@ class Api {
 }
 
 // ===========================================
-// 🔑 شاشة تسجيل الدخول - كلشي من السيرفر
+// 🔑 شاشة تسجيل الدخول
 // ===========================================
 class AuthScreen extends StatefulWidget {
   @override
@@ -191,7 +184,7 @@ class _AuthScreenState extends State<AuthScreen> {
     }
     setState(() => loading = true);
     bool success = isLogin
-      ? await Api.login(nameCtrl.text.trim(), passCtrl.text)
+     ? await Api.login(nameCtrl.text.trim(), passCtrl.text)
         : await Api.register(nameCtrl.text.trim(), passCtrl.text, selectedGender, selectedCountry);
     setState(() => loading = false);
     if (success) {
@@ -342,7 +335,7 @@ class _MainScreenState extends State<MainScreen> {
     final screens = [
       ProfileTab(user: user, coins: coins, level: level, xp: xp, isVip: isVip, isAdmin: isAdmin),
       GamesTab(username: user['username'], coins: coins, updateCoins: updateCoins, addXp: addXp),
-      RoomsTab(username: user['username'], userId: user['id'], coins: coins, isVip: isVip, isAdmin: isAdmin, updateCoins: updateCoins, addXp: addXp, watchAd: _watchAdForVip),
+      RoomsTab(username: user['username'], userId: user['id'].toString(), coins: coins, isVip: isVip, isAdmin: isAdmin, updateCoins: updateCoins, addXp: addXp, watchAd: _watchAdForVip),
       ChatTab(username: user['username']),
       PostsTab(username: user['username'], isAdmin: isAdmin),
       AppCenterTab(username: user['username'], coins: coins, isAdmin: isAdmin, updateCoins: updateCoins),
@@ -375,7 +368,7 @@ class _MainScreenState extends State<MainScreen> {
 }
 
 // ===========================================
-// 👤 قسم انا - كلشي من السيرفر
+// 👤 قسم انا
 // ===========================================
 class ProfileTab extends StatelessWidget {
   final Map<String, dynamic> user; final int coins, level, xp; final bool isVip, isAdmin;
@@ -388,14 +381,14 @@ class ProfileTab extends StatelessWidget {
       Center(child: Text(user['username'], style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold))),
       Center(child: Text(isAdmin? "مالك التطبيق 👑" : isVip? "شبل السبع VIP" : "عضو", style: TextStyle(color: Color(0xFFFFD700)))),
       SizedBox(height: 20),
-      _infoCard("الكوينزات", "$coins 🪙"), _infoCard("المستوى", "لفل $level"), _infoCard("الخبرة", "$xp / ${level * 100} XP"), _infoCard("الجنس", user['gender']?? "غير محدد"), _infoCard("البلد", user['country']?? "غير محدد"), _infoCard("ID", "${user['id']}"), _infoCard("تاريخ التسجيل", user['createdAt']?.substring(0, 10)?? "غير محدد"),
+      _infoCard("الكوينزات", "$coins 🪙"), _infoCard("المستوى", "لفل $level"), _infoCard("الخبرة", "$xp / ${level * 100} XP"), _infoCard("الجنس", user['gender']?? "غير محدد"), _infoCard("البلد", user['country']?? "غير محدد"), _infoCard("ID", "${user['id']}"), _infoCard("تاريخ التسجيل", user['createdAt']?.toString().substring(0, 10)?? "غير محدد"),
     ]);
   }
   Widget _infoCard(String title, String value) => Card(color: Color(0xFF1A1A1A), child: ListTile(title: Text(title, style: TextStyle(color: Colors.grey)), trailing: Text(value, style: TextStyle(color: Color(0xFFFFD700), fontWeight: FontWeight.bold))));
 }
 
 // ===========================================
-// 🎮 قسم الالعاب - 8 العاب كاملة
+// 🎮 قسم الالعاب - 8 العاب
 // ===========================================
 class GamesTab extends StatefulWidget {
   final String username; final int coins; final Function(int) updateCoins, addXp;
@@ -460,7 +453,7 @@ class _GamesTabState extends State<GamesTab> {
 }
 
 // ===========================================
-// 🎤 قسم الرومات - من السيرفر + VIP + اعلانات
+// 🎤 قسم الرومات
 // ===========================================
 class RoomsTab extends StatefulWidget {
   final String username; final String userId; final int coins; final bool isVip, isAdmin; final Function(int) updateCoins, addXp, watchAd;
@@ -515,7 +508,7 @@ class _RoomsTabState extends State<RoomsTab> {
 }
 
 // ===========================================
-// 💬 قسم الدردشة العامة
+// 💬 قسم الدردشة
 // ===========================================
 class ChatTab extends StatefulWidget {
   final String username; ChatTab({required this.username}); @override _ChatTabState createState() => _ChatTabState();
@@ -533,7 +526,7 @@ class _ChatTabState extends State<ChatTab> {
 }
 
 // ===========================================
-// 📝 قسم المناشير - من السيرفر + لايك
+// 📝 قسم المناشير
 // ===========================================
 class PostsTab extends StatefulWidget {
   final String username; final bool isAdmin; PostsTab({required this.username, required this.isAdmin}); @override _PostsTabState createState() => _PostsTabState();
@@ -586,7 +579,7 @@ class _PostsTabState extends State<PostsTab> {
 }
 
 // ===========================================
-// ⚙️ مركز التطبيق - شحن + سحب + اكواد
+// ⚙️ مركز التطبيق
 // ===========================================
 class AppCenterTab extends StatefulWidget {
   final String username; final int coins; final bool isAdmin; final Function(int) updateCoins;
@@ -641,5 +634,4 @@ class _AppCenterTabState extends State<AppCenterTab> {
       _sectionTitle("📱 عن التطبيق"),
       _settingCard(Icons.info, "اصدار التطبيق", "v1.0.0", Colors.grey, () {}),
       _settingCard(Icons.description, "الشروط والاحكام", "اقرأ", Colors.grey, () => _showComingSoon(context, "الشروط")),
-      _settingCard(Icons.privacy_tip, "سياسة الخصوصية", "اقرأ", Colors.grey, () => _showComingSoon(context, "الخصوصية")),
-      if (
+      _settingCard(Icons.privacy_tip, "سياسة الخصوصية", "اق
