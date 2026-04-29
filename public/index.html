@@ -3,159 +3,87 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>إمبراطورية السبع - النظام المتكامل V3</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <title>إمبراطورية السبع - تسجيل الدخول</title>
     <style>
-        :root {
-            --gold: linear-gradient(135deg, #f3cf4b 0%, #b58921 100%);
-            --bg-dark: #050a0f;
-            --panel-bg: #101520;
-            --text-gold: #f3cf4b;
-            --neon-pink: #ff00ff;
-            --neon-blue: #00ffff;
-        }
-
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: var(--bg-dark); color: #fff; overflow-x: hidden; }
-
-        /* شاشة الترحيب */
-        #welcomeScreen {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: #000; display: flex; flex-direction: column; justify-content: center; align-items: center;
-            z-index: 9999; animation: fadeOut 1s ease-in-out 4s forwards;
-        }
-        .welcome-text {
-            font-size: 32px; font-weight: bold; text-align: center; color: var(--neon-blue);
-            text-shadow: 0 0 20px var(--neon-blue); z-index: 2;
-        }
-
-        /* حاوية الصفحات */
-        .page { display: none; min-height: 100vh; padding-bottom: 70px; }
-        .page.active { display: block; }
-
-        /* الهيدر */
-        .header { background: var(--panel-bg); padding: 15px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--neon-pink); }
-        .coin-pill { background: var(--gold); color: #000; padding: 5px 15px; border-radius: 20px; font-weight: bold; font-size: 14px; }
-
-        /* نموذج الدخول */
-        .auth-container { padding: 30px; text-align: center; margin-top: 50px; }
-        .auth-box { background: var(--panel-bg); border: 2px solid var(--neon-pink); border-radius: 20px; padding: 25px; box-shadow: 0 0 20px rgba(255, 0, 255, 0.2); }
-        input { width: 100%; padding: 12px; margin: 10px 0; border-radius: 10px; border: 1px solid #333; background: #0a0a14; color: #fff; }
-        .btn-main { width: 100%; padding: 15px; background: linear-gradient(90deg, var(--neon-pink), #9d00ff); border: none; border-radius: 10px; color: #fff; font-weight: bold; cursor: pointer; margin-top: 10px; }
-
-        /* قائمة الغرف */
-        .room-card { background: #161b29; margin: 15px; padding: 15px; border-radius: 15px; display: flex; align-items: center; border: 1px solid rgba(255,255,255,0.05); }
-        .room-img { width: 50px; height: 50px; border-radius: 10px; border: 2px solid var(--neon-blue); }
-        .room-info { flex: 1; margin-right: 15px; }
-
-        /* شريط التنقل السفلي */
-        .bottom-nav { position: fixed; bottom: 0; width: 100%; background: var(--panel-bg); display: flex; justify-content: space-around; padding: 10px 0; border-top: 1px solid #333; z-index: 1000; }
-        .nav-item { text-align: center; color: #888; font-size: 12px; cursor: pointer; }
-        .nav-item.active { color: var(--neon-blue); }
-        .nav-item i { font-size: 20px; display: block; margin-bottom: 4px; }
-
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #0a0a14; color: #fff; min-height: 100vh; overflow-x: hidden; }
+        #welcomeScreen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #000; display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 9999; animation: fadeOut 1s ease-in-out 6s forwards; overflow: hidden; }
+       .welcome-text { font-size: 42px; font-weight: bold; text-align: center; background: linear-gradient(90deg, #ff00ff, #00ffff, #ff00ff); background-size: 200% 200%; -webkit-background-clip: text; -webkit-text-fill-color: transparent; animation: gradientMove 2s ease infinite, scaleIn 1s ease; margin-bottom: 30px; text-shadow: 0 0 30px rgba(255, 0, 255, 1), 0 0 60px rgba(0, 255, 255, 0.8); padding: 0 20px; z-index: 2; position: absolute; top: 8%; }
+       .dance-video { width: 100%; height: 100%; object-fit: cover; position: absolute; top: 0; left: 0; z-index: 1; filter: brightness(0.7); }
+        #welcomeScreen::after { content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.3); z-index: 1; }
+        @keyframes gradientMove { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
+        @keyframes scaleIn { 0% { transform: scale(0); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
         @keyframes fadeOut { to { opacity: 0; visibility: hidden; } }
+        #customAlert { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); display: none; justify-content: center; align-items: center; z-index: 10000; }
+       .alert-box { background: #141428; border: 2px solid #00ffff; border-radius: 15px; padding: 30px; text-align: center; box-shadow: 0 0 30px rgba(0, 255, 255, 0.5); animation: popIn 0.3s ease; max-width: 350px; margin: 20px; }
+       .alert-box h3 { color: #00ffff; font-size: 22px; margin-bottom: 15px; }
+       .alert-box p { color: #fff; font-size: 16px; margin-bottom: 20px; }
+       .alert-box button { padding: 10px 30px; background: linear-gradient(90deg, #ff00ff, #9d00ff); border: none; border-radius: 8px; color: white; font-size: 16px; font-weight: bold; cursor: pointer; }
+        @keyframes popIn { 0% { transform: scale(0.5); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
+       .container { max-width: 450px; margin: 0 auto; padding: 20px; opacity: 0; animation: fadeIn 1s ease 6.5s forwards; }
+        @keyframes fadeIn { to { opacity: 1; } }
+       .logo { text-align: center; font-size: 32px; font-weight: bold; margin: 20px 0; background: linear-gradient(90deg, #ff00ff, #00ffff); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+       .form-box { background: #141428; border: 2px solid #ff00ff; border-radius: 15px; padding: 25px; box-shadow: 0 0 20px rgba(255, 0, 255, 0.3); }
+        input, select { width: 100%; padding: 12px; margin: 8px 0; border: 2px solid #ff00ff; border-radius: 8px; background: #0f0f1e; color: white; font-size: 16px; outline: none; transition: 0.3s; }
+        input:focus, select:focus { border-color: #00ffff; box-shadow: 0 0 10px rgba(0, 255, 255, 0.5); }
+        input:read-only { background: #1a1a2e; cursor: not-allowed; border-color: #555; }
+        label { color: #ff00ff; font-size: 14px; display: block; margin-top: 10px; margin-bottom: -5px; padding-right: 5px; }
+        button { width: 100%; padding: 14px; margin-top: 15px; background: linear-gradient(90deg, #ff00ff, #9d00ff); border: none; border-radius: 8px; color: white; font-size: 18px; font-weight: bold; cursor: pointer; transition: 0.3s; }
+        button:hover { transform: scale(1.03); box-shadow: 0 0 15px rgba(255, 0, 255, 0.6); }
+       .switch { text-align: center; margin-top: 15px; color: #aaa; font-size: 14px; }
+       .switch span { color: #00ffff; cursor: pointer; font-weight: bold; text-decoration: underline; }
+        h2 { color: #ff00ff; text-align: center; margin-bottom: 20px; font-size: 24px; }
+        #loginForm { display: block; }
+        #registerForm { display: none; }
     </style>
 </head>
 <body>
-
     <div id="welcomeScreen">
-        <div class="welcome-text">السبع الحلبي يرحب بكم 🔥</div>
+        <div class="welcome-text">السبع الحلبي يرحب بكم</div>
+        <video class="dance-video" autoplay muted loop playsinline>
+            <source src="https://assets.mixkit.co/videos/8713/8713-720.mp4" type="video/mp4">
+        </video>
     </div>
-
-    <div id="loginPage" class="page active">
-        <div class="auth-container">
-            <h1 style="color: var(--neon-pink); margin-bottom: 20px;">إمبراطورية السبع</h1>
-            <div class="auth-box">
+    <div id="customAlert">
+        <div class="alert-box">
+            <h3 id="alertTitle">تطبيق السبع</h3>
+            <p id="alertMsg"></p>
+            <button onclick="closeAlert()">حسناً</button>
+        </div>
+    </div>
+    <div class="container">
+        <div class="logo">إمبراطورية السبع</div>
+        <div class="form-box">
+            <div id="loginForm">
                 <h2>تسجيل الدخول</h2>
-                <input type="text" id="username" placeholder="اسم المستخدم (أبو نمر)">
-                <input type="password" placeholder="كلمة السر">
-                <button class="btn-main" onclick="navigateTo('roomsPage')">دخول الملك 🔥</button>
+                <input type="email" id="loginEmail" placeholder="الإيميل">
+                <input type="password" id="loginPassword" placeholder="كلمة السر">
+                <button onclick="handleAuth('/api/login', 'loginEmail', 'loginPassword')">دخول</button>
+                <div class="switch">ما عندك حساب؟ <span onclick="toggleForm('register')">انشاء حساب</span></div>
+            </div>
+            <div id="registerForm">
+                <h2>انشاء حساب</h2>
+                <input type="text" id="regUsername" placeholder="اسم المستخدم">
+                <input type="email" id="regEmail" placeholder="الإيميل">
+                <input type="password" id="regPassword" placeholder="كلمة السر">
+                <label>الدولة:</label>
+                <select id="regCountry"><option value="سوريا">سوريا 🇸🇾</option><option value="تركيا">تركيا 🇹🇷</option><option value="أخرى">أخرى</option></select>
+                <button onclick="handleAuth('/api/register', 'regEmail', 'regPassword', 'regUsername')">تأسيس الحساب</button>
+                <div class="switch">عندك حساب؟ <span onclick="toggleForm('login')">تسجيل دخول</span></div>
             </div>
         </div>
     </div>
-
-    <div id="roomsPage" class="page">
-        <div class="header">
-            <span>الغرف المباشرة</span>
-            <div class="coin-pill">💰 50,250</div>
-        </div>
-        <div class="room-card" onclick="navigateTo('chatRoomPage')">
-            <img src="https://via.placeholder.com/50/ff00ff" class="room-img">
-            <div class="room-info">
-                <div style="font-weight: bold;">مضافة السبع الحلبي 🦅</div>
-                <div style="font-size: 12px; color: #aaa;">أهلاً بالسباع.. سهرة طرب</div>
-            </div>
-            <div style="color: var(--neon-blue); font-size: 12px;"><i class="fas fa-users"></i> 150</div>
-        </div>
-    </div>
-
-    <div id="chatRoomPage" class="page">
-        <div class="header">
-            <button onclick="navigateTo('roomsPage')" style="background:none; border:none; color:white;"><i class="fas fa-arrow-right"></i></button>
-            <span>مضافة السبع</span>
-            <div class="coin-pill">🎁 متجر</div>
-        </div>
-        <div style="height: 300px; display: flex; justify-content: center; align-items: center; flex-direction: column;">
-            <div style="width: 100px; height: 100px; border-radius: 50%; border: 3px solid var(--text-gold); overflow: hidden;">
-                <img src="https://via.placeholder.com/100" style="width:100%;">
-            </div>
-            <h3 style="color: var(--text-gold); margin-top: 10px;">أبو نمر 🎙️</h3>
-        </div>
-        <div style="background: rgba(0,0,0,0.3); height: 200px; margin: 10px; padding: 10px; overflow-y: auto; border-radius: 10px;">
-            <p><span style="color:var(--text-gold)">النظام:</span> أهلاً بك يا سبع في عرينك!</p>
-        </div>
-    </div>
-
-    <div id="profilePage" class="page">
-        <div style="height: 150px; background: var(--gold);"></div>
-        <div style="text-align: center; margin-top: -50px;">
-            <img src="https://via.placeholder.com/100" style="border-radius: 50%; border: 5px solid var(--bg-dark);">
-            <h2 id="displayName">أبو نمر</h2>
-            <p style="color: var(--neon-blue);">ID: 7084474</p>
-        </div>
-        <div style="padding: 20px;">
-            <div style="background: var(--panel-bg); padding: 15px; border-radius: 15px; margin-bottom: 10px;">
-                <span>رصيد شام كاش: </span>
-                <span style="float: left; color: #00ff00;">65% مكتمل</span>
-            </div>
-            <button class="btn-main" style="background: #ff4b2b;" onclick="location.reload()">تسجيل خروج</button>
-        </div>
-    </div>
-
-    <div class="bottom-nav">
-        <div class="nav-item" onclick="navigateTo('roomsPage')">
-            <i class="fas fa-comments"></i>
-            <span>الدردشة</span>
-        </div>
-        <div class="nav-item" onclick="alert('قريباً: الترتيب والمسابقات')">
-            <i class="fas fa-trophy"></i>
-            <span>الترتيب</span>
-        </div>
-        <div class="nav-item" onclick="navigateTo('profilePage')">
-            <i class="fas fa-user"></i>
-            <span>أنا</span>
-        </div>
-    </div>
-
     <script>
-        function navigateTo(pageId) {
-            // إخفاء كل الصفحات
-            document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-            // إظهار الصفحة المطلوبة
-            document.getElementById(pageId).classList.add('active');
-            
-            // إذا كان دخول، حفظ الاسم
-            if(pageId === 'roomsPage') {
-                const name = document.getElementById('username').value;
-                if(name) document.getElementById('displayName').innerText = name;
-            }
+        function showAlert(msg, title = 'تطبيق السبع') { document.getElementById('alertTitle').textContent = title; document.getElementById('alertMsg').textContent = msg; document.getElementById('customAlert').style.display = 'flex'; }
+        function closeAlert() { document.getElementById('customAlert').style.display = 'none'; }
+        function toggleForm(type) { document.getElementById('loginForm').style.display = type === 'login' ? 'block' : 'none'; document.getElementById('registerForm').style.display = type === 'register' ? 'block' : 'none'; }
+        async function handleAuth(url, emailId, passId, userId = null) {
+            const email = document.getElementById(emailId).value;
+            const password = document.getElementById(passId).value;
+            const response = await fetch(url, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ email, password }) });
+            const data = await response.json();
+            showAlert(data.message);
         }
-
-        // إخفاء شاشة الترحيب برمجياً بعد فترة
-        setTimeout(() => {
-            document.getElementById('welcomeScreen').style.display = 'none';
-        }, 5000);
     </script>
 </body>
 </html>
