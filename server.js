@@ -1,48 +1,25 @@
 const express = require('express');
-const mongoose = require('mongoose');
-const cors = require('cors');
-require('dotenv').config();
-
+const path = require('path');
 const app = express();
+
+// 1. إعداد المجلد العام للملفات (HTML, CSS, Images)
+// تأكد أن ملف index.html موجود داخل مجلد اسمه public
+app.use(express.static(path.join(__dirname, 'public')));
+
+// 2. معالجة البيانات القادمة من الواجهة (عشان تسجيل الدخول مستقبلاً)
 app.use(express.json());
-app.use(cors());
+app.use(express.urlencoded({ extended: true }));
 
-// الربط بقاعدة البيانات باستخدام الرابط اللي أنت حاطه بـ Render
-mongoose.connect(process.env.MONGO_URI)
-  .then(() => console.log("تم الاتصال بخزنة السبع بنجاح 🦁"))
-  .catch(err => console.log("خطأ في الاتصال: ", err));
-
-// نموذج بيانات المستخدم (الكوينز والـ VIP)
-const UserSchema = new mongoose.Schema({
-    userId: String,
-    name: String,
-    coins: { type: Number, default: 0 },
-    vip_level: { type: Number, default: 0 }
-});
-
-const User = mongoose.model('User', UserSchema);
-
-// نقطة فحص السيرفر
+// 3. المسار الرئيسي للموقع
 app.get('/', (req, res) => {
-    res.send('سيرفر إمبراطورية السبع شغال وجاهز يا أبو نمر! 🔥');
+    res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
-// دالة جلب بيانات السبع
-app.get('/user/:id', async (req, res) => {
-    const user = await User.findOne({ userId: req.params.id });
-    res.json(user || { msg: "غير موجود" });
+// 4. رسالة ترحيبية عند تشغيل السيرفر (تظهر في الـ Logs عندك)
+const PORT = process.env.PORT || 10000;
+app.listen(PORT, () => {
+    console.log('====================================');
+    console.log(`🚀 تم تشغيل سيرفر إمبراطورية السبع بنجاح`);
+    console.log(`📍 السيرفر شغال على البورت: ${PORT}`);
+    console.log('====================================');
 });
-
-// دالة تحديث الكوينز (شحن أو خصم)
-app.post('/update-coins', async (req, res) => {
-    const { userId, amount } = req.body;
-    const user = await User.findOneAndUpdate(
-        { userId },
-        { $inc: { coins: amount } },
-        { new: true, upsert: true }
-    );
-    res.json({ status: "success", newBalance: user.coins });
-});
-
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => console.log(`السيرفر شغال على بورت ${PORT}`));
