@@ -1,26 +1,16 @@
-async function loadUser() {
-  const res = await fetch(`/api/auth/me`, {
-    method: 'GET',
-    credentials: 'include'
-  });
+const API_URL = 'https://game-server-ayham.onrender.com';
 
-  if (!res.ok) {
-    window.location.href = '/login.html';
-    return;
-  }
+async function loadProfile() {
+    const token = localStorage.getItem('token');
+    if (!token) { window.location.href = 'login.html'; return; }
 
-  const user = await res.json();
-  document.getElementById('welcome').innerText = `اهلا ${user.username}`;
-  document.getElementById('username').innerText = user.username;
+    try {
+        const res = await fetch(`${API_URL}/api/user/profile`, {
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+        const user = await res.json();
+        document.getElementById('username-display').innerText = user.username;
+        document.getElementById('coins-count').innerText = user.coins.toLocaleString();
+    } catch (err) { console.log("خطأ في تحميل البيانات"); }
 }
-
-async function logout() {
-  await fetch(`/api/auth/logout`, {
-    method: 'POST',
-    credentials: 'include'
-  });
-  window.location.href = '/login.html';
-}
-
-window.onload = loadUser;
-document.getElementById('logoutBtn')?.addEventListener('click', logout);
+loadProfile();
