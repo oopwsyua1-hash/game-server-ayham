@@ -1,111 +1,137 @@
 const express = require('express');
-const http = require('http');
-const { Server } = require('socket.io');
+const mongoose = require('mongoose');
 const cors = require('cors');
-const fs = require('fs');
+const bcrypt = require('bcryptjs');
+const jwt = require('jsonwebtoken');
+const path = require('path');
+require('dotenv').config();
 
 const app = express();
-const server = http.createServer(app);
-const io = new Server(server, { cors: { origin: "*" } });
+const PORT = process.env.PORT || 3000;
+const JWT_SECRET = 'ayham-secret-key-2024';
 
+// Middleware
 app.use(cors());
 app.use(express.json());
+app.use(express.static(path.join(__dirname, 'public')));
 
-const DB_PATH = './empire_database.json';
-
-// تأمين قاعدة البيانات لضمان عدم ضياع حسابات "السبع"
-if (!fs.existsSync(DB_PATH)) {
-    fs.writeFileSync(DB_PATH, JSON.stringify({ users: [], rooms: [], agencies: [] }));
+// MongoDB Connection
+const mongoURI = process.env.MONGODB_URI;
+if (!mongoURI) {
+    console.log('❌ MONGODB_URI مو موجود بالـ Environment Variables');
+    process.exit(1);
 }
 
-// --- 1. نظام التسجيل الملكي الكامل (يدعم الجنس، الدولة، والعمر) ---
-app.post('/api/register', (req, res) => {
+mongoose.connect(mongoURI)
+  .then(() => console.log('✅ MongoDB Connected - إمبراطورية السبع V3 شغال'))
+  .catch(err => {
+       console.log('❌ MongoDB Error:', err.message);
+       process.exit(1);
+   });
+
+// --- User Schema المعدل ليكون ملكي ---
+const userSchema = new mongoose.Schema({
+    username: { type: String, required: true },
+    lastName: { type: String, required: true },
+    email: { type: String, required: true, unique: true },
+    password: { type: String, required: true },
+    country: { type: String, required: true },
+    birthDate: { type: String, required: true },
+    age: { type: Number, required: true },
+    gender: { type: String, required: true },
+    
+    // إضافات إمبراطورية السبع V3 👑
+    coins: { type: Number, default: 0 }, 
+    diamonds: { type: Number, default: 0 }, 
+    role: { type: String, default: 'USER' }, // USER, AGENT, MODERATOR, ADMIN, OWNER
+    isVIP: { type: Boolean, default: false },
+    vipType: { type: String, default: 'none' }, // gold, silver, crown
+    supportPoints: { type: Number, default: 0 }, // لتسكير التارجت
+    
+    createdAt: { type: Date, default: Date.now }
+});
+
+const User = mongoose.model('User', userSchema);
+
+// --- APIs التسجيل والدخول ---
+app.post('/api/register', async (req, res) => {
     try {
-        const data = JSON.parse(fs.readFileSync(DB_PATH));
-        const { username, email, password, gender, country, birth_date } = req.body;
+        const { username, lastName, email, password, country, birthDate, age, gender } = req.body;
+        const existingUser = await User.findOne({ email });
+        if (existingUser) return res.status(400).json({ error: 'الايميل مستخدم من قبل' });
 
-        if (data.users.find(u => u.email === email)) {
-            return res.status(400).json({ message: "هذا الإيميل مسجل مسبقاً يا وحش" });
-        }
+        const hashedPassword = await bcrypt.hash(password, 10);
+        const newUser = new User({ username, lastName, email, password: hashedPassword, country, birthDate, age, gender });
+        await newUser.save();
 
-        const newUser = {
-            id: Math.floor(100000000 + Math.random() * 900000000), // ID ملكي عشوائي
-            username, 
-            email, 
-            password, 
-            gender: gender || "ذكر ♂️", 
-            country: country || "غير محدد 🌍", 
-            birth_date: birth_date || "",
-            coins: 500,        // رصيد ترحيبي مجاني
-            diamonds: 0,      // الماس المستلم من الهدايا (للسحب كاش)
-            wealth_lv: 1,     // لفل الثروة (يزيد عند صرف الكوينز)
-            charm_lv: 1,      // لفل الشعبية (يزيد عند استلام الهدايا)
-            vip: "NONE",      // مستوى التميز
-            frame: "default", // إطار الصورة الشخصية
-            entry_effect: "none", // سيارة الدخول الفخمة
-            bio: "مرحباً بك في إمبراطورية السبع",
-            created_at: new Date()
-        };
-
-        data.users.push(newUser);
-        fs.writeFileSync(DB_PATH, JSON.stringify(data, null, 2));
-        
-        res.status(200).json({ message: "تم إنشاء الحساب الملكي بنجاح", user: newUser });
+        const token = jwt.sign({ userId: newUser._id }, JWT_SECRET);
+        res.json({ token, user: newUser });
     } catch (error) {
-        res.status(500).json({ message: "خطأ داخلي في السيرفر" });
+        res.status(500).json({ error: 'خطأ بالسيرفر' });
     }
 });
 
-// --- 2. نظام تسجيل الدخول ---
-app.post('/api/login', (req, res) => {
-    const data = JSON.parse(fs.readFileSync(DB_PATH));
-    const { email, password } = req.body;
-    const user = data.users.find(u => u.email === email && u.password === password);
-
-    if (user) {
-        res.json({ message: "أهلاً بك مجدداً يا سبع", user });
-    } else {
-        res.status(401).json({ message: "خطأ في الإيميل أو كلمة السر" });
+app.post('/api/login', async (req, res) => {
+    try {
+        const { email, password } = req.body;
+        const user = await User.findOne({ email });
+        if (!user || !(await bcrypt.compare(password, user.password))) {
+            return res.status(400).json({ error: 'الايميل او كلمة السر غلط' });
+        }
+        const token = jwt.sign({ userId: user._id }, JWT_SECRET);
+        res.json({ token, user });
+    } catch (error) {
+        res.status(500).json({ error: 'خطأ بالسيرفر' });
     }
 });
 
-// --- 3. محرك الغرف الصوتية والدردشة الفورية (Socket.io) ---
-io.on('connection', (socket) => {
-    // الانضمام لغرفة صوتية
-    socket.on('join_room', ({ roomId, user }) => {
-        socket.join(roomId);
-        io.to(roomId).emit('user_joined', { user, message: `السبع ${user.username} دخل الغرفة` });
-    });
+// --- نظام الاتصالات (الشب يدفع والبنت مجاني) ---
+app.post('/api/call/start', async (req, res) => {
+    try {
+        const token = req.headers.authorization?.split(' ')[1];
+        const decoded = jwt.verify(token, JWT_SECRET);
+        const user = await User.findById(decoded.userId);
 
-    // إرسال هدايا متحركة (SVGA/Lottie)
-    socket.on('send_gift', ({ roomId, giftData, senderId, receiverId }) => {
-        // يتم هنا خصم الكوينز من المرسل وإضافتها كأرباح (ماس) للمستلم
-        io.to(roomId).emit('display_gift', { giftData, from: senderId });
-    });
-
-    // نظام التحدي والـ PK (التركيت)
-    socket.on('start_pk', (roomId) => {
-        io.to(roomId).emit('pk_started', { timer: 300 }); // تحدي مدته 5 دقائق
-    });
-
-    socket.on('disconnect', () => {
-        console.log('مستخدم غادر الإمبراطورية');
-    });
+        if (user.gender === 'male') {
+            if (user.coins < 50) return res.status(400).json({ error: 'رصيدك ما بيكفي للمكالمة' });
+            user.coins -= 50; 
+            await user.save();
+        }
+        res.json({ success: true, balance: user.coins });
+    } catch (error) {
+        res.status(401).json({ error: 'خطأ في التصريح' });
+    }
 });
 
-// --- 4. نظام شحن الوكلاء (Agents) ---
-app.post('/api/agent/topup', (req, res) => {
-    const { targetEmail, amount, agentKey } = req.body;
-    // منطق التحقق من مفتاح الوكيل وشحن الحساب فوراً
-    res.json({ success: true, message: `تم شحن ${amount} كوينز للحساب` });
+// --- نظام أعلى القمة (Leaderboard) ---
+app.get('/api/leaderboard', async (req, res) => {
+    try {
+        const topUsers = await User.find().sort({ coins: -1 }).limit(10).select('username coins gender');
+        res.json({ topUsers });
+    } catch (error) {
+        res.status(500).json({ error: 'خطأ بجلب البيانات' });
+    }
 });
 
-// --- 5. الصفحة الرئيسية للسيرفر (لمنع خطأ Cannot GET /) ---
-app.get('/', (req, res) => {
-    res.send('<h1 style="text-align:center; margin-top:50px; color:#f1c40f;">👑 سيرفر إمبراطورية السبع V3 يعمل بنجاح 👑</h1>');
+// --- نظام سحب الرواتب (شام كاش) ---
+app.post('/api/withdraw/sham-cash', async (req, res) => {
+    try {
+        const token = req.headers.authorization?.split(' ')[1];
+        const decoded = jwt.verify(token, JWT_SECRET);
+        const user = await User.findById(decoded.userId);
+
+        if (user.supportPoints < 100000) return res.status(400).json({ error: 'ما وصلت للتارجت المطلوب للسحب' });
+        
+        // منطق السحب (إرسال إشعار للمالك أبو نمر)
+        res.json({ success: true, message: 'طلب السحب قيد المعالجة للتحويل عبر شام كاش' });
+    } catch (error) {
+        res.status(401).json({ error: 'خطأ في التصريح' });
+    }
 });
 
-const PORT = process.env.PORT || 3000;
-server.listen(PORT, () => {
-    console.log(`[OK] Empire Server V3 started on port ${PORT}`);
-});
+// Routes الصفحات
+app.get('/', (req, res) => res.sendFile(path.join(__dirname, 'public', 'index.html')));
+app.get('/login', (req, res) => res.sendFile(path.join(__dirname, 'public', 'login.html')));
+app.get('/me', (req, res) => res.sendFile(path.join(__dirname, 'public', 'me.html')));
+
+app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
