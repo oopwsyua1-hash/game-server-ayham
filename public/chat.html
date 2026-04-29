@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>دردشة الإمبراطورية</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        html, body { overscroll-behavior: none; overflow: hidden; width: 100%; height: 100%; background: #050a0f; color: #fff; font-family: 'Segoe UI', sans-serif; margin: 0; }
+        
+        /* الهيدر مع أزرار المكالمات */
+        .chat-header {
+            padding: 15px; background: #101520; display: flex; align-items: center;
+            border-bottom: 2px solid #ff00ff; box-shadow: 0 4px 15px rgba(255, 0, 255, 0.2);
+        }
+        .user-info-header { flex: 1; display: flex; align-items: center; gap: 10px; }
+        .user-info-header img { width: 40px; height: 40px; border-radius: 50%; border: 1px solid #00ffff; }
+        .call-icons { display: flex; gap: 18px; font-size: 18px; color: #00ffff; margin-left: 10px; }
+        .call-icons i:active { color: #ff00ff; transform: scale(1.2); }
+
+        /* منطقة الرسائل */
+        .chat-container { height: calc(100vh - 140px); overflow-y: auto; padding: 15px; display: flex; flex-direction: column; gap: 10px; }
+        .msg { max-width: 80%; padding: 10px 15px; border-radius: 15px; font-size: 14px; position: relative; animation: fadeIn 0.3s; }
+        .msg.sent { align-self: flex-start; background: linear-gradient(135deg, #9d00ff, #ff00ff); border-bottom-right-radius: 2px; }
+        .msg.received { align-self: flex-end; background: #1a2030; border: 1px solid #333; border-bottom-left-radius: 2px; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* شريط الإدخال المطور */
+        .input-area {
+            position: fixed; bottom: 0; width: 100%; background: #101520; padding: 10px;
+            display: flex; align-items: center; gap: 10px; box-sizing: border-box; border-top: 1px solid #333;
+        }
+        .input-area input {
+            flex: 1; background: #050a0f; border: 1px solid #333; padding: 10px 15px;
+            border-radius: 25px; color: #fff; outline: none; transition: 0.3s;
+        }
+        .input-area input:focus { border-color: #ff00ff; }
+        
+        .action-btn { color: #00ffff; font-size: 20px; cursor: pointer; transition: 0.2s; }
+        .action-btn:active { transform: scale(0.8); color: #ff00ff; }
+
+        /* أيقونة التسجيل المتحركة */
+        .recording { color: #ff4b2b; animation: pulse 1s infinite; }
+        @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.5; } 100% { opacity: 1; } }
+
+        /* بوب أب مخصص */
+        #customPop { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 1000; justify-content: center; align-items: center; }
+        .pop-box { background: #141428; border: 2px solid #00ffff; padding: 30px; border-radius: 20px; text-align: center; width: 80%; }
+        .pop-box i { font-size: 50px; color: #00ffff; margin-bottom: 15px; }
+    </style>
+</head>
+<body>
+
+    <div id="customPop">
+        <div class="pop-box">
+            <i id="popIcon" class="fas fa-phone-alt"></i>
+            <h3 id="popTitle">جاري الاتصال...</h3>
+            <p id="popName">حمزة السبع</p>
+            <button onclick="closePop()" style="background:#ff4b2b; border:none; padding:10px 20px; border-radius:10px; color:#fff; margin-top:15px;">إنهاء</button>
+        </div>
+    </div>
+
+    <div class="chat-header">
+        <div class="user-info-header" onclick="window.history.back()">
+            <i class="fas fa-arrow-right"></i>
+            <img src="https://via.placeholder.com/100/00ffff/000000?text=🦁" alt="User">
+            <div>
+                <div style="font-weight: bold; font-size: 14px;">حمزة السبع</div>
+                <div style="font-size: 10px; color: #00ff00;">متصل الآن</div>
+            </div>
+        </div>
+        <div class="call-icons">
+            <i class="fas fa-phone-alt" onclick="startCall('صوتية')"></i>
+            <i class="fas fa-video" onclick="startCall('فيديو')"></i>
+            <i class="fas fa-ellipsis-v"></i>
+        </div>
+    </div>
+
+    <div class="chat-container" id="chatBox">
+        <div class="msg received">هلا يا سبع، كيف الأمور؟</div>
+        <div class="msg sent">بخير يا غالي، عم نجهز الإمبراطورية 🔥</div>
+        <div class="msg received">وحش، بانتظارك بالسهرة!</div>
+    </div>
+
+    <div class="input-area">
+        <label for="imgInput" class="action-btn">
+            <i class="fas fa-image"></i>
+        </label>
+        <input type="file" id="imgInput" hidden accept="image/*" onchange="sendImage(this)">
+
+        <input type="text" id="msgInput" placeholder="اكتب رسالتك...">
+
+        <i class="fas fa-microphone action-btn" id="micBtn" onclick="toggleRecord()"></i>
+        
+        <i class="fas fa-paper-plane action-btn" style="color: #ff00ff;" onclick="sendText()"></i>
+    </div>
+
+    <script>
+        function startCall(type) {
+            document.getElementById('popIcon').className = type === 'صوتية' ? 'fas fa-phone-alt' : 'fas fa-video';
+            document.getElementById('popTitle').innerText = 'مكالمة ' + type + '...';
+            document.getElementById('customPop').style.display = 'flex';
+        }
+        function closePop() { document.getElementById('customPop').style.display = 'none'; }
+
+        function sendText() {
+            let input = document.getElementById('msgInput');
+            if(input.value.trim() !== "") {
+                addMsg(input.value, 'sent');
+                input.value = "";
+            }
+        }
+
+        function addMsg(content, type) {
+            let chatBox = document.getElementById('chatBox');
+            let div = document.createElement('div');
+            div.className = 'msg ' + type;
+            div.innerText = content;
+            chatBox.appendChild(div);
+            chatBox.scrollTop = chatBox.scrollHeight;
+        }
+
+        function sendImage(input) {
+            if (input.files && input.files[0]) {
+                let reader = new FileReader();
+                reader.onload = function(e) {
+                    let chatBox = document.getElementById('chatBox');
+                    let div = document.createElement('div');
+                    div.className = 'msg sent';
+                    div.innerHTML = `<img src="${e.target.result}" style="width:100%; border-radius:10px;">`;
+                    chatBox.appendChild(div);
+                    chatBox.scrollTop = chatBox.scrollHeight;
+                };
+                reader.readAsDataURL(input.files[0]);
+            }
+        }
+
+        let isRecording = false;
+        function toggleRecord() {
+            let mic = document.getElementById('micBtn');
+            isRecording = !isRecording;
+            if(isRecording) {
+                mic.className = "fas fa-microphone recording action-btn";
+                // هنا منطق بدء التسجيل الحقيقي مستقبلاً
+            } else {
+                mic.className = "fas fa-microphone action-btn";
+                addMsg("🎤 رسالة صوتية (0:05)", 'sent');
+            }
+        }
+    </script>
+</body>
+</html>
