@@ -3,143 +3,90 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>إمبراطورية السبع - الملف الشخصي الكامل</title>
+    <title>إمبراطورية السبع - الملف الشخصي</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
-        /* تثبيت الصفحة ومنع الانسحاب */
-        html, body { 
-            overscroll-behavior: none; 
-            overflow-x: hidden; 
-            width: 100%; 
-            height: 100%;
-            background-color: #050a0f;
-            color: #fff;
-            font-family: 'Segoe UI', sans-serif;
-            margin: 0;
-            padding: 0;
-        }
-
-        @keyframes nameGlow {
-            0% { text-shadow: 0 0 5px #fff, 0 0 10px #ff00ff; }
-            50% { text-shadow: 0 0 20px #ff00ff, 0 0 30px #9d00ff; color: #f5d496; }
-            100% { text-shadow: 0 0 5px #fff, 0 0 10px #ff00ff; }
-        }
-
-        /* الهيدر */
-        .header-nav { display: flex; align-items: center; justify-content: space-between; padding: 15px; position: absolute; width: 100%; z-index: 10; box-sizing: border-box; }
-        .btn-back { background: rgba(0,0,0,0.5); border: none; color: #00ffff; width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; backdrop-filter: blur(5px); }
-
-        /* منطقة الغلاف */
-        .cover-area {
-            height: 200px;
-            background: linear-gradient(to bottom, transparent, #050a0f), url('https://via.placeholder.com/800x400/1a1a2e/ffffff?text=غلاف+الإمبراطورية');
-            background-size: cover; background-position: center; position: relative;
-        }
-        .change-cover-btn { position: absolute; top: 70px; left: 15px; background: rgba(0,0,0,0.6); border: 1px solid #00ffff; color: #fff; padding: 5px 10px; border-radius: 8px; font-size: 11px; cursor: pointer; }
+        /* التنسيق الأساسي كما في صورتك */
+        html, body { overscroll-behavior: none; overflow: hidden; width: 100%; height: 100%; background: #050a0f; color: #fff; font-family: 'Segoe UI', sans-serif; margin: 0; }
         
-        /* البروفايل */
+        .header-nav { display: flex; align-items: center; justify-content: space-between; padding: 15px; background: #101520; }
+        
+        .cover-area { height: 180px; background: linear-gradient(to bottom, transparent, #050a0f), url('https://via.placeholder.com/800x400'); background-size: cover; position: relative; }
+        
         .avatar-section { position: absolute; bottom: -40px; right: 20px; }
         .avatar-wrapper { width: 100px; height: 100px; background: linear-gradient(135deg, #ff00ff, #00ffff); border-radius: 50%; padding: 3px; position: relative; }
-        .avatar-wrapper img { width: 100%; height: 100%; border-radius: 50%; border: 3px solid #050a0f; object-fit: cover; }
-        .change-avatar-btn { position: absolute; bottom: 0; right: 0; background: #00ffff; color: #000; width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; border: 2px solid #050a0f; font-size: 12px; }
+        .avatar-wrapper img { width: 100%; height: 100%; border-radius: 50%; border: 3px solid #050a0f; }
+        .edit-icon { position: absolute; bottom: 0; left: 0; background: #00ffff; color: #000; width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center; border: 2px solid #050a0f; }
 
-        .user-header-info { padding: 50px 20px 10px; text-align: right; }
-        .name-row { font-size: 24px; font-weight: bold; display: flex; align-items: center; gap: 8px; animation: nameGlow 3s infinite; }
-        .id-badge { display: inline-block; background: rgba(0, 255, 255, 0.1); padding: 4px 12px; border-radius: 15px; font-size: 12px; color: #00ffff; margin-top: 5px; border: 1px solid rgba(0, 255, 255, 0.3); }
+        .user-name-title { padding: 50px 20px 10px; text-align: right; }
+        .id-tag { background: rgba(0,255,255,0.1); color: #00ffff; padding: 5px 15px; border-radius: 20px; font-size: 12px; display: inline-block; border: 1px solid #00ffff; }
 
-        /* القائمة */
-        .settings-list { padding: 10px 15px; display: flex; flex-direction: column; gap: 12px; overflow-y: auto; height: calc(100% - 350px); }
+        .menu-card { background: #101520; margin: 15px; padding: 15px; border-radius: 15px; border: 1px solid rgba(255,255,255,0.05); }
+        .section-title { color: #ff00ff; margin-bottom: 15px; display: flex; align-items: center; gap: 10px; }
         
-        .menu-card { background: #101520; border-radius: 15px; padding: 15px; border: 1px solid rgba(255, 255, 255, 0.05); }
-        .section-title { color: #ff00ff; font-size: 14px; font-weight: bold; margin-bottom: 12px; display: flex; align-items: center; gap: 8px; }
+        /* شريط البحث والأزرار */
+        .search-box { width: 100%; background: #050a0f; border: 1px solid #333; padding: 12px; border-radius: 10px; color: #fff; margin-bottom: 10px; box-sizing: border-box; }
+        .action-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; }
+        .btn-action { background: #1a2030; border: 1px solid #333; padding: 10px; border-radius: 10px; color: #fff; font-size: 12px; text-align: center; }
 
-        /* شريط البحث */
-        .search-box { width: 100%; background: #0a0a14; border: 1px solid #333; padding: 10px; border-radius: 10px; color: #fff; margin-bottom: 10px; outline: none; }
-
-        /* معلومات الشخص */
-        .info-row { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid rgba(255,255,255,0.05); font-size: 14px; }
-        .info-row span:first-child { color: #888; }
-        .gender-tag { color: #00ffff; font-weight: bold; }
-
-        .agency-buttons { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; }
-        .btn-mini { background: #1a2030; border: 1px solid #333; padding: 10px 5px; border-radius: 10px; color: #fff; font-size: 11px; cursor: pointer; text-align: center; }
-        
-        .btn-logout { background: #ff4b2b; color: white; border: none; padding: 15px; border-radius: 15px; width: 100%; font-weight: bold; margin: 20px 0; cursor: pointer; }
-
-        /* بوب أب مخصص بدون روابط */
-        #custom-popup { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 1000; justify-content: center; align-items: center; }
-        .popup-box { background: #141428; border: 2px solid #ff00ff; border-radius: 15px; padding: 25px; width: 80%; text-align: center; }
-        .popup-box button { background: #00ffff; border: none; padding: 10px 20px; border-radius: 8px; margin-top: 15px; cursor: pointer; }
+        /* شريط التنقل السفلي - هاد اللي كان ناقصك */
+        .bottom-nav { 
+            position: fixed; bottom: 0; width: 100%; background: #101520; 
+            display: flex; justify-content: space-around; padding: 12px 0; 
+            border-top: 1px solid #333; z-index: 100;
+        }
+        .nav-item { text-align: center; color: #888; font-size: 12px; cursor: pointer; flex: 1; }
+        .nav-item.active { color: #ff00ff; }
+        .nav-item i { font-size: 22px; display: block; margin-bottom: 4px; }
     </style>
 </head>
 <body>
 
-    <div id="custom-popup"><div class="popup-box"><p id="popup-text"></p><button onclick="closePopup()">حسناً</button></div></div>
-
     <div class="header-nav">
-        <button class="btn-back" onclick="window.history.back()"><i class="fas fa-arrow-right"></i></button>
+        <i class="fas fa-arrow-right"></i>
         <div style="font-weight: bold;">إعدادات الحساب</div>
-        <div style="width: 40px;"></div>
+        <div style="width: 20px;"></div>
     </div>
 
-    <div class="cover-area" id="roomCover">
-        <button class="change-cover-btn" onclick="document.getElementById('coverInput').click()"><i class="fas fa-camera"></i> تغيير غلاف الغرف</button>
-        <input type="file" id="coverInput" hidden onchange="updateImage(this, 'roomCover', true)">
-        
+    <div class="cover-area">
         <div class="avatar-section">
             <div class="avatar-wrapper">
-                <img src="https://via.placeholder.com/150" id="userAvatar">
-                <div class="change-avatar-btn" onclick="document.getElementById('avatarInput').click()"><i class="fas fa-pen"></i></div>
-                <input type="file" id="avatarInput" hidden onchange="updateImage(this, 'userAvatar', false)">
+                <img src="https://via.placeholder.com/150" alt="أبو نمر">
+                <div class="edit-icon"><i class="fas fa-pen"></i></div>
             </div>
         </div>
     </div>
 
-    <div class="user-header-info">
-        <div class="name-row"><span id="displayName">أبو نمر</span><i class="fas fa-certificate" style="color:#f1c40f;"></i></div>
-        <div class="id-badge">ID: <span id="displayID">7084474</span></div>
+    <div class="user-name-title">
+        <h2 style="margin:0;">أبو نمر ☀️</h2>
+        <div class="id-tag">ID: 7084474</div>
     </div>
 
-    <div class="settings-list">
-        
-        <div class="menu-card">
-            <div class="section-title"><i class="fas fa-users-cog"></i> مركز الوكالات</div>
-            <input type="text" class="search-box" placeholder="بحث عن وكالات...">
-            <div class="agency-buttons">
-                <div class="btn-mini" onclick="showMsg('تم الطلب')">انضم للوكالة</div>
-                <div class="btn-mini" onclick="showMsg('جاري الإنشاء')">إنشاء وكالة</div>
-                <div class="btn-mini" onclick="showMsg('اختر وكالة')">نقل لوكالة</div>
-            </div>
+    <div class="menu-card">
+        <div class="section-title"><i class="fas fa-users"></i> مركز الوكالات</div>
+        <input type="text" class="search-box" placeholder="بحث عن وكالات...">
+        <div class="action-grid">
+            <div class="btn-action">انضم للوكالة</div>
+            <div class="btn-action">إنشاء وكالة</div>
+            <div class="btn-action">نقل وكالة</div>
         </div>
-
-        <div class="menu-card">
-            <div class="section-title"><i class="fas fa-id-card"></i> المعلومات الشخصية</div>
-            <div class="info-row"><span>الجنس:</span><span class="gender-tag">ذكر 🦁</span></div>
-            <div class="info-row"><span>الحالة:</span><span>متصل الآن</span></div>
-            <div class="info-row"><span>البريد:</span><span id="userEmail">qusai@example.com</span></div>
-            <div class="info-row"><span>رقم الهاتف:</span><span>+90 5xx xxx xx</span></div>
-        </div>
-
-        <button class="btn-logout" onclick="handleLogout()">تسجيل خروج</button>
-
     </div>
 
-    <script>
-        function showMsg(text) { document.getElementById('popup-text').innerText = text; document.getElementById('custom-popup').style.display = 'flex'; }
-        function closePopup() { document.getElementById('custom-popup').style.display = 'none'; }
-        
-        function updateImage(input, targetId, isBackground) {
-            if (input.files && input.files[0]) {
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    if(isBackground) document.getElementById(targetId).style.backgroundImage = `url(${e.target.result})`;
-                    else document.getElementById(targetId).src = e.target.result;
-                };
-                reader.readAsDataURL(input.files[0]);
-            }
-        }
+    <!-- شريط التنقل السفلي - هاد اللي بيوديك للدردشة -->
+    <div class="bottom-nav">
+        <div class="nav-item" onclick="alert('جاري الانتقال للغرف...')">
+            <i class="fas fa-comments"></i>
+            <span>الغرف</span>
+        </div>
+        <div class="nav-item" onclick="window.location.href='chat.html'">
+            <i class="fas fa-paper-plane"></i>
+            <span>الرسائل</span>
+        </div>
+        <div class="nav-item active">
+            <i class="fas fa-user"></i>
+            <span>أنا</span>
+        </div>
+    </div>
 
-        function handleLogout() { if (confirm("خروج يا أبو نمر؟")) window.location.href = '/'; }
-    </script>
 </body>
 </html>
