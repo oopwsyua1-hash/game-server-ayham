@@ -1,62 +1,67 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>السبع لايف - تسجيل دخول</title>
-  <style>
-    body {
-      background: linear-gradient(180deg, #1a0000, #4a0000);
-      color: #fff;
-      font-family: 'Cairo', sans-serif;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      height: 100vh;
-      margin: 0;
-    }
-   .login-box {
-      background: #00000080;
-      border: 2px solid #FFD700;
-      border-radius: 20px;
-      padding: 40px;
-      text-align: center;
-      width: 300px;
-    }
-    h1 { color: #FFD700; margin-bottom: 30px; }
-    button {
-      background: linear-gradient(45deg, #FFD700, #FF00FF);
-      color: #000;
-      font-size: 20px;
-      padding: 15px;
-      border: none;
-      border-radius: 15px;
-      font-weight: bold;
-      width: 100%;
-      cursor: pointer;
-    }
-  </style>
+    <meta charset="UTF-8">
+    <title>إمبراطورية السبع - التحكم</title>
+    <style>
+        body { background: #0b0f19; color: gold; text-align: center; font-family: sans-serif; }
+        .card { border: 2px solid gold; margin: 20px; padding: 20px; border-radius: 15px; background: #161b29; }
+        button { background: gold; color: black; border: none; padding: 10px 20px; border-radius: 5px; font-weight: bold; cursor: pointer; }
+        input { padding: 10px; border-radius: 5px; border: 1px solid gold; background: #0b0f19; color: white; }
+    </style>
 </head>
 <body>
-  <div class="login-box">
-    <h1>👑 السبع لايف</h1>
-    <p style="color: #FFD700; margin-bottom: 20px;">غرف صوتية VIP</p>
-    <button id="ownerLoginBtn">دخول المالك مباشر 👑</button>
-  </div>
 
-  <script>
-    document.getElementById('ownerLoginBtn').onclick = async () => {
-      const res = await fetch('/api/owner-login', { method: 'POST' });
-      const data = await res.json();
-      localStorage.setItem('token', data.token);
-      localStorage.setItem('user', JSON.stringify(data.user));
+    <div class="card">
+        <h2>👑 حساب الإمبراطور 👑</h2>
+        <p>رصيدك الحالي: <span id="balance">0</span> 💰</p>
+        <input type="text" id="userId" placeholder="دخل آيدي المستخدم" value="12345">
+        <br><br>
+        <input type="number" id="amount" placeholder="المبلغ">
+        <button onclick="addCoins()">شحن كوينز 🔥</button>
+    </div>
 
-      // هاي الخدعة بتفعل الصوت لكل التطبيق
-      const audio = new Audio();
-      audio.play().catch(() => {});
+    <script>
+        // رابط السيرفر تبعك اللي طلع بالصورة يا أبو نمر
+        const serverUrl = "https://game-server-ayham.onrender.com";
 
-      location.href = '/room.html';
-    }
-  </script>
+        // دالة لجلب الرصيد من السيرفر
+        async function fetchBalance() {
+            const userId = document.getElementById('userId').value;
+            try {
+                const response = await fetch(`${serverUrl}/user/${userId}`);
+                const data = await response.json();
+                if (data.coins !== undefined) {
+                    document.getElementById('balance').innerText = data.coins;
+                } else {
+                    document.getElementById('balance').innerText = "0 (جديد)";
+                }
+            } catch (e) {
+                console.error("السيرفر لسه عم يصحى.. استنى شوي");
+            }
+        }
+
+        // دالة شحن الكوينز وإرسالها للسيرفر
+        async function addCoins() {
+            const userId = document.getElementById('userId').value;
+            const amount = parseInt(document.getElementById('amount').value);
+
+            const response = await fetch(`${serverUrl}/update-coins`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ userId, amount })
+            });
+
+            const result = await response.json();
+            if (result.status === "success") {
+                alert("تم شحن الخزنة يا سبع!");
+                fetchBalance(); // تحديث الرصيد عالشاشة
+            }
+        }
+
+        // تحديث الرصيد كل 5 ثواني تلقائياً
+        setInterval(fetchBalance, 5000);
+        fetchBalance();
+    </script>
 </body>
 </html>
