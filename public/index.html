@@ -64,7 +64,6 @@
             border: 1px solid #a855f7;
         }
 
-        /* تعديل مقاس الصورة الشخصية لتكون أضخم كما في طلبك */
         .avatar-wrapper {
             position: absolute;
             bottom: -70px;
@@ -145,7 +144,23 @@
             border-color: #a855f7;
         }
 
-        /* تنسيق أزرار التحكم الجديدة */
+        /* تنسيق الاختيارات والرزنامة */
+        .hidden-input { display: none; }
+        
+        .modal-select {
+            display: none;
+            position: fixed;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            background: #1a1a2e;
+            padding: 25px;
+            border-radius: 20px;
+            z-index: 2000;
+            border: 2px solid #a855f7;
+            width: 80%;
+            text-align: center;
+        }
+
         .footer-actions {
             display: flex;
             gap: 15px;
@@ -168,27 +183,20 @@
         }
         .btn-back { background: #1e293b; border: 1px solid #334155; }
         .btn-logout { background: #7f1d1d; border: 1px solid #991b1b; }
-        .btn-action:active { transform: scale(0.95); }
-
-        #countrySelect {
-            display: none;
-            position: fixed;
-            top: 50%; left: 50%;
-            transform: translate(-50%, -50%);
-            background: #1a1a2e;
-            color: white;
-            padding: 25px;
-            border-radius: 20px;
-            z-index: 1000;
-            border: 2px solid #a855f7;
-            max-height: 400px;
-            width: 80%;
-            overflow-y: auto;
-            box-shadow: 0 0 50px rgba(0,0,0,0.8);
-        }
 
         .editable:hover { color: #a855f7; cursor: pointer; text-decoration: underline; }
         #avatarInput, #coverInput { display: none; }
+        
+        /* ستايل الرزنامة */
+        input[type="date"] {
+            background: #050a0f;
+            color: white;
+            border: 1px solid #a855f7;
+            padding: 10px;
+            border-radius: 10px;
+            width: 100%;
+            margin-top: 10px;
+        }
     </style>
 </head>
 <body>
@@ -199,7 +207,6 @@
             <div class="cover-overlay"><i class="fas fa-camera"></i> تغيير غلاف الإمبراطورية</div>
             <input type="file" id="coverInput" accept="image/*" onchange="previewCover(event)">
             
-            <!-- الصورة الشخصية (الأفاتار) المقاس المعدل -->
             <div class="avatar-wrapper" onclick="event.stopPropagation(); triggerAvatarUpload();">
                 <img src="https://via.placeholder.com/150" id="avatarImg" alt="Avatar">
                 <input type="file" id="avatarInput" accept="image/*" onchange="previewAvatar(event)">
@@ -229,14 +236,15 @@
                 <i class="fas fa-info-circle"></i> البيانات الأساسية
             </h3>
             <div class="info-grid">
+                <div class="info-item" onclick="showGenderModal()">
+                    <i class="fas fa-venus-mars" style="color: #a855f7;"></i> <span id="userGender">ذكر</span>
+                </div>
+                <div class="info-item" onclick="triggerDatePicker()">
+                    <i class="fas fa-calendar-alt" style="color: #a855f7;"></i> <span id="userAge">23 سنة</span>
+                    <input type="date" id="birthDateInput" class="hidden-input" onchange="calculateAge(this.value)">
+                </div>
                 <div class="info-item" onclick="editField('userHeight', 'الطول')">
                     <i class="fas fa-ruler-vertical" style="color: #a855f7;"></i> <span id="userHeight">193cm</span>
-                </div>
-                <div class="info-item" onclick="editField('userAge', 'العمر')">
-                    <i class="fas fa-birthday-cake" style="color: #a855f7;"></i> <span id="userAge">23 سنة</span>
-                </div>
-                <div class="info-item">
-                    <i class="fas fa-heart" style="color: #ef4444;"></i> في علاقة
                 </div>
                 <div class="info-item" onclick="chooseCountry()">
                     <i class="fas fa-map-marker-alt" style="color: #3b82f6;"></i> <span id="userLocation">Bursa, TR</span>
@@ -244,7 +252,6 @@
             </div>
         </div>
 
-        <!-- أزرار التحكم المضافة -->
         <div class="footer-actions">
             <button class="btn-action btn-back" onclick="window.history.back()">
                 <i class="fas fa-arrow-right"></i> رجوع
@@ -255,34 +262,59 @@
         </div>
     </div>
 
+    <!-- مودال اختيار الجنس -->
+    <div id="genderModal" class="modal-select">
+        <h3 style="color: #a855f7;">اختر الجنس</h3>
+        <button class="btn-action" style="background: #3b82f6; margin-bottom: 10px;" onclick="setGender('ذكر ♂️')">ذكر ♂️</button>
+        <button class="btn-action" style="background: #ec4899;" onclick="setGender('أنثى ♀️')">أنثى ♀️</button>
+    </div>
+
     <!-- قائمة اختيار الدول -->
-    <select id="countrySelect" onchange="updateCountry()">
-        <option value="">-- اختر الدولة يا سبع --</option>
+    <select id="countrySelect" class="modal-select" onchange="updateCountry()" style="display: none;">
+        <option value="">-- اختر الدولة --</option>
         <option value="السعودية 🇸🇦">السعودية 🇸🇦</option>
         <option value="تركيا 🇹🇷">تركيا 🇹🇷</option>
         <option value="سوريا 🇸🇾">سوريا 🇸🇾</option>
         <option value="العراق 🇮🇶">العراق 🇮🇶</option>
         <option value="مصر 🇪🇬">مصر 🇪🇬</option>
-        <option value="الأردن 🇯🇴">الأردن 🇯🇴</option>
-        <option value="ألمانيا 🇩🇪">ألمانيا 🇩🇪</option>
     </select>
 
     <script>
         const API_URL = 'https://game-server-ayham.onrender.com/api';
 
-        function initID() {
-            let id = localStorage.getItem('fixed_id');
-            if (!id) {
-                id = Math.floor(100000000 + Math.random() * 900000000);
-                localStorage.setItem('fixed_id', id);
-            }
-            document.getElementById('userID').innerText = id;
+        // حساب العمر من الرزنامة
+        function triggerDatePicker() {
+            document.getElementById('birthDateInput').showPicker();
         }
 
+        async function calculateAge(birthDate) {
+            if (!birthDate) return;
+            const birth = new Date(birthDate);
+            const now = new Date();
+            let age = now.getFullYear() - birth.getFullYear();
+            const m = now.getMonth() - birth.getMonth();
+            if (m < 0 || (m === 0 && now.getDate() < birth.getDate())) age--;
+            
+            const ageStr = age + " سنة";
+            document.getElementById('userAge').innerText = ageStr;
+            localStorage.setItem('userAge', ageStr);
+            localStorage.setItem('userBirthDate', birthDate);
+            await updateProfileOnServer({ age: ageStr, birth_date: birthDate });
+        }
+
+        // اختيار الجنس
+        function showGenderModal() { document.getElementById('genderModal').style.display = 'block'; }
+        async function setGender(gender) {
+            document.getElementById('userGender').innerText = gender;
+            localStorage.setItem('userGender', gender);
+            document.getElementById('genderModal').style.display = 'none';
+            await updateProfileOnServer({ gender: gender });
+        }
+
+        // بقية الدوال (الاسم، الدولة، الصور...)
         async function editField(id, label) {
             const el = document.getElementById(id);
             const val = prompt(`تعديل ${label}:`, el.innerText);
-            
             if (val && val.trim() !== "") {
                 el.innerText = val;
                 localStorage.setItem(id, val);
@@ -290,15 +322,11 @@
             }
         }
 
-        function chooseCountry() {
-            document.getElementById('countrySelect').style.display = 'block';
-        }
-
+        function chooseCountry() { document.getElementById('countrySelect').style.display = 'block'; }
         async function updateCountry() {
             const sel = document.getElementById('countrySelect');
-            const loc = document.getElementById('userLocation');
             if(sel.value !== "") {
-                loc.innerText = sel.value;
+                document.getElementById('userLocation').innerText = sel.value;
                 localStorage.setItem('userLocation', sel.value);
                 await updateProfileOnServer({ country: sel.value });
             }
@@ -308,29 +336,23 @@
         async function updateProfileOnServer(data) {
             const token = localStorage.getItem('token');
             if (!token) return;
-
             try {
-                const res = await fetch(`${API_URL}/update-profile`, {
+                await fetch(`${API_URL}/update-profile`, {
                     method: 'POST',
-                    headers: { 
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${token}`
-                    },
+                    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
                     body: JSON.stringify(data)
                 });
-            } catch (err) {
-                console.error("عطل في الاتصال بالسيرفر");
-            }
+            } catch (err) { console.error("عطل بالسيرفر"); }
         }
 
         function userLogout() {
-            if(confirm("هل تريد تسجيل الخروج من الإمبراطورية؟")) {
+            if(confirm("خروج من الإمبراطورية؟")) {
                 localStorage.removeItem('token');
-                window.location.href = 'login.html'; // تأكد من اسم صفحة تسجيل الدخول عندك
+                window.location.href = 'login.html';
             }
         }
 
-        // التعامل مع الصور الشخصية والغلاف
+        // تحميل الصور
         function triggerAvatarUpload() { document.getElementById('avatarInput').click(); }
         function previewAvatar(event) {
             const reader = new FileReader();
@@ -352,13 +374,19 @@
         }
 
         window.onload = function() {
-            initID();
-            const fields = ['userName', 'userBio', 'userHeight', 'userAge', 'userLocation'];
+            const fields = ['userName', 'userBio', 'userHeight', 'userAge', 'userLocation', 'userGender'];
             fields.forEach(f => {
                 if(localStorage.getItem(f)) document.getElementById(f).innerText = localStorage.getItem(f);
             });
             if(localStorage.getItem('savedAvatar')) document.getElementById('avatarImg').src = localStorage.getItem('savedAvatar');
             if(localStorage.getItem('savedCover')) document.getElementById('coverBg').style.backgroundImage = `url('${localStorage.getItem('savedCover')}')`;
+            
+            let id = localStorage.getItem('fixed_id');
+            if (!id) {
+                id = Math.floor(100000000 + Math.random() * 900000000);
+                localStorage.setItem('fixed_id', id);
+            }
+            document.getElementById('userID').innerText = id;
         };
     </script>
 </body>
