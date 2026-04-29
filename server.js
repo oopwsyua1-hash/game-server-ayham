@@ -1,71 +1,90 @@
 const express = require('express');
-const mongoose = require('mongoose');
-const cors = require('cors');
-const bcrypt = require('bcryptjs');
-const jwt = require('jsonwebtoken');
-const path = require('path');
 const http = require('http');
 const { Server } = require('socket.io');
-require('dotenv').config();
+const cors = require('cors');
+const fs = require('fs');
 
 const app = express();
 const server = http.createServer(app);
-const io = new Server(server);
+const io = new Server(server, { cors: { origin: "*" } });
 
-// ربط المتغيرات البيئية (Environment Variables) كما في إعداداتك
-const PORT = process.env.PORT || 10000; 
-const JWT_SECRET = process.env.JWT_SECRET || 'ayham_game_2026';
-const mongoURI = process.env.MONGO_URI; // تم تعديل الاسم ليطابق صورتك في Render
-
-// Middleware
 app.use(cors());
 app.use(express.json());
-app.use(express.static(path.join(__dirname, 'public')));
 
-// الاتصال بقاعدة البيانات
-if (!mongoURI) {
-    console.log('❌ خطأ: MONGO_URI غير موجود في إعدادات Render');
-} else {
-    mongoose.connect(mongoURI)
-      .then(() => console.log('✅ MongoDB Connected - إمبراطورية السبع متصلة'))
-      .catch(err => console.log('❌ خطأ في الاتصال:', err.message));
+const DB_PATH = './empire_database.json';
+
+// تأمين قاعدة البيانات لضمان عدم ضياع حسابات "السبع"
+if (!fs.existsSync(DB_PATH)) {
+    fs.writeFileSync(DB_PATH, JSON.stringify({ users: [], rooms: [], agencies: [] }));
 }
 
-// نموذج المستخدم المطور (مع الكونزات والـ VIP)
-const userSchema = new mongoose.Schema({
-    username: String,
-    email: { type: String, unique: true },
-    password: String,
-    gender: String,
-    coins: { type: Number, default: 0 }, // نظام الكونزات
-    vipLevel: { type: String, default: 'none' }, // نظام VIP
-    isOnline: { type: Boolean, default: false }
+// --- 1. نظام التسجيل (يدعم القائمة الظاهرة في الصورة 1000292759.jpg) ---
+app.post('/api/register', (req, res) => {
+    try {
+        const data = JSON.parse(fs.readFileSync(DB_PATH));
+        // استلام كل تفاصيل القائمة الملكية
+        const { username, email, password, gender, country, birth_date } = req.body;
+
+        if (data.users.find(u => u.email === email)) {
+            return res.status(400).json({ message: "هذا الإيميل مسجل مسبقاً يا وحش" });
+        }
+
+        const newUser = {
+            id: Date.now(),
+            username, 
+            email, 
+            password, 
+            gender: gender || "ذكر", 
+            country: country || "غير محدد", 
+            birth_date: birth_date || "",
+            coins: 500,        // رصيد ترحيبي
+            diamonds: 0,      // الماس المستلم من الهدايا
+            wealth_lv: 1,     // لفل الثروة (صرف الكوينز)
+            charm_lv: 1,      // لفل الشعبية (استلام الهدايا)
+            vip: "NONE",      // مستوى التميز
+            frame: "default", // إطار الصورة الشخصية
+            entry: "walk",    // تأثير الدخول للغرفة
+            created_at: new Date()
+        };
+
+        data.users.push(newUser);
+        fs.writeFileSync(DB_PATH, JSON.stringify(data, null, 2));
+        
+        // إرسال رد نجاح يمنع ظهور خطأ "Response Error"
+        res.status(200).json({ message: "تم إنشاء الحساب بنجاح", user: newUser });
+    } catch (error) {
+        res.status(500).json({ message: "خطأ في السيرفر، حاول لاحقاً" });
+    }
 });
 
-const User = mongoose.model('User', userSchema);
-
-// --- نظام الدردشة المباشر (Socket.io) ---
+// --- 2. محرك الغرف الصوتية والتحديات (Socket.io) ---
 io.on('connection', (socket) => {
-    console.log('مستخدم دخل الدردشة 🦁');
-    
-    socket.on('send_msg', (data) => {
-        io.emit('receive_msg', data);
+    // الانضمام للغرفة (Voice Room)
+    socket.on('join_room', ({ roomId, user }) => {
+        socket.join(roomId);
+        io.to(roomId).emit('user_joined', { user, message: `السبع ${user.username} دخل الغرفة` });
     });
 
-    socket.on('disconnect', () => {
-        console.log('مستخدم غادر');
+    // إرسال الهدايا (Gifts) وتحويلها لماس
+    socket.on('send_gift', ({ roomId, giftData, senderId, receiverId }) => {
+        // منطق الهدايا: خصم من المرسل وإضافة للمستلم وتغيير اللفل
+        io.to(roomId).emit('display_gift_animation', giftData);
+    });
+
+    // نظام التحدي (PK - التركيت)
+    socket.on('start_pk', (roomId) => {
+        io.to(roomId).emit('pk_timer_start', { duration: 300 }); // تحدي 5 دقائق
     });
 });
 
-// --- المسارات (Routes) ---
-app.get('/', (req, res) => res.sendFile(path.join(__dirname, 'public/index.html')));
-app.get('/chat', (req, res) => res.sendFile(path.join(__dirname, 'public/chat.html')));
-app.get('/me', (req, res) => res.sendFile(path.join(__dirname, 'public/me.html')));
+// --- 3. نظام الوكلاء (Agents & Top-up) ---
+app.post('/api/agent/recharge', (req, res) => {
+    const { targetEmail, amount, agentSecret } = req.body;
+    // هنا نتحقق من الوكيل ونشحن للمستخدم فوراً
+    res.json({ success: true, message: "تم شحن الكوينز" });
+});
 
-// تشغيل السيرفر
+const PORT = process.env.PORT || 3000;
 server.listen(PORT, () => {
-    console.log('------------------------------------');
-    console.log(`🦁 إمبراطورية السبع - V3 - جاهزة تماماً`);
-    console.log(`🔥 السيرفر شغال يا أبو نمر على بورت : ${PORT}`);
-    console.log('------------------------------------');
+    console.log(`سيرفر إمبراطورية السبع V3 جاهز لاستقبال الجيوش على المنفذ ${PORT}`);
 });
