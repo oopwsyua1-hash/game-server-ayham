@@ -3,51 +3,159 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>إمبراطورية السبع</title>
+    <title>إمبراطورية السبع - النظام المتكامل V3</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
-        body { background: #050a0f; color: gold; font-family: sans-serif; margin: 0; padding: 0; }
-        .header { background: #101520; padding: 20px; border-bottom: 2px solid gold; }
-        .lion-img { width: 120px; border-radius: 50%; border: 3px solid gold; margin-top: 10px; }
-        .card { background: #161b29; margin: 20px; padding: 20px; border-radius: 15px; box-shadow: 0 0 15px rgba(212, 175, 55, 0.3); }
-        .balance { font-size: 40px; font-weight: bold; color: white; display: block; margin: 10px 0; }
-        input { width: 80%; padding: 10px; border-radius: 8px; border: 1px solid gold; background: #050a0f; color: white; margin-bottom: 10px; }
-        button { background: gold; color: black; border: none; padding: 12px 25px; border-radius: 8px; font-weight: bold; cursor: pointer; width: 85%; }
+        :root {
+            --gold: linear-gradient(135deg, #f3cf4b 0%, #b58921 100%);
+            --bg-dark: #050a0f;
+            --panel-bg: #101520;
+            --text-gold: #f3cf4b;
+            --neon-pink: #ff00ff;
+            --neon-blue: #00ffff;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: var(--bg-dark); color: #fff; overflow-x: hidden; }
+
+        /* شاشة الترحيب */
+        #welcomeScreen {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: #000; display: flex; flex-direction: column; justify-content: center; align-items: center;
+            z-index: 9999; animation: fadeOut 1s ease-in-out 4s forwards;
+        }
+        .welcome-text {
+            font-size: 32px; font-weight: bold; text-align: center; color: var(--neon-blue);
+            text-shadow: 0 0 20px var(--neon-blue); z-index: 2;
+        }
+
+        /* حاوية الصفحات */
+        .page { display: none; min-height: 100vh; padding-bottom: 70px; }
+        .page.active { display: block; }
+
+        /* الهيدر */
+        .header { background: var(--panel-bg); padding: 15px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--neon-pink); }
+        .coin-pill { background: var(--gold); color: #000; padding: 5px 15px; border-radius: 20px; font-weight: bold; font-size: 14px; }
+
+        /* نموذج الدخول */
+        .auth-container { padding: 30px; text-align: center; margin-top: 50px; }
+        .auth-box { background: var(--panel-bg); border: 2px solid var(--neon-pink); border-radius: 20px; padding: 25px; box-shadow: 0 0 20px rgba(255, 0, 255, 0.2); }
+        input { width: 100%; padding: 12px; margin: 10px 0; border-radius: 10px; border: 1px solid #333; background: #0a0a14; color: #fff; }
+        .btn-main { width: 100%; padding: 15px; background: linear-gradient(90deg, var(--neon-pink), #9d00ff); border: none; border-radius: 10px; color: #fff; font-weight: bold; cursor: pointer; margin-top: 10px; }
+
+        /* قائمة الغرف */
+        .room-card { background: #161b29; margin: 15px; padding: 15px; border-radius: 15px; display: flex; align-items: center; border: 1px solid rgba(255,255,255,0.05); }
+        .room-img { width: 50px; height: 50px; border-radius: 10px; border: 2px solid var(--neon-blue); }
+        .room-info { flex: 1; margin-right: 15px; }
+
+        /* شريط التنقل السفلي */
+        .bottom-nav { position: fixed; bottom: 0; width: 100%; background: var(--panel-bg); display: flex; justify-content: space-around; padding: 10px 0; border-top: 1px solid #333; z-index: 1000; }
+        .nav-item { text-align: center; color: #888; font-size: 12px; cursor: pointer; }
+        .nav-item.active { color: var(--neon-blue); }
+        .nav-item i { font-size: 20px; display: block; margin-bottom: 4px; }
+
+        @keyframes fadeOut { to { opacity: 0; visibility: hidden; } }
     </style>
 </head>
 <body>
 
-    <div class="header">
-        <img src="https://i.ibb.co/3S4S1S/lion.jpg" class="lion-img"> <h2>إمبراطورية السبع 🦁</h2>
+    <div id="welcomeScreen">
+        <div class="welcome-text">السبع الحلبي يرحب بكم 🔥</div>
     </div>
 
-    <div class="card" id="login-box">
-        <h3>تسجيل دخول الإمبراطور</h3>
-        <input type="text" id="user-id" placeholder="أدخل الآيدي الخاص بك">
-        <button onclick="login()">دخول 🔥</button>
+    <div id="loginPage" class="page active">
+        <div class="auth-container">
+            <h1 style="color: var(--neon-pink); margin-bottom: 20px;">إمبراطورية السبع</h1>
+            <div class="auth-box">
+                <h2>تسجيل الدخول</h2>
+                <input type="text" id="username" placeholder="اسم المستخدم (أبو نمر)">
+                <input type="password" placeholder="كلمة السر">
+                <button class="btn-main" onclick="navigateTo('roomsPage')">دخول الملك 🔥</button>
+            </div>
+        </div>
     </div>
 
-    <div class="card" id="user-info" style="display:none;">
-        <h3>مرحباً بك يا <span id="display-name">سبع</span></h3>
-        <span>رصيدك من الكوينز:</span>
-        <span class="balance" id="coin-balance">0</span>
-        <p>آيدي الحساب: <span id="display-id">---</span></p>
+    <div id="roomsPage" class="page">
+        <div class="header">
+            <span>الغرف المباشرة</span>
+            <div class="coin-pill">💰 50,250</div>
+        </div>
+        <div class="room-card" onclick="navigateTo('chatRoomPage')">
+            <img src="https://via.placeholder.com/50/ff00ff" class="room-img">
+            <div class="room-info">
+                <div style="font-weight: bold;">مضافة السبع الحلبي 🦅</div>
+                <div style="font-size: 12px; color: #aaa;">أهلاً بالسباع.. سهرة طرب</div>
+            </div>
+            <div style="color: var(--neon-blue); font-size: 12px;"><i class="fas fa-users"></i> 150</div>
+        </div>
+    </div>
+
+    <div id="chatRoomPage" class="page">
+        <div class="header">
+            <button onclick="navigateTo('roomsPage')" style="background:none; border:none; color:white;"><i class="fas fa-arrow-right"></i></button>
+            <span>مضافة السبع</span>
+            <div class="coin-pill">🎁 متجر</div>
+        </div>
+        <div style="height: 300px; display: flex; justify-content: center; align-items: center; flex-direction: column;">
+            <div style="width: 100px; height: 100px; border-radius: 50%; border: 3px solid var(--text-gold); overflow: hidden;">
+                <img src="https://via.placeholder.com/100" style="width:100%;">
+            </div>
+            <h3 style="color: var(--text-gold); margin-top: 10px;">أبو نمر 🎙️</h3>
+        </div>
+        <div style="background: rgba(0,0,0,0.3); height: 200px; margin: 10px; padding: 10px; overflow-y: auto; border-radius: 10px;">
+            <p><span style="color:var(--text-gold)">النظام:</span> أهلاً بك يا سبع في عرينك!</p>
+        </div>
+    </div>
+
+    <div id="profilePage" class="page">
+        <div style="height: 150px; background: var(--gold);"></div>
+        <div style="text-align: center; margin-top: -50px;">
+            <img src="https://via.placeholder.com/100" style="border-radius: 50%; border: 5px solid var(--bg-dark);">
+            <h2 id="displayName">أبو نمر</h2>
+            <p style="color: var(--neon-blue);">ID: 7084474</p>
+        </div>
+        <div style="padding: 20px;">
+            <div style="background: var(--panel-bg); padding: 15px; border-radius: 15px; margin-bottom: 10px;">
+                <span>رصيد شام كاش: </span>
+                <span style="float: left; color: #00ff00;">65% مكتمل</span>
+            </div>
+            <button class="btn-main" style="background: #ff4b2b;" onclick="location.reload()">تسجيل خروج</button>
+        </div>
+    </div>
+
+    <div class="bottom-nav">
+        <div class="nav-item" onclick="navigateTo('roomsPage')">
+            <i class="fas fa-comments"></i>
+            <span>الدردشة</span>
+        </div>
+        <div class="nav-item" onclick="alert('قريباً: الترتيب والمسابقات')">
+            <i class="fas fa-trophy"></i>
+            <span>الترتيب</span>
+        </div>
+        <div class="nav-item" onclick="navigateTo('profilePage')">
+            <i class="fas fa-user"></i>
+            <span>أنا</span>
+        </div>
     </div>
 
     <script>
-        const API = ""; // خليه فاضي لأنه بنفس السيرفر
-
-        async function login() {
-            const id = document.getElementById('user-id').value;
-            if(!id) return alert("دخل الآيدي!");
-
-            const res = await fetch(`/user/${id}`);
-            const data = await res.json();
-
-            document.getElementById('login-box').style.display = 'none';
-            document.getElementById('user-info').style.display = 'block';
-            document.getElementById('display-id').innerText = id;
-            document.getElementById('coin-balance').innerText = data.coins || 0;
+        function navigateTo(pageId) {
+            // إخفاء كل الصفحات
+            document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+            // إظهار الصفحة المطلوبة
+            document.getElementById(pageId).classList.add('active');
+            
+            // إذا كان دخول، حفظ الاسم
+            if(pageId === 'roomsPage') {
+                const name = document.getElementById('username').value;
+                if(name) document.getElementById('displayName').innerText = name;
+            }
         }
+
+        // إخفاء شاشة الترحيب برمجياً بعد فترة
+        setTimeout(() => {
+            document.getElementById('welcomeScreen').style.display = 'none';
+        }, 5000);
     </script>
 </body>
 </html>
