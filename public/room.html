@@ -2,281 +2,138 @@
 <html lang="ar" dir="rtl">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>السبع لايف - غرفة VIP</title>
-  <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>إمبراطورية السبع - التحكم بالمايكات</title>
+  <script src="/socket.io/socket.io.js"></script>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body {
       background: linear-gradient(180deg, #1a0000, #4a0000);
-      color: #fff;
-      font-family: 'Cairo', sans-serif;
-      overflow: hidden;
+      color: #fff; font-family: 'Cairo', sans-serif;
+      overflow: hidden; height: 100vh; display: flex; flex-direction: column;
     }
 
-    /* 1. شاشة دخول VIP */
-   .entry-screen {
-      position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
-      background: #000; z-index: 9999; display: none; justify-content: center; align-items: center;
+    /* لوحة الإعدادات */
+    #settingsPanel {
+      position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
+      background: #111; border: 2px solid #FFD700; border-radius: 15px;
+      padding: 20px; z-index: 10001; display: none; width: 80%; text-align: center;
     }
-   .entry-video {
-      width: 100vw; height: 100vh; object-fit: cover;
-      opacity: 0.75; filter: blur(1px);
-    }
-   .entry-text {
-      color: #FFD700; font-size: 36px; font-weight: bold;
-      text-shadow: 0 0 30px #FFD700; z-index: 10; position: absolute;
+    .settings-btn {
+      background: #FFD700; color: #000; border: none; padding: 10px;
+      margin: 5px; border-radius: 5px; cursor: pointer; font-weight: bold;
     }
 
-    /* 2. المايكات الـ 20 ثابتة */
-   .mics-grid {
+    /* شبكة المايكات المرنة */
+    .mics-grid {
       display: grid;
-      grid-template-columns: repeat(5, 1fr);
-      grid-template-rows: repeat(4, 1fr);
-      gap: 10px;
-      padding: 15px;
-      height: 420px;
-      min-height: 420px;
-      max-height: 420px;
+      grid-template-columns: repeat(4, 1fr); /* الافتراضي 4 بالعرض */
+      gap: 10px; padding: 15px; flex-shrink: 0;
+      max-height: 50vh; overflow-y: auto;
     }
-   .mic {
-      aspect-ratio: 1;
-      background: #1a1a2e;
-      border-radius: 12px;
-      border: 2px solid #FFD700;
-      height: 100%;
-      min-height: 90px;
-      max-height: 90px;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      cursor: pointer;
-      position: relative;
+    .mic {
+      background: #1a1a2e; border-radius: 12px; border: 2px solid #FFD700;
+      height: 85px; display: flex; flex-direction: column;
+      align-items: center; justify-content: center; position: relative;
     }
-   .mic-number {
-      position: absolute;
-      top: 5px;
-      left: 5px;
-      background: #FFD700;
-      color: #000;
-      border-radius: 50%;
-      width: 20px;
-      height: 20px;
-      font-size: 10px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-weight: bold;
+    .mic-number {
+      position: absolute; top: 5px; left: 5px; background: #FFD700;
+      color: #000; border-radius: 50%; width: 18px; height: 18px;
+      font-size: 10px; display: flex; align-items: center; justify-content: center;
     }
-   .mic img { width: 40px; height: 40px; border-radius: 50%; }
-   .mic-name { font-size: 9px; margin-top: 5px; color: #FFD700; }
+    .mic img { width: 40px; height: 40px; border-radius: 50%; border: 1px solid #FFD700; }
+    .mic-name { font-size: 9px; margin-top: 5px; color: #FFD700; }
 
-    /* 3. الشات */
-   .chat-box {
-      background: #00000080;
-      border: 2px solid #FFD700;
-      border-radius: 15px;
-      margin: 15px;
-      height: 200px;
-      display: flex;
-      flex-direction: column
+    /* الشات */
+    .chat-box {
+      flex-grow: 1; background: rgba(0,0,0,0.5);
+      border-top: 2px solid #FFD700; margin-top: 10px;
+      display: flex; flex-direction: column;
     }
-    #chatMessages { flex: 1; overflow-y: auto; padding: 10px; font-size: 12px; }
-   .chat-input { display: flex; padding: 5px; border-top: 1px solid #FFD700; }
-   .chat-input input {
-      flex: 1; background: #000; border: 1px solid #FFD700;
-      color: #fff; border-radius: 5px; padding: 5px;
-    }
-   .chat-input button {
-      background: #FFD700; color: #000; border: none;
-      border-radius: 5px; padding: 5px 10px; margin: 0 5px;
-    }
-
-    /* 4. الهدايا */
-    #giftPanel {
-      display: none; position: fixed; bottom: 0; left: 0; right: 0;
-      background: #000; height: 300px; z-index: 9998;
-      border-top: 2px solid #FFD700;
-    }
-    #giftsList {
-      display: grid; grid-template-columns: repeat(4, 1fr);
-      gap: 10px; padding: 10px;
-    }
-    #giftAnimation {
-      display: none; position: fixed; top: 50%; left: 50%;
-      transform: translate(-50%,-50%); z-index: 10000;
-      pointer-events: none; text-align: center;
-    }
+    #chatMessages { flex: 1; overflow-y: auto; padding: 10px; font-size: 13px; }
+    .chat-input { display: flex; padding: 10px; background: #000; }
+    .chat-input input { flex: 1; background: #111; border: 1px solid #FFD700; color: #fff; border-radius: 20px; padding: 8px 15px; }
+    .chat-input button { background: none; border: none; font-size: 22px; cursor: pointer; margin-left: 10px; }
   </style>
 </head>
 <body>
 
-  <!-- 1. شاشة دخول VIP -->
-  <div class="entry-screen" id="entryScreen">
-    <video class="entry-video" id="entryVideo" playsinline></video>
-    <div class="entry-text" id="entryText"></div>
+  <!-- الهيدر مع زر الإعدادات -->
+  <div style="padding:15px; display:flex; justify-content:space-between; align-items:center; background:#000;">
+    <div style="color:#FFD700; font-weight:bold;">👑 إمبراطورية السبع</div>
+    <button onclick="toggleSettings()" style="background:none; border:none; color:#FFD700; font-size:20px;">⚙️</button>
   </div>
 
-  <!-- الهيدر -->
-  <div style="background:#00000080; border:2px solid #FFD700; border-radius:15px; margin:10px; padding:15px; display:flex; justify-content:space-between">
-    <div style="color:#FFD700; font-weight:bold; font-size:20px">👑 غرفة السبع</div>
-    <div id="userCount" style="color:#FFD700">0 متصل</div>
+  <!-- لوحة التحكم بالمايكات -->
+  <div id="settingsPanel">
+    <h3 style="color:#FFD700; margin-bottom:15px;">إعدادات المايكات</h3>
+    <button class="settings-btn" onclick="updateMicsCount(6)">6 مايكات</button>
+    <button class="settings-btn" onclick="updateMicsCount(8)">8 مايكات</button>
+    <button class="settings-btn" onclick="updateMicsCount(10)">10 مايكات</button>
+    <button class="settings-btn" onclick="updateMicsCount(20)">20 مايك</button>
+    <button class="settings-btn" onclick="updateMicsCount(30)">30 مايك</button>
+    <br><br>
+    <button onclick="toggleSettings()" style="color:#fff; background:red; border:none; padding:5px 15px; border-radius:5px;">إغلاق</button>
   </div>
 
-  <!-- 2. المايكات الـ 20 -->
+  <!-- شبكة المايكات -->
   <div class="mics-grid" id="micsGrid"></div>
 
-  <!-- 3. الشات -->
+  <!-- الشات -->
   <div class="chat-box">
     <div id="chatMessages"></div>
     <div class="chat-input">
-      <button onclick="showGifts()">🎁</button>
-      <input id="chatInput" placeholder="اكتب رسالة...">
-      <button onclick="sendChat()">ارسال</button>
+      <button onclick="alert('قريباً')">🎁</button>
+      <input id="chatInput" placeholder="اكتب رسالة للإمبراطورية...">
+      <button onclick="sendChat()" style="color:#FFD700; font-size:16px;">إرسال</button>
     </div>
   </div>
-
-  <!-- 4. لوحة الهدايا -->
-  <div id="giftPanel">
-    <div style="padding:10px; text-align:center; color:#FFD700; font-weight:bold">🎁 الهدايا</div>
-    <div id="giftsList"></div>
-  </div>
-
-  <!-- 5. انيميشن الهدية -->
-  <div id="giftAnimation"></div>
 
 <script>
 const socket = io();
-const token = localStorage.getItem('token');
-const user = JSON.parse(localStorage.getItem('user'));
-let room = {};
+let currentMics = 8; // العدد الافتراضي
 
-// 1. رسم المايكات الـ 20
-const micsGrid = document.getElementById('micsGrid');
-for (let i = 0; i < 20; i++) {
-  micsGrid.innerHTML += `
-    <div class="mic" onclick="handleMic(${i})" id="mic${i}">
-      <div class="mic-number">${i+1}</div>
-      <div style="font-size:30px">🎤</div>
-      <div class="mic-name">فارغ</div>
-    </div>
-  `;
-}
+function drawMics(count) {
+  const grid = document.getElementById('micsGrid');
+  grid.innerHTML = '';
+  // تعديل التوزيع حسب العدد
+  if (count > 10) grid.style.gridTemplateColumns = 'repeat(5, 1fr)';
+  else grid.style.gridTemplateColumns = 'repeat(4, 1fr)';
 
-// 2. دخول الغرفة
-socket.emit('joinRoom', { roomId: 'VIP-10000', token });
-
-// 3. دخول VIP
-socket.on('vipEntry', (data) => {
-  const screen = document.getElementById('entryScreen');
-  const video = document.getElementById('entryVideo');
-  const text = document.getElementById('entryText');
-
-  video.src = data.video;
-  video.muted = false;
-  video.controls = false;
-  text.textContent = data.text;
-  screen.style.display = 'flex';
-
-  video.play().catch(() => {
-    video.muted = true;
-    video.play().then(() => setTimeout(() => { video.muted = false; }, 500));
-  });
-
-  setTimeout(() => { screen.style.display = 'none'; video.pause(); }, data.duration * 1000);
-});
-
-// 4. تحديث الغرفة
-socket.on('roomUpdate', (data) => {
-  room = data;
-  document.getElementById('userCount').textContent = data.users.length + ' متصل';
-
-  data.mics.forEach((micUser, i) => {
-    const mic = document.getElementById(`mic${i}`);
-    if (micUser && micUser!== 'closed') {
-      mic.innerHTML = `
-        <div class="mic-number">${i+1}</div>
-        <img src="${micUser.avatar}">
-        <div class="mic-name">${micUser.username}</div>
-      `;
-      mic.style.borderColor = '#ff00ff';
-    } else {
-      mic.innerHTML = `
+  for (let i = 0; i < count; i++) {
+    grid.innerHTML += `
+      <div class="mic" id="mic${i}">
         <div class="mic-number">${i+1}</div>
         <div style="font-size:30px">🎤</div>
         <div class="mic-name">فارغ</div>
-      `;
-      mic.style.borderColor = '#FFD700';
+      </div>`;
+  }
+}
+
+function toggleSettings() {
+  const panel = document.getElementById('settingsPanel');
+  panel.style.display = panel.style.display === 'block' ? 'none' : 'block';
+}
+
+function updateMicsCount(count) {
+  currentMics = count;
+  drawMics(count);
+  toggleSettings();
+  // إرسال التحديث للسيرفر ليعرف الجميع بتغيير العدد
+  socket.emit('adminChangeMics', { count }); 
+}
+
+// البدء بـ 8 مايكات
+drawMics(8);
+
+socket.on('roomUpdate', (data) => {
+  // تحديث البيانات على المايكات الموجودة فقط
+  data.mics.forEach((micUser, i) => {
+    const mic = document.getElementById(`mic${i}`);
+    if (mic && micUser && micUser !== 'closed') {
+      mic.innerHTML = `<div class="mic-number">${i+1}</div><img src="${micUser.avatar}"><div class="mic-name">${micUser.username}</div>`;
     }
   });
-});
-
-// 5. المايك
-function handleMic(index) {
-  const micUser = room.mics[index];
-  if (!micUser) {
-    socket.emit('takeMic', { roomId: 'VIP-10000', micIndex: index });
-  } else if (micUser.userId === user._id) {
-    socket.emit('leaveMic', { roomId: 'VIP-10000' });
-  }
-}
-
-// 6. الهدايا
-async function loadGifts() {
-  const res = await fetch('/api/gifts');
-  const gifts = await res.json();
-  const list = document.getElementById('giftsList');
-  list.innerHTML = '';
-  gifts.forEach(g => {
-    list.innerHTML += `
-      <div onclick="sendGift('${g.giftId}')" style="text-align:center; cursor:pointer">
-        <img src="${g.animation}" style="width:40px; height:40px">
-        <div style="color:#fff; font-size:10px">${g.name}</div>
-        <div style="color:#00ffff; font-size:10px">💎${g.price}</div>
-      </div>
-    `;
-  });
-}
-loadGifts();
-
-function showGifts() {
-  document.getElementById('giftPanel').style.display = 'block';
-}
-
-function sendGift(giftId) {
-  const targetMic = room.mics.find(m => m && m!== 'closed');
-  if (targetMic) {
-    socket.emit('sendGift', { roomId: 'VIP-10000', toUserId: targetMic.userId, giftId });
-  }
-  document.getElementById('giftPanel').style.display = 'none';
-}
-
-socket.on('giftAnimation', (data) => {
-  const anim = document.getElementById('giftAnimation');
-  anim.innerHTML = `
-    <img src="${data.gift.animation}" style="width:100px; height:100px">
-    <div style="color:#FFD700; font-weight:bold; font-size:18px; text-shadow:0 0 10px #FFD700">
-      ${data.from.username} اهدى ${data.to.username}
-    </div>
-    <div style="color:#fff; font-size:14px">${data.gift.name}</div>
-  `;
-  anim.style.display = 'block';
-  setTimeout(() => { anim.style.display = 'none'; }, 3000);
-});
-
-// 7. الشات
-socket.on('newMessage', (msg) => {
-  const chat = document.getElementById('chatMessages');
-  const vipBadge = msg.vip >= 1000? '👑' : '';
-  chat.innerHTML += `
-    <div style="margin:5px 0">
-      <span style="color:#FFD700; font-weight:bold">${vipBadge} ${msg.username}</span>
-      <span style="color:#ff00ff; font-size:10px; margin:0 5px">${msg.level}</span>
-      <span style="color:#fff">: ${msg.text}</span>
-    </div>
-  `;
-  chat.scrollTop = chat.scrollHeight;
 });
 
 function sendChat() {
@@ -287,9 +144,10 @@ function sendChat() {
   }
 }
 
-// Enter للارسال
-document.getElementById('chatInput').addEventListener('keypress', (e) => {
-  if (e.key === 'Enter') sendChat();
+socket.on('newMessage', (msg) => {
+  const chat = document.getElementById('chatMessages');
+  chat.innerHTML += `<div><span style="color:#FFD700;">${msg.username}:</span> ${msg.text}</div>`;
+  chat.scrollTop = chat.scrollHeight;
 });
 </script>
 </body>
