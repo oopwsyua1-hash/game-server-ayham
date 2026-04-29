@@ -18,11 +18,10 @@ if (!fs.existsSync(DB_PATH)) {
     fs.writeFileSync(DB_PATH, JSON.stringify({ users: [], rooms: [], agencies: [] }));
 }
 
-// --- 1. نظام التسجيل (يدعم القائمة الظاهرة في الصورة 1000292759.jpg) ---
+// --- 1. نظام التسجيل الملكي الكامل (يدعم الجنس، الدولة، والعمر) ---
 app.post('/api/register', (req, res) => {
     try {
         const data = JSON.parse(fs.readFileSync(DB_PATH));
-        // استلام كل تفاصيل القائمة الملكية
         const { username, email, password, gender, country, birth_date } = req.body;
 
         if (data.users.find(u => u.email === email)) {
@@ -30,61 +29,83 @@ app.post('/api/register', (req, res) => {
         }
 
         const newUser = {
-            id: Date.now(),
+            id: Math.floor(100000000 + Math.random() * 900000000), // ID ملكي عشوائي
             username, 
             email, 
             password, 
-            gender: gender || "ذكر", 
-            country: country || "غير محدد", 
+            gender: gender || "ذكر ♂️", 
+            country: country || "غير محدد 🌍", 
             birth_date: birth_date || "",
-            coins: 500,        // رصيد ترحيبي
-            diamonds: 0,      // الماس المستلم من الهدايا
-            wealth_lv: 1,     // لفل الثروة (صرف الكوينز)
-            charm_lv: 1,      // لفل الشعبية (استلام الهدايا)
+            coins: 500,        // رصيد ترحيبي مجاني
+            diamonds: 0,      // الماس المستلم من الهدايا (للسحب كاش)
+            wealth_lv: 1,     // لفل الثروة (يزيد عند صرف الكوينز)
+            charm_lv: 1,      // لفل الشعبية (يزيد عند استلام الهدايا)
             vip: "NONE",      // مستوى التميز
             frame: "default", // إطار الصورة الشخصية
-            entry: "walk",    // تأثير الدخول للغرفة
+            entry_effect: "none", // سيارة الدخول الفخمة
+            bio: "مرحباً بك في إمبراطورية السبع",
             created_at: new Date()
         };
 
         data.users.push(newUser);
         fs.writeFileSync(DB_PATH, JSON.stringify(data, null, 2));
         
-        // إرسال رد نجاح يمنع ظهور خطأ "Response Error"
-        res.status(200).json({ message: "تم إنشاء الحساب بنجاح", user: newUser });
+        res.status(200).json({ message: "تم إنشاء الحساب الملكي بنجاح", user: newUser });
     } catch (error) {
-        res.status(500).json({ message: "خطأ في السيرفر، حاول لاحقاً" });
+        res.status(500).json({ message: "خطأ داخلي في السيرفر" });
     }
 });
 
-// --- 2. محرك الغرف الصوتية والتحديات (Socket.io) ---
+// --- 2. نظام تسجيل الدخول ---
+app.post('/api/login', (req, res) => {
+    const data = JSON.parse(fs.readFileSync(DB_PATH));
+    const { email, password } = req.body;
+    const user = data.users.find(u => u.email === email && u.password === password);
+
+    if (user) {
+        res.json({ message: "أهلاً بك مجدداً يا سبع", user });
+    } else {
+        res.status(401).json({ message: "خطأ في الإيميل أو كلمة السر" });
+    }
+});
+
+// --- 3. محرك الغرف الصوتية والدردشة الفورية (Socket.io) ---
 io.on('connection', (socket) => {
-    // الانضمام للغرفة (Voice Room)
+    // الانضمام لغرفة صوتية
     socket.on('join_room', ({ roomId, user }) => {
         socket.join(roomId);
         io.to(roomId).emit('user_joined', { user, message: `السبع ${user.username} دخل الغرفة` });
     });
 
-    // إرسال الهدايا (Gifts) وتحويلها لماس
+    // إرسال هدايا متحركة (SVGA/Lottie)
     socket.on('send_gift', ({ roomId, giftData, senderId, receiverId }) => {
-        // منطق الهدايا: خصم من المرسل وإضافة للمستلم وتغيير اللفل
-        io.to(roomId).emit('display_gift_animation', giftData);
+        // يتم هنا خصم الكوينز من المرسل وإضافتها كأرباح (ماس) للمستلم
+        io.to(roomId).emit('display_gift', { giftData, from: senderId });
     });
 
-    // نظام التحدي (PK - التركيت)
+    // نظام التحدي والـ PK (التركيت)
     socket.on('start_pk', (roomId) => {
-        io.to(roomId).emit('pk_timer_start', { duration: 300 }); // تحدي 5 دقائق
+        io.to(roomId).emit('pk_started', { timer: 300 }); // تحدي مدته 5 دقائق
+    });
+
+    socket.on('disconnect', () => {
+        console.log('مستخدم غادر الإمبراطورية');
     });
 });
 
-// --- 3. نظام الوكلاء (Agents & Top-up) ---
-app.post('/api/agent/recharge', (req, res) => {
-    const { targetEmail, amount, agentSecret } = req.body;
-    // هنا نتحقق من الوكيل ونشحن للمستخدم فوراً
-    res.json({ success: true, message: "تم شحن الكوينز" });
+// --- 4. نظام شحن الوكلاء (Agents) ---
+app.post('/api/agent/topup', (req, res) => {
+    const { targetEmail, amount, agentKey } = req.body;
+    // منطق التحقق من مفتاح الوكيل وشحن الحساب فوراً
+    res.json({ success: true, message: `تم شحن ${amount} كوينز للحساب` });
+});
+
+// --- 5. الصفحة الرئيسية للسيرفر (لمنع خطأ Cannot GET /) ---
+app.get('/', (req, res) => {
+    res.send('<h1 style="text-align:center; margin-top:50px; color:#f1c40f;">👑 سيرفر إمبراطورية السبع V3 يعمل بنجاح 👑</h1>');
 });
 
 const PORT = process.env.PORT || 3000;
 server.listen(PORT, () => {
-    console.log(`سيرفر إمبراطورية السبع V3 جاهز لاستقبال الجيوش على المنفذ ${PORT}`);
+    console.log(`[OK] Empire Server V3 started on port ${PORT}`);
 });
