@@ -29,7 +29,7 @@ mongoose.connect(mongoURI)
        process.exit(1);
    });
 
-// --- User Schema المعدل ليكون ملكي ---
+// --- User Schema الملكي الشامل ---
 const userSchema = new mongoose.Schema({
     username: { type: String, required: true },
     lastName: { type: String, required: true },
@@ -40,18 +40,85 @@ const userSchema = new mongoose.Schema({
     age: { type: Number, required: true },
     gender: { type: String, required: true },
     
-    // إضافات إمبراطورية السبع V3 👑
+    // إضافات الإمبراطورية V3 💎
     coins: { type: Number, default: 0 }, 
     diamonds: { type: Number, default: 0 }, 
     role: { type: String, default: 'USER' }, // USER, AGENT, MODERATOR, ADMIN, OWNER
     isVIP: { type: Boolean, default: false },
     vipType: { type: String, default: 'none' }, // gold, silver, crown
-    supportPoints: { type: Number, default: 0 }, // لتسكير التارجت
+    supportPoints: { type: Number, default: 0 }, // لتسكير التارجت والرواتب
+    agencyId: { type: String, default: null }, // لربط المستخدم بوكالة معينة
     
     createdAt: { type: Date, default: Date.now }
 });
 
 const User = mongoose.model('User', userSchema);
+
+// --- نظام الهدايا وتسكير التارجت (Gifts & Points) ---
+app.post('/api/send-gift', async (req, res) => {
+    try {
+        const { senderId, receiverId, giftCost } = req.body;
+        const sender = await User.findById(senderId);
+        const receiver = await User.findById(receiverId);
+
+        if (sender.coins < giftCost) return res.status(400).json({ error: 'الرصيد لا يكفي' });
+
+        sender.coins -= giftCost;
+        // الهدية تروح لصندوق صاحب الروم أو الوكيل كنقاط دعم
+        receiver.supportPoints += giftCost; 
+        
+        await sender.save();
+        await receiver.save();
+        res.json({ success: true, newBalance: sender.coins, receiverPoints: receiver.supportPoints });
+    } catch (error) {
+        res.status(500).json({ error: 'خطأ في معالجة الهدية' });
+    }
+});
+
+// --- نظام الاتصالات (الشب بيدفع والبنت مجاني) ---
+app.post('/api/call/start', async (req, res) => {
+    try {
+        const token = req.headers.authorization?.split(' ')[1];
+        const decoded = jwt.verify(token, JWT_SECRET);
+        const user = await User.findById(decoded.userId);
+
+        if (user.gender === 'male') {
+            if (user.coins < 50) return res.status(400).json({ error: 'رصيدك ما بيكفي للمكالمة' });
+            user.coins -= 50; 
+            await user.save();
+        }
+        res.json({ success: true, balance: user.coins });
+    } catch (error) {
+        res.status(401).json({ error: 'خطأ في التصريح' });
+    }
+});
+
+// --- نظام أعلى القمة والترتيب (Leaderboard) ---
+app.get('/api/leaderboard', async (req, res) => {
+    try {
+        // ترتيب المستخدمين حسب الكوينز وصورهم
+        const topUsers = await User.find().sort({ coins: -1 }).limit(10).select('username coins gender isVIP');
+        res.json({ topUsers });
+    } catch (error) {
+        res.status(500).json({ error: 'خطأ بجلب البيانات' });
+    }
+});
+
+// --- نظام الرواتب والسحب (شام كاش) ---
+app.post('/api/withdraw/sham-cash', async (req, res) => {
+    try {
+        const token = req.headers.authorization?.split(' ')[1];
+        const decoded = jwt.verify(token, JWT_SECRET);
+        const user = await User.findById(decoded.userId);
+
+        if (user.supportPoints < 100000) return res.status(400).json({ error: 'لم تصل للتارجت (100 ألف نقطة)' });
+        
+        // إرسال طلب السحب للمدير (أبو نمر)
+        res.json({ success: true, message: 'تم إرسال طلبك للإدارة، سيتم التحويل عبر شام كاش قريباً' });
+    } catch (error) {
+        res.status(401).json({ error: 'خطأ في التصريح' });
+    }
+});
 
 // --- APIs التسجيل والدخول ---
 app.post('/api/register', async (req, res) => {
@@ -85,53 +152,11 @@ app.post('/api/login', async (req, res) => {
     }
 });
 
-// --- نظام الاتصالات (الشب يدفع والبنت مجاني) ---
-app.post('/api/call/start', async (req, res) => {
-    try {
-        const token = req.headers.authorization?.split(' ')[1];
-        const decoded = jwt.verify(token, JWT_SECRET);
-        const user = await User.findById(decoded.userId);
-
-        if (user.gender === 'male') {
-            if (user.coins < 50) return res.status(400).json({ error: 'رصيدك ما بيكفي للمكالمة' });
-            user.coins -= 50; 
-            await user.save();
-        }
-        res.json({ success: true, balance: user.coins });
-    } catch (error) {
-        res.status(401).json({ error: 'خطأ في التصريح' });
-    }
-});
-
-// --- نظام أعلى القمة (Leaderboard) ---
-app.get('/api/leaderboard', async (req, res) => {
-    try {
-        const topUsers = await User.find().sort({ coins: -1 }).limit(10).select('username coins gender');
-        res.json({ topUsers });
-    } catch (error) {
-        res.status(500).json({ error: 'خطأ بجلب البيانات' });
-    }
-});
-
-// --- نظام سحب الرواتب (شام كاش) ---
-app.post('/api/withdraw/sham-cash', async (req, res) => {
-    try {
-        const token = req.headers.authorization?.split(' ')[1];
-        const decoded = jwt.verify(token, JWT_SECRET);
-        const user = await User.findById(decoded.userId);
-
-        if (user.supportPoints < 100000) return res.status(400).json({ error: 'ما وصلت للتارجت المطلوب للسحب' });
-        
-        // منطق السحب (إرسال إشعار للمالك أبو نمر)
-        res.json({ success: true, message: 'طلب السحب قيد المعالجة للتحويل عبر شام كاش' });
-    } catch (error) {
-        res.status(401).json({ error: 'خطأ في التصريح' });
-    }
-});
-
-// Routes الصفحات
+// --- Routes الصفحات ---
 app.get('/', (req, res) => res.sendFile(path.join(__dirname, 'public', 'index.html')));
 app.get('/login', (req, res) => res.sendFile(path.join(__dirname, 'public', 'login.html')));
 app.get('/me', (req, res) => res.sendFile(path.join(__dirname, 'public', 'me.html')));
+app.get('/room', (req, res) => res.sendFile(path.join(__dirname, 'public', 'room.html')));
+app.get('/admin', (req, res) => res.sendFile(path.join(__dirname, 'public', 'admin.html')));
 
-app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
+app.listen(PORT, () => console.log(`🚀 السيرفر الملكي شغال على بورت ${PORT}`));
