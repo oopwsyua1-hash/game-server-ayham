@@ -3,48 +3,323 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>إمبراطورية السبع - دخول</title>
+    <title>بروفايل إمبراطورية السبع - أبو نمر</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #0a0a14; color: #fff; min-height: 100vh; overflow: hidden; }
-        #welcomeScreen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #000; display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 9999; animation: fadeOut 1s ease 6s forwards; }
-        .welcome-text { font-size: 42px; font-weight: bold; text-align: center; background: linear-gradient(90deg, #ff00ff, #00ffff); -webkit-background-clip: text; -webkit-text-fill-color: transparent; z-index: 2; position: absolute; top: 8%; }
-        .dance-video { width: 100%; height: 100%; object-fit: cover; position: absolute; filter: brightness(0.7); }
-        @keyframes fadeOut { to { opacity: 0; visibility: hidden; } }
-        .container { max-width: 450px; margin: 0 auto; padding: 20px; opacity: 0; animation: fadeIn 1s ease 6.5s forwards; }
-        @keyframes fadeIn { to { opacity: 1; } }
-        .form-box { background: #141428; border: 2px solid #ff00ff; border-radius: 15px; padding: 25px; box-shadow: 0 0 20px rgba(255, 0, 255, 0.3); }
-        input, select { width: 100%; padding: 12px; margin: 8px 0; border: 2px solid #ff00ff; border-radius: 8px; background: #0f0f1e; color: white; outline: none; }
-        button { width: 100%; padding: 14px; margin-top: 15px; background: linear-gradient(90deg, #ff00ff, #9d00ff); border: none; border-radius: 8px; color: white; font-weight: bold; cursor: pointer; }
-        #customAlert { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); display: none; justify-content: center; align-items: center; z-index: 10000; }
-        .alert-box { background: #141428; border: 2px solid #00ffff; border-radius: 15px; padding: 30px; text-align: center; }
+        /* --- الأنيميشن الملكي --- */
+        @keyframes nameGlow {
+            0% { text-shadow: 0 0 5px #fff, 0 0 10px #a855f7; }
+            50% { text-shadow: 0 0 20px #a855f7, 0 0 30px #7c3aed; color: #f3e8ff; }
+            100% { text-shadow: 0 0 5px #fff, 0 0 10px #a855f7; }
+        }
+
+        @keyframes rotateVerify {
+            0% { transform: scale(1) rotate(0deg); }
+            50% { transform: scale(1.2) rotate(10deg); }
+            100% { transform: scale(1) rotate(0deg); }
+        }
+
+        @keyframes fadeInScale {
+            from { opacity: 0; transform: scale(0.9) translateY(20px); }
+            to { opacity: 1; transform: scale(1) translateY(0); }
+        }
+
+        /* --- التنسيق العام --- */
+        body {
+            background-color: #050a0f;
+            color: #ffffff;
+            margin: 0;
+            font-family: 'Segoe UI', 'Cairo', sans-serif;
+            overflow-x: hidden;
+        }
+
+        .profile-container {
+            position: relative;
+            z-index: 1;
+            animation: fadeInScale 0.7s ease-out;
+        }
+
+        .cover-area {
+            height: 220px;
+            background: #1a1a2e;
+            background-size: cover;
+            background-position: center;
+            position: relative;
+            cursor: pointer;
+            transition: 0.3s;
+            border-bottom: 2px solid #a855f7;
+        }
+
+        .cover-overlay {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            background: rgba(0,0,0,0.6);
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-size: 12px;
+            backdrop-filter: blur(5px);
+            border: 1px solid #a855f7;
+        }
+
+        .avatar-wrapper {
+            position: absolute;
+            bottom: -50px;
+            right: 20px;
+            width: 110px;
+            height: 110px;
+            background: linear-gradient(135deg, #f5d496, #e2b35c);
+            border-radius: 50%;
+            padding: 4px;
+            cursor: pointer;
+            box-shadow: 0 0 20px rgba(168, 85, 247, 0.5);
+        }
+
+        .avatar-wrapper img {
+            width: 100%; height: 100%;
+            border-radius: 50%;
+            border: 3px solid #050a0f;
+            object-fit: cover;
+        }
+
+        .user-details { padding: 70px 20px 10px; text-align: right; }
+        .name { 
+            font-size: 26px; 
+            font-weight: bold; 
+            display: flex; 
+            align-items: center; 
+            gap: 10px;
+            animation: nameGlow 3s infinite ease-in-out;
+        }
+        .verify-gold { 
+            color: #f1c40f; 
+            animation: rotateVerify 2s infinite ease-in-out;
+            font-size: 22px;
+            filter: drop-shadow(0 0 8px #f1c40f);
+        }
+
+        .id-badge {
+            display: inline-block;
+            background: rgba(168, 85, 247, 0.1);
+            padding: 6px 18px;
+            border-radius: 20px;
+            font-size: 13px;
+            color: #a855f7;
+            margin-top: 12px;
+            border: 1px solid rgba(168, 85, 247, 0.3);
+        }
+
+        .card {
+            background: rgba(26, 26, 46, 0.9);
+            margin: 15px;
+            padding: 22px;
+            border-radius: 20px;
+            border: 1px solid rgba(168, 85, 247, 0.1);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        }
+
+        .info-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+        .info-item {
+            background: rgba(30, 30, 60, 0.6);
+            padding: 15px;
+            border-radius: 15px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            border: 1px solid transparent;
+        }
+        .info-item:hover { 
+            background: rgba(168, 85, 247, 0.15); 
+            transform: translateY(-3px);
+            border-color: #a855f7;
+        }
+
+        #countrySelect {
+            display: none;
+            position: fixed;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            background: #1a1a2e;
+            color: white;
+            padding: 25px;
+            border-radius: 20px;
+            z-index: 1000;
+            border: 2px solid #a855f7;
+            max-height: 400px;
+            width: 80%;
+            overflow-y: auto;
+            box-shadow: 0 0 50px rgba(0,0,0,0.8);
+        }
+
+        .editable:hover { color: #a855f7; cursor: pointer; text-decoration: underline; }
+        #avatarInput, #coverInput { display: none; }
     </style>
 </head>
 <body>
-    <div id="welcomeScreen">
-        <div class="welcome-text">السبع الحلبي يرحب بكم</div>
-        <video class="dance-video" autoplay muted loop playsinline><source src="https://assets.mixkit.co/videos/8713/8713-720.mp4" type="video/mp4"></video>
-    </div>
-    <div id="customAlert"><div class="alert-box"><h3 id="alertTitle"></h3><p id="alertMsg"></p><button onclick="closeAlert()">حسناً</button></div></div>
-    <div class="container">
-        <div style="text-align: center; font-size: 32px; margin: 20px 0; color: #ff00ff;">إمبراطورية السبع</div>
-        <div class="form-box">
-            <div id="loginForm">
-                <h2>تسجيل الدخول</h2>
-                <input type="email" id="loginEmail" placeholder="الإيميل">
-                <input type="password" id="loginPassword" placeholder="كلمة السر">
-                <button onclick="handleAuth('/api/login')">دخول</button>
+
+    <div class="profile-container">
+        <!-- منطقة الغلاف -->
+        <div class="cover-area" id="coverBg" onclick="triggerCoverUpload()" style="background-image: url('https://via.placeholder.com/800x400/1a1a2e/ffffff?text=إمبراطورية+السبع');">
+            <div class="cover-overlay"><i class="fas fa-camera"></i> تغيير غلاف الإمبراطورية</div>
+            <input type="file" id="coverInput" accept="image/*" onchange="previewCover(event)">
+            
+            <div class="avatar-wrapper" onclick="event.stopPropagation(); triggerAvatarUpload();">
+                <img src="https://via.placeholder.com/150" id="avatarImg" alt="Avatar">
+                <input type="file" id="avatarInput" accept="image/*" onchange="previewAvatar(event)">
+            </div>
+        </div>
+
+        <!-- تفاصيل المستخدم -->
+        <div class="user-details">
+            <div class="name">
+                <span id="userName" class="editable" onclick="editField('userName', 'الاسم')">اﻟـﭙـﮋⓈ_ـبـع𓆃</span>
+                <i class="fas fa-certificate verify-gold"></i>
+            </div>
+            <div class="id-badge">الملف الملكي ID: <span id="userID">000000000</span></div>
+        </div>
+
+        <!-- السيرة الذاتية -->
+        <div class="card">
+            <h3 style="font-size: 15px; color: #a855f7; margin-bottom: 12px; display: flex; align-items: center; gap: 8px;">
+                <i class="fas fa-pen-nib"></i> السيرة الذاتية
+            </h3>
+            <p id="userBio" class="editable" onclick="editField('userBio', 'السيرة')" style="font-size: 14px; line-height: 1.6; color: #ccc;">ما ا داام المووت اكيد سافعل مااريد ❤️</p>
+        </div>
+
+        <!-- معلومات أساسية -->
+        <div class="card">
+            <h3 style="font-size: 15px; color: #a855f7; margin-bottom: 18px; display: flex; align-items: center; gap: 8px;">
+                <i class="fas fa-info-circle"></i> البيانات الأساسية
+            </h3>
+            <div class="info-grid">
+                <div class="info-item" onclick="editField('userHeight', 'الطول')">
+                    <i class="fas fa-ruler-vertical" style="color: #a855f7;"></i> <span id="userHeight">193cm</span>
+                </div>
+                <div class="info-item" onclick="editField('userAge', 'العمر')">
+                    <i class="fas fa-birthday-cake" style="color: #a855f7;"></i> <span id="userAge">23 سنة</span>
+                </div>
+                <div class="info-item">
+                    <i class="fas fa-heart" style="color: #ef4444;"></i> في علاقة
+                </div>
+                <div class="info-item" onclick="chooseCountry()">
+                    <i class="fas fa-map-marker-alt" style="color: #3b82f6;"></i> <span id="userLocation">Bursa, TR</span>
+                </div>
             </div>
         </div>
     </div>
+
+    <!-- قائمة اختيار الدول -->
+    <select id="countrySelect" onchange="updateCountry()">
+        <option value="">-- اختر الدولة يا سبع --</option>
+        <option value="السعودية 🇸🇦">السعودية 🇸🇦</option>
+        <option value="تركيا 🇹🇷">تركيا 🇹🇷</option>
+        <option value="سوريا 🇸🇾">سوريا 🇸🇾</option>
+        <option value="العراق 🇮🇶">العراق 🇮🇶</option>
+        <option value="مصر 🇪🇬">مصر 🇪🇬</option>
+        <option value="الأردن 🇯🇴">الأردن 🇯🇴</option>
+        <option value="ألمانيا 🇩🇪">ألمانيا 🇩🇪</option>
+    </select>
+
     <script>
-        function showAlert(msg, title='تنبيه') { document.getElementById('alertTitle').innerText=title; document.getElementById('alertMsg').innerText=msg; document.getElementById('customAlert').style.display='flex'; }
-        function closeAlert() { document.getElementById('customAlert').style.display='none'; }
-        async function handleAuth(url) {
-            const response = await fetch(url, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ test: true }) });
-            const data = await response.json();
-            if(data.redirect) { window.location.href = data.redirect; } else { showAlert(data.message); }
+        const API_URL = 'https://game-server-ayham.onrender.com/api';
+
+        // تهيئة الـ ID من السيرفر أو محلياً
+        function initID() {
+            let id = localStorage.getItem('fixed_id');
+            if (!id) {
+                id = Math.floor(100000000 + Math.random() * 900000000);
+                localStorage.setItem('fixed_id', id);
+            }
+            document.getElementById('userID').innerText = id;
         }
+
+        // تعديل أي حقل وربطه بالسيرفر فوراً
+        async function editField(id, label) {
+            const el = document.getElementById(id);
+            const val = prompt(`تعديل ${label}:`, el.innerText);
+            
+            if (val && val.trim() !== "") {
+                el.innerText = val;
+                localStorage.setItem(id, val);
+                
+                // الربط مع السيرفر لضمان عدم الضياع
+                await updateProfileOnServer({ [id]: val });
+            }
+        }
+
+        function chooseCountry() {
+            document.getElementById('countrySelect').style.display = 'block';
+        }
+
+        async function updateCountry() {
+            const sel = document.getElementById('countrySelect');
+            const loc = document.getElementById('userLocation');
+            if(sel.value !== "") {
+                loc.innerText = sel.value;
+                localStorage.setItem('userLocation', sel.value);
+                await updateProfileOnServer({ country: sel.value });
+            }
+            sel.style.display = 'none';
+        }
+
+        // دالة الربط مع سيرفر Render
+        async function updateProfileOnServer(data) {
+            const token = localStorage.getItem('token');
+            if (!token) return;
+
+            try {
+                const res = await fetch(`${API_URL}/update-profile`, {
+                    method: 'POST',
+                    headers: { 
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify(data)
+                });
+                if(res.ok) console.log("تم التحديث في قاعدة بيانات الإمبراطورية");
+            } catch (err) {
+                console.error("عطل في الاتصال بالسيرفر");
+            }
+        }
+
+        // التعامل مع الصور
+        function triggerAvatarUpload() { document.getElementById('avatarInput').click(); }
+        function previewAvatar(event) {
+            const reader = new FileReader();
+            reader.onload = function() {
+                document.getElementById('avatarImg').src = reader.result;
+                localStorage.setItem('savedAvatar', reader.result);
+            };
+            reader.readAsDataURL(event.target.files[0]);
+        }
+
+        function triggerCoverUpload() { document.getElementById('coverInput').click(); }
+        function previewCover(event) {
+            const reader = new FileReader();
+            reader.onload = function() {
+                document.getElementById('coverBg').style.backgroundImage = `url('${reader.result}')`;
+                localStorage.setItem('savedCover', reader.result);
+            };
+            reader.readAsDataURL(event.target.files[0]);
+        }
+
+        window.onload = function() {
+            initID();
+            const fields = ['userName', 'userBio', 'userHeight', 'userAge', 'userLocation'];
+            fields.forEach(f => {
+                if(localStorage.getItem(f)) document.getElementById(f).innerText = localStorage.getItem(f);
+            });
+            if(localStorage.getItem('savedAvatar')) document.getElementById('avatarImg').src = localStorage.getItem('savedAvatar');
+            if(localStorage.getItem('savedCover')) document.getElementById('coverBg').style.backgroundImage = `url('${localStorage.getItem('savedCover')}')`;
+        };
     </script>
 </body>
 </html>
