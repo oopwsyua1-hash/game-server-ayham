@@ -1,204 +1,34 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>الملف الشخصي</title>
-  <style>
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
-    body {
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-      min-height: 100vh;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      padding: 20px;
-    }
-    .profile-container {
-      background: white;
-      padding: 40px;
-      border-radius: 20px;
-      box-shadow: 0 10px 40px rgba(0,0,0,0.2);
-      width: 100%;
-      max-width: 500px;
-      text-align: center;
-    }
-    .profile-pic {
-      width: 120px;
-      height: 120px;
-      border-radius: 50%;
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-      margin: 0 auto 20px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 48px;
-      color: white;
-      font-weight: bold;
-    }
-    h1 {
-      color: #333;
-      margin-bottom: 10px;
-      font-size: 28px;
-    }
-    .email {
-      color: #666;
-      margin-bottom: 30px;
-      font-size: 14px;
-    }
-    .stats {
-      display: grid;
-      grid-template-columns: repeat(2, 1fr);
-      gap: 15px;
-      margin: 30px 0;
-    }
-    .stat-card {
-      background: #f8f9fa;
-      padding: 20px;
-      border-radius: 12px;
-    }
-    .stat-value {
-      font-size: 32px;
-      font-weight: bold;
-      color: #667eea;
-    }
-    .stat-label {
-      color: #666;
-      font-size: 14px;
-      margin-top: 5px;
-    }
-    .info-row {
-      display: flex;
-      justify-content: space-between;
-      padding: 12px 0;
-      border-bottom: 1px solid #eee;
-    }
-    .info-label {
-      color: #666;
-      font-weight: 500;
-    }
-    .info-value {
-      color: #333;
-      font-weight: bold;
-    }
-    .logout-btn {
-      width: 100%;
-      padding: 14px;
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-      color: white;
-      border: none;
-      border-radius: 10px;
-      font-size: 16px;
-      font-weight: bold;
-      cursor: pointer;
-      margin-top: 30px;
-      transition: transform 0.2s;
-    }
-    .logout-btn:hover {
-      transform: translateY(-2px);
-    }
-    .loading {
-      color: #666;
-      font-size: 18px;
-    }
-    .error {
-      color: #e74c3c;
-      background: #ffe6e6;
-      padding: 15px;
-      border-radius: 10px;
-      margin: 20px 0;
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>الملف الشخصي - إمبراطورية السبع</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        body { background-color: #050a0f; color: #fff; font-family: 'Segoe UI', sans-serif; margin: 0; }
+        .cover-area { height: 200px; background: linear-gradient(to bottom, transparent, #050a0f), url('https://via.placeholder.com/800x400/1a1a2e/ffffff?text=السبع'); background-size: cover; position: relative; }
+        .avatar-section { position: absolute; bottom: -40px; right: 20px; }
+        .avatar-wrapper { width: 100px; height: 100px; background: linear-gradient(135deg, #ff00ff, #00ffff); border-radius: 50%; padding: 3px; }
+        .avatar-wrapper img { width: 100%; height: 100%; border-radius: 50%; border: 3px solid #050a0f; }
+        .user-header { padding: 50px 20px 10px; text-align: right; }
+        .settings-list { padding: 15px; }
+        .menu-card { background: #101520; border-radius: 15px; padding: 15px; margin-bottom: 12px; border: 1px solid rgba(255,255,255,0.05); }
+        .btn-logout { background: #ff4b2b; color: white; border: none; padding: 15px; border-radius: 15px; width: 100%; font-weight: bold; cursor: pointer; }
+    </style>
 </head>
 <body>
-  <div class="profile-container" id="profileContainer">
-    <div class="loading">جاري التحميل...</div>
-  </div>
-
-  <script>
-    const API_URL = 'https://game-server-ayham.onrender.com';
-    const token = localStorage.getItem('token');
-
-    if (!token) {
-      window.location.href = '/';
-    }
-
-    async function loadProfile() {
-      try {
-        const response = await fetch(`${API_URL}/api/profile`, {
-          headers: {
-            'Authorization': `Bearer ${token}`
-          }
-        });
-
-        if (!response.ok) {
-          throw new Error('فشل تحميل البيانات');
-        }
-
-        const user = await response.json();
-        displayProfile(user);
-      } catch (error) {
-        document.getElementById('profileContainer').innerHTML = `
-          <div class="error">خطأ: ${error.message}</div>
-          <button class="logout-btn" onclick="logout()">تسجيل خروج</button>
-        `;
-      }
-    }
-
-    function displayProfile(user) {
-      const firstLetter = user.username.charAt(0).toUpperCase();
-      const joinDate = new Date(user.createdAt).toLocaleDateString('ar-SA');
-      const lastSeen = new Date(user.lastSeen).toLocaleString('ar-SA');
-
-      document.getElementById('profileContainer').innerHTML = `
-        <div class="profile-pic">${firstLetter}</div>
-        <h1>${user.username}</h1>
-        <div class="email">${user.email}</div>
-
-        <div class="stats">
-          <div class="stat-card">
-            <div class="stat-value">${user.points}</div>
-            <div class="stat-label">النقاط</div>
-          </div>
-          <div class="stat-card">
-            <div class="stat-value">${user.wins}</div>
-            <div class="stat-label">مرات الفوز</div>
-          </div>
-          <div class="stat-card">
-            <div class="stat-value">${user.games}</div>
-            <div class="stat-label">المباريات</div>
-          </div>
-          <div class="stat-card">
-            <div class="stat-value">${user.level}</div>
-            <div class="stat-label">المستوى</div>
-          </div>
-        </div>
-
-        <div class="info-row">
-          <span class="info-label">تاريخ الانضمام</span>
-          <span class="info-value">${joinDate}</span>
-        </div>
-        <div class="info-row">
-          <span class="info-label">آخر ظهور</span>
-          <span class="info-value">${lastSeen}</span>
-        </div>
-
-        <button class="logout-btn" onclick="logout()">تسجيل خروج</button>
-      `;
-    }
-
-    function logout() {
-      localStorage.removeItem('token');
-      localStorage.removeItem('username');
-      window.location.href = '/';
-    }
-
-    loadProfile();
-  </script>
+    <div class="cover-area">
+        <div class="avatar-section"><div class="avatar-wrapper"><img src="https://via.placeholder.com/150"></div></div>
+    </div>
+    <div class="user-header">
+        <div style="font-size: 24px; font-weight: bold;">أبو نمر 🦁</div>
+        <div style="color: #00ffff;">ID: 7084474</div>
+    </div>
+    <div class="settings-list">
+        <div class="menu-card"><h3>مركز الوكالات</h3><p>لا توجد وكالة حالياً</p></div>
+        <div class="menu-card"><h3>شام كاش</h3><p>الرصيد: 0.00$</p></div>
+        <button class="btn-logout" onclick="location.href='/'">تسجيل خروج</button>
+    </div>
 </body>
 </html>
