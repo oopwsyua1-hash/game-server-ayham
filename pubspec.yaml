@@ -1,5 +1,5 @@
 name: dardashat_alsabea
-description: تطبيق دردشة السبع
+description: تطبيق دردشة السبع الملكي V3
 publish_to: 'none'
 version: 1.0.0+1
 
@@ -11,6 +11,12 @@ dependencies:
     sdk: flutter
   http: ^1.2.0
   cupertino_icons: ^1.0.6
+  
+  # إضافات إمبراطورية السبع الضرورية 👑
+  webview_flutter: ^4.4.2       # لفتح غرفة الدردشة (room.html) داخل التطبيق
+  socket_io_client: ^3.0.0      # للربط المباشر مع سيرفر Render (المايكات والشات)
+  shared_preferences: ^2.2.2    # لحفظ توكن الدخول (Token) على هاتف المستخدم
+  url_launcher: ^6.2.1          # لفتح روابط الدفع أو "شام كاش" في المتصفح الخارجي
 
 dev_dependencies:
   flutter_test:
@@ -19,3 +25,6 @@ dev_dependencies:
 
 flutter:
   uses-material-design: true
+  # إذا كان لديك صور أو أيقونات ملكية (مثل التاج)، أضفها هنا
+  assets:
+    - assets/images/logo.png
