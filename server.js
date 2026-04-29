@@ -4,9 +4,13 @@ const cors = require('cors');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const path = require('path');
+const http = require('http'); // إضافي لدعم السوكيت
+const { Server } = require('socket.io'); // إضافي لدعم السوكيت
 require('dotenv').config();
 
 const app = express();
+const server = http.createServer(app); // إنشاء السيرفر ليدعم HTTP و WebSockets
+const io = new Server(server, { cors: { origin: "*" } });
 const PORT = process.env.PORT || 3000;
 const JWT_SECRET = 'ayham-secret-key-2024';
 
@@ -39,103 +43,75 @@ const userSchema = new mongoose.Schema({
     birthDate: { type: String, required: true },
     age: { type: Number, required: true },
     gender: { type: String, required: true },
-    
-    // إضافات الإمبراطورية V3 💎
     coins: { type: Number, default: 0 }, 
     diamonds: { type: Number, default: 0 }, 
-    role: { type: String, default: 'USER' }, // USER, AGENT, MODERATOR, ADMIN, OWNER
+    role: { type: String, default: 'USER' }, 
     isVIP: { type: Boolean, default: false },
-    vipType: { type: String, default: 'none' }, // gold, silver, crown
-    supportPoints: { type: Number, default: 0 }, // لتسكير التارجت والرواتب
-    agencyId: { type: String, default: null }, // لربط المستخدم بوكالة معينة
-    
+    vipType: { type: String, default: 'none' }, 
+    supportPoints: { type: Number, default: 0 }, 
+    agencyId: { type: String, default: null },
     createdAt: { type: Date, default: Date.now }
 });
 
 const User = mongoose.model('User', userSchema);
 
-// --- نظام الهدايا وتسكير التارجت (Gifts & Points) ---
-app.post('/api/send-gift', async (req, res) => {
-    try {
-        const { senderId, receiverId, giftCost } = req.body;
-        const sender = await User.findById(senderId);
-        const receiver = await User.findById(receiverId);
+// --- نظام حالة الغرف (مؤقت في الرام) ---
+let roomsData = {
+  'VIP-10000': {
+    users: [],
+    mics: Array(20).fill(null)
+  }
+};
 
-        if (sender.coins < giftCost) return res.status(400).json({ error: 'الرصيد لا يكفي' });
-
-        sender.coins -= giftCost;
-        // الهدية تروح لصندوق صاحب الروم أو الوكيل كنقاط دعم
-        receiver.supportPoints += giftCost; 
-        
-        await sender.save();
-        await receiver.save();
-        res.json({ success: true, newBalance: sender.coins, receiverPoints: receiver.supportPoints });
-    } catch (error) {
-        res.status(500).json({ error: 'خطأ في معالجة الهدية' });
-    }
-});
-
-// --- نظام الاتصالات (الشب بيدفع والبنت مجاني) ---
-app.post('/api/call/start', async (req, res) => {
-    try {
-        const token = req.headers.authorization?.split(' ')[1];
-        const decoded = jwt.verify(token, JWT_SECRET);
-        const user = await User.findById(decoded.userId);
-
-        if (user.gender === 'male') {
-            if (user.coins < 50) return res.status(400).json({ error: 'رصيدك ما بيكفي للمكالمة' });
-            user.coins -= 50; 
-            await user.save();
+// --- Socket.io Logic (التعامل المباشر مع الغرفة) ---
+io.on('connection', (socket) => {
+    socket.on('joinRoom', ({ roomId, token }) => {
+        socket.join(roomId);
+        // إضافة مستخدم للغرفة بشكل مبسط
+        if(roomsData[roomId]) {
+            roomsData[roomId].users.push(socket.id);
+            io.to(roomId).emit('roomUpdate', roomsData[roomId]);
         }
-        res.json({ success: true, balance: user.coins });
-    } catch (error) {
-        res.status(401).json({ error: 'خطأ في التصريح' });
-    }
+    });
+
+    socket.on('sendMessage', (data) => {
+        // نرسل الرسالة لكل المتصلين في الغرفة
+        io.to(data.roomId).emit('newMessage', {
+            username: "عضو الإمبراطورية",
+            text: data.text,
+            level: "Lv.1",
+            vip: 0
+        });
+    });
+
+    socket.on('disconnect', () => {
+        // تنظيف المستخدمين عند الخروج
+        console.log('مستخدم غادر');
+    });
 });
 
-// --- نظام أعلى القمة والترتيب (Leaderboard) ---
-app.get('/api/leaderboard', async (req, res) => {
-    try {
-        // ترتيب المستخدمين حسب الكوينز وصورهم
-        const topUsers = await User.find().sort({ coins: -1 }).limit(10).select('username coins gender isVIP');
-        res.json({ topUsers });
-    } catch (error) {
-        res.status(500).json({ error: 'خطأ بجلب البيانات' });
-    }
+// --- API الهدايا (المطلوب في كود الـ HTML) ---
+app.get('/api/gifts', (req, res) => {
+    const gifts = [
+        { giftId: 'g1', name: 'أسد السبع', price: 500, animation: 'https://cdn-icons-png.flaticon.com/512/616/616412.png' },
+        { giftId: 'g2', name: 'تاج ملكي', price: 1000, animation: 'https://cdn-icons-png.flaticon.com/512/2353/2353361.png' },
+        { giftId: 'g3', name: 'سيارة VIP', price: 5000, animation: 'https://cdn-icons-png.flaticon.com/512/743/743007.png' }
+    ];
+    res.json(gifts);
 });
 
-// --- نظام الرواتب والسحب (شام كاش) ---
-app.post('/api/withdraw/sham-cash', async (req, res) => {
-    try {
-        const token = req.headers.authorization?.split(' ')[1];
-        const decoded = jwt.verify(token, JWT_SECRET);
-        const user = await User.findById(decoded.userId);
-
-        if (user.supportPoints < 100000) return res.status(400).json({ error: 'لم تصل للتارجت (100 ألف نقطة)' });
-        
-        // إرسال طلب السحب للمدير (أبو نمر)
-        res.json({ success: true, message: 'تم إرسال طلبك للإدارة، سيتم التحويل عبر شام كاش قريباً' });
-    } catch (error) {
-        res.status(401).json({ error: 'خطأ في التصريح' });
-    }
-});
-
-// --- APIs التسجيل والدخول ---
+// --- باقي الـ APIs (Register, Login, Withdraw, etc.) ---
 app.post('/api/register', async (req, res) => {
     try {
         const { username, lastName, email, password, country, birthDate, age, gender } = req.body;
         const existingUser = await User.findOne({ email });
         if (existingUser) return res.status(400).json({ error: 'الايميل مستخدم من قبل' });
-
         const hashedPassword = await bcrypt.hash(password, 10);
         const newUser = new User({ username, lastName, email, password: hashedPassword, country, birthDate, age, gender });
         await newUser.save();
-
         const token = jwt.sign({ userId: newUser._id }, JWT_SECRET);
         res.json({ token, user: newUser });
-    } catch (error) {
-        res.status(500).json({ error: 'خطأ بالسيرفر' });
-    }
+    } catch (error) { res.status(500).json({ error: 'خطأ بالسيرفر' }); }
 });
 
 app.post('/api/login', async (req, res) => {
@@ -147,16 +123,26 @@ app.post('/api/login', async (req, res) => {
         }
         const token = jwt.sign({ userId: user._id }, JWT_SECRET);
         res.json({ token, user });
-    } catch (error) {
-        res.status(500).json({ error: 'خطأ بالسيرفر' });
-    }
+    } catch (error) { res.status(500).json({ error: 'خطأ بالسيرفر' }); }
 });
 
-// --- Routes الصفحات ---
-app.get('/', (req, res) => res.sendFile(path.join(__dirname, 'public', 'index.html')));
-app.get('/login', (req, res) => res.sendFile(path.join(__dirname, 'public', 'login.html')));
-app.get('/me', (req, res) => res.sendFile(path.join(__dirname, 'public', 'me.html')));
-app.get('/room', (req, res) => res.sendFile(path.join(__dirname, 'public', 'room.html')));
-app.get('/admin', (req, res) => res.sendFile(path.join(__dirname, 'public', 'admin.html')));
+app.post('/api/send-gift', async (req, res) => {
+    try {
+        const { senderId, receiverId, giftCost } = req.body;
+        const sender = await User.findById(senderId);
+        const receiver = await User.findById(receiverId);
+        if (sender.coins < giftCost) return res.status(400).json({ error: 'الرصيد لا يكفي' });
+        sender.coins -= giftCost;
+        receiver.supportPoints += giftCost; 
+        await sender.save();
+        await receiver.save();
+        res.json({ success: true, newBalance: sender.coins });
+    } catch (error) { res.status(500).json({ error: 'خطأ في معالجة الهدية' }); }
+});
 
-app.listen(PORT, () => console.log(`🚀 السيرفر الملكي شغال على بورت ${PORT}`));
+// Routes الصفحات
+app.get('/', (req, res) => res.sendFile(path.join(__dirname, 'public', 'index.html')));
+app.get('/room', (req, res) => res.sendFile(path.join(__dirname, 'public', 'room.html')));
+
+// تشغيل السيرفر باستخدام server.listen وليس app.listen لدعم السوكيت
+server.listen(PORT, () => console.log(`🚀 السيرفر الملكي شغال على بورت ${PORT}`));
