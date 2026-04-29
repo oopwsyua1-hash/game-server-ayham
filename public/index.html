@@ -3,110 +3,51 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>إمبراطورية السبع - نظام الإدارة</title>
+    <title>إمبراطورية السبع</title>
     <style>
-        /* تصميم الإمبراطورية - أسود وذهبي */
-        body { background-color: #050a0f; color: #f1c40f; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; text-align: center; margin: 0; padding: 20px; }
-        .container { max-width: 500px; margin: auto; background: #101520; border: 2px solid #f1c40f; border-radius: 20px; padding: 20px; box-shadow: 0 0 20px rgba(241, 196, 15, 0.2); }
-        h1 { font-size: 24px; text-shadow: 0 0 10px #f1c40f; margin-bottom: 20px; }
-        .stat-box { background: #1a1f2b; padding: 15px; border-radius: 15px; margin-bottom: 20px; border: 1px solid #333; }
-        .balance-val { font-size: 35px; font-weight: bold; display: block; color: #fff; }
-        input { width: 80%; padding: 12px; margin: 10px 0; border-radius: 10px; border: 1px solid #f1c40f; background: #050a0f; color: #fff; text-align: center; font-size: 16px; }
-        button { width: 85%; padding: 12px; background: #f1c40f; color: #000; border: none; border-radius: 10px; font-weight: bold; cursor: pointer; font-size: 18px; transition: 0.3s; }
-        button:active { transform: scale(0.95); background: #d4ac0d; }
-        .status { margin-top: 15px; font-size: 14px; color: #39ff14; display: none; }
-        
-        /* تأثير الأسد عند الدخول */
-        #entrance-effect { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #000; z-index: 10000; display: none; align-items: center; justify-content: center; flex-direction: column; }
-        .lion-msg { color: #f1c40f; font-size: 28px; margin-top: 20px; font-weight: bold; text-shadow: 0 0 15px #f1c40f; }
+        body { background: #050a0f; color: gold; font-family: sans-serif; margin: 0; padding: 0; }
+        .header { background: #101520; padding: 20px; border-bottom: 2px solid gold; }
+        .lion-img { width: 120px; border-radius: 50%; border: 3px solid gold; margin-top: 10px; }
+        .card { background: #161b29; margin: 20px; padding: 20px; border-radius: 15px; box-shadow: 0 0 15px rgba(212, 175, 55, 0.3); }
+        .balance { font-size: 40px; font-weight: bold; color: white; display: block; margin: 10px 0; }
+        input { width: 80%; padding: 10px; border-radius: 8px; border: 1px solid gold; background: #050a0f; color: white; margin-bottom: 10px; }
+        button { background: gold; color: black; border: none; padding: 12px 25px; border-radius: 8px; font-weight: bold; cursor: pointer; width: 85%; }
     </style>
 </head>
 <body>
 
-    <div id="entrance-effect">
-        <img src="https://i.giphy.com/media/v1.Y2lkPTc5MGI3NjExNHJndXQydXlyM3R5Z3R5Z3R5Z3R5Z3R5Z3R5Z3R5Z3R5JmVwPXYxX2ludGVybmFsX2dpZl9ieV9pZ25vcmUmY3Q9Zw/L1f3uCmKs6eUXsjbE6/giphy.gif" width="300">
-        <div class="lion-msg">حضر الإمبراطور أبو نمر 🦁</div>
+    <div class="header">
+        <img src="https://i.ibb.co/3S4S1S/lion.jpg" class="lion-img"> <h2>إمبراطورية السبع 🦁</h2>
     </div>
 
-    <div class="container">
-        <h1>👑 لوحة تحكم السبع 👑</h1>
+    <div class="card" id="login-box">
+        <h3>تسجيل دخول الإمبراطور</h3>
+        <input type="text" id="user-id" placeholder="أدخل الآيدي الخاص بك">
+        <button onclick="login()">دخول 🔥</button>
+    </div>
 
-        <div class="stat-box">
-            <span>رصيد الكوينز الحالي</span>
-            <span class="balance-val" id="balance">0</span>
-        </div>
-
-        <input type="text" id="userId" placeholder="أدخل آيدي المستخدم (ID)" value="12345">
-        <input type="number" id="amount" placeholder="كمية الكوينز للشحن">
-        
-        <button onclick="updateCoins()">شحن الآن 🔥</button>
-        
-        <div id="status-msg" class="status">تم تحديث الخزنة بنجاح! ✅</div>
-        
-        <p style="color: #666; font-size: 12px; margin-top: 20px;">الربط مباشر مع سيرفر Render و MongoDB</p>
+    <div class="card" id="user-info" style="display:none;">
+        <h3>مرحباً بك يا <span id="display-name">سبع</span></h3>
+        <span>رصيدك من الكوينز:</span>
+        <span class="balance" id="coin-balance">0</span>
+        <p>آيدي الحساب: <span id="display-id">---</span></p>
     </div>
 
     <script>
-        // الرابط الخاص بسيرفرك يا أبو نمر - لا تغيره
-        const API_URL = "https://game-server-ayham.onrender.com";
+        const API = ""; // خليه فاضي لأنه بنفس السيرفر
 
-        // وظيفة لجلب الرصيد فور فتح الصفحة
-        async function getBalance() {
-            const id = document.getElementById('userId').value;
-            try {
-                const response = await fetch(`${API_URL}/user/${id}`);
-                const data = await response.json();
-                if (data.coins !== undefined) {
-                    document.getElementById('balance').innerText = data.coins.toLocaleString();
-                }
-            } catch (err) {
-                console.log("السيرفر يحتاج ثواني للاستيقاظ...");
-            }
+        async function login() {
+            const id = document.getElementById('user-id').value;
+            if(!id) return alert("دخل الآيدي!");
+
+            const res = await fetch(`/user/${id}`);
+            const data = await res.json();
+
+            document.getElementById('login-box').style.display = 'none';
+            document.getElementById('user-info').style.display = 'block';
+            document.getElementById('display-id').innerText = id;
+            document.getElementById('coin-balance').innerText = data.coins || 0;
         }
-
-        // وظيفة شحن الكوينز وإرسالها للسيرفر
-        async function updateCoins() {
-            const id = document.getElementById('userId').value;
-            const amt = parseInt(document.getElementById('amount').value);
-
-            if (!amt) { alert("دخل المبلغ يا خالي!"); return; }
-
-            try {
-                const response = await fetch(`${API_URL}/update-coins`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ userId: id, amount: amt })
-                });
-
-                const result = await response.json();
-                if (result.status === "success") {
-                    document.getElementById('status-msg').style.display = "block";
-                    document.getElementById('balance').innerText = result.newBalance.toLocaleString();
-                    
-                    // تشغيل هيبة الأسد عند النجاح
-                    showLion();
-                    
-                    setTimeout(() => {
-                        document.getElementById('status-msg').style.display = "none";
-                    }, 3000);
-                }
-            } catch (err) {
-                alert("تأكد من اتصال السيرفر بـ Render!");
-            }
-        }
-
-        // إظهار تأثير الأسد
-        function showLion() {
-            const effect = document.getElementById('entrance-effect');
-            effect.style.display = 'flex';
-            setTimeout(() => {
-                effect.style.display = 'none';
-            }, 4000); // يختفي بعد 4 ثواني
-        }
-
-        // تحديث الرصيد تلقائياً كل 10 ثواني
-        setInterval(getBalance, 10000);
-        window.onload = getBalance;
     </script>
 </body>
 </html>
