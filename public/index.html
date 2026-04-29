@@ -3,391 +3,220 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>بروفايل إمبراطورية السبع - أبو نمر</title>
+    <title>إنشاء حساب - إمبراطورية السبع</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    
     <style>
-        /* --- الأنيميشن الملكي --- */
-        @keyframes nameGlow {
-            0% { text-shadow: 0 0 5px #fff, 0 0 10px #a855f7; }
-            50% { text-shadow: 0 0 20px #a855f7, 0 0 30px #7c3aed; color: #f3e8ff; }
-            100% { text-shadow: 0 0 5px #fff, 0 0 10px #a855f7; }
-        }
-
-        @keyframes rotateVerify {
-            0% { transform: scale(1) rotate(0deg); }
-            50% { transform: scale(1.2) rotate(10deg); }
-            100% { transform: scale(1) rotate(0deg); }
-        }
-
-        @keyframes fadeInScale {
-            from { opacity: 0; transform: scale(0.9) translateY(20px); }
-            to { opacity: 1; transform: scale(1) translateY(0); }
-        }
-
-        /* --- التنسيق العام --- */
         body {
             background-color: #050a0f;
             color: #ffffff;
-            margin: 0;
             font-family: 'Segoe UI', 'Cairo', sans-serif;
-            overflow-x: hidden;
-        }
-
-        .profile-container {
-            position: relative;
-            z-index: 1;
-            animation: fadeInScale 0.7s ease-out;
-            padding-bottom: 30px;
-        }
-
-        .cover-area {
-            height: 220px;
-            background: #1a1a2e;
-            background-size: cover;
-            background-position: center;
-            position: relative;
-            cursor: pointer;
-            transition: 0.3s;
-            border-bottom: 2px solid #a855f7;
-        }
-
-        .cover-overlay {
-            position: absolute;
-            top: 10px;
-            left: 10px;
-            background: rgba(0,0,0,0.6);
-            padding: 8px 15px;
-            border-radius: 20px;
-            font-size: 12px;
-            backdrop-filter: blur(5px);
-            border: 1px solid #a855f7;
-        }
-
-        .avatar-wrapper {
-            position: absolute;
-            bottom: -70px;
-            right: 20px;
-            width: 140px; 
-            height: 140px;
-            background: linear-gradient(135deg, #f5d496, #e2b35c);
-            border-radius: 50%;
-            padding: 4px;
-            cursor: pointer;
-            box-shadow: 0 0 25px rgba(168, 85, 247, 0.6);
-            z-index: 2;
-        }
-
-        .avatar-wrapper img {
-            width: 100%; height: 100%;
-            border-radius: 50%;
-            border: 4px solid #050a0f;
-            object-fit: cover;
-        }
-
-        .user-details { padding: 85px 20px 10px; text-align: right; }
-        .name { 
-            font-size: 26px; 
-            font-weight: bold; 
-            display: flex; 
-            align-items: center; 
-            gap: 10px;
-            animation: nameGlow 3s infinite ease-in-out;
-        }
-        .verify-gold { 
-            color: #f1c40f; 
-            animation: rotateVerify 2s infinite ease-in-out;
-            font-size: 22px;
-            filter: drop-shadow(0 0 8px #f1c40f);
-        }
-
-        .id-badge {
-            display: inline-block;
-            background: rgba(168, 85, 247, 0.1);
-            padding: 6px 18px;
-            border-radius: 20px;
-            font-size: 13px;
-            color: #a855f7;
-            margin-top: 12px;
-            border: 1px solid rgba(168, 85, 247, 0.3);
-        }
-
-        .card {
-            background: rgba(26, 26, 46, 0.9);
-            margin: 15px;
-            padding: 22px;
-            border-radius: 20px;
-            border: 1px solid rgba(168, 85, 247, 0.1);
-            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
-        }
-
-        .info-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 15px;
-        }
-        .info-item {
-            background: rgba(30, 30, 60, 0.6);
-            padding: 15px;
-            border-radius: 15px;
-            font-size: 14px;
-            cursor: pointer;
-            transition: 0.3s;
             display: flex;
+            justify-content: center;
             align-items: center;
-            gap: 12px;
-            border: 1px solid transparent;
-        }
-        .info-item:hover { 
-            background: rgba(168, 85, 247, 0.15); 
-            transform: translateY(-3px);
-            border-color: #a855f7;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px 0;
         }
 
-        /* تنسيق الاختيارات والرزنامة */
-        .hidden-input { display: none; }
-        
-        .modal-select {
-            display: none;
-            position: fixed;
-            top: 50%; left: 50%;
-            transform: translate(-50%, -50%);
+        .auth-card {
             background: #1a1a2e;
+            width: 90%;
+            max-width: 450px;
             padding: 25px;
-            border-radius: 20px;
-            z-index: 2000;
+            border-radius: 25px;
             border: 2px solid #a855f7;
-            width: 80%;
+            box-shadow: 0 0 30px rgba(168, 85, 247, 0.3);
             text-align: center;
         }
 
-        .footer-actions {
-            display: flex;
-            gap: 15px;
-            margin: 20px 15px;
+        .logo-area h1 {
+            color: #f1c40f;
+            font-size: 26px;
+            margin-bottom: 10px;
+            text-shadow: 0 0 10px rgba(241, 196, 15, 0.6);
         }
-        .btn-action {
-            flex: 1;
-            padding: 15px;
-            border-radius: 15px;
-            border: none;
-            font-weight: bold;
-            font-size: 15px;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-            transition: 0.3s;
-            color: white;
-        }
-        .btn-back { background: #1e293b; border: 1px solid #334155; }
-        .btn-logout { background: #7f1d1d; border: 1px solid #991b1b; }
 
-        .editable:hover { color: #a855f7; cursor: pointer; text-decoration: underline; }
-        #avatarInput, #coverInput { display: none; }
-        
-        /* ستايل الرزنامة */
-        input[type="date"] {
-            background: #050a0f;
-            color: white;
-            border: 1px solid #a855f7;
-            padding: 10px;
-            border-radius: 10px;
+        .input-group {
+            text-align: right;
+            margin-bottom: 15px;
+        }
+
+        .input-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-size: 14px;
+            color: #a855f7;
+            font-weight: bold;
+        }
+
+        .input-group input, .input-group select {
             width: 100%;
+            padding: 12px;
+            border-radius: 12px;
+            border: 1px solid #334155;
+            background: #0f172a;
+            color: white;
+            box-sizing: border-box;
+            outline: none;
+            font-size: 14px;
+        }
+
+        .input-group input:focus, .input-group select:focus {
+            border-color: #f1c40f;
+        }
+
+        .btn-submit {
+            width: 100%;
+            padding: 16px;
+            background: linear-gradient(135deg, #f1c40f, #d4af37);
+            border: none;
+            border-radius: 15px;
+            color: #000;
+            font-weight: bold;
+            font-size: 17px;
+            cursor: pointer;
+            box-shadow: 0 5px 15px rgba(241, 196, 15, 0.3);
             margin-top: 10px;
         }
+
+        .error-container {
+            background: rgba(239, 68, 68, 0.1);
+            color: #ef4444;
+            padding: 12px;
+            border-radius: 10px;
+            margin-top: 15px;
+            border: 1px solid #ef4444;
+            display: none;
+            font-size: 13px;
+        }
+
+        #ageDisplay { color: #f1c40f; font-size: 12px; display: block; margin-top: 5px; }
     </style>
 </head>
 <body>
 
-    <div class="profile-container">
-        <!-- منطقة الغلاف -->
-        <div class="cover-area" id="coverBg" onclick="triggerCoverUpload()" style="background-image: url('https://via.placeholder.com/800x400/1a1a2e/ffffff?text=إمبراطورية+السبع');">
-            <div class="cover-overlay"><i class="fas fa-camera"></i> تغيير غلاف الإمبراطورية</div>
-            <input type="file" id="coverInput" accept="image/*" onchange="previewCover(event)">
-            
-            <div class="avatar-wrapper" onclick="event.stopPropagation(); triggerAvatarUpload();">
-                <img src="https://via.placeholder.com/150" id="avatarImg" alt="Avatar">
-                <input type="file" id="avatarInput" accept="image/*" onchange="previewAvatar(event)">
-            </div>
-        </div>
-
-        <!-- تفاصيل المستخدم -->
-        <div class="user-details">
-            <div class="name">
-                <span id="userName" class="editable" onclick="editField('userName', 'الاسم')">اﻟـﭙـﮋⓈ_ـبـع𓆃</span>
-                <i class="fas fa-certificate verify-gold"></i>
-            </div>
-            <div class="id-badge">الملف الملكي ID: <span id="userID">000000000</span></div>
-        </div>
-
-        <!-- السيرة الذاتية -->
-        <div class="card">
-            <h3 style="font-size: 15px; color: #a855f7; margin-bottom: 12px; display: flex; align-items: center; gap: 8px;">
-                <i class="fas fa-pen-nib"></i> السيرة الذاتية
-            </h3>
-            <p id="userBio" class="editable" onclick="editField('userBio', 'السيرة')" style="font-size: 14px; line-height: 1.6; color: #ccc;">ما ا داام المووت اكيد سافعل مااريد ❤️</p>
-        </div>
-
-        <!-- معلومات أساسية -->
-        <div class="card">
-            <h3 style="font-size: 15px; color: #a855f7; margin-bottom: 18px; display: flex; align-items: center; gap: 8px;">
-                <i class="fas fa-info-circle"></i> البيانات الأساسية
-            </h3>
-            <div class="info-grid">
-                <div class="info-item" onclick="showGenderModal()">
-                    <i class="fas fa-venus-mars" style="color: #a855f7;"></i> <span id="userGender">ذكر</span>
-                </div>
-                <div class="info-item" onclick="triggerDatePicker()">
-                    <i class="fas fa-calendar-alt" style="color: #a855f7;"></i> <span id="userAge">23 سنة</span>
-                    <input type="date" id="birthDateInput" class="hidden-input" onchange="calculateAge(this.value)">
-                </div>
-                <div class="info-item" onclick="editField('userHeight', 'الطول')">
-                    <i class="fas fa-ruler-vertical" style="color: #a855f7;"></i> <span id="userHeight">193cm</span>
-                </div>
-                <div class="info-item" onclick="chooseCountry()">
-                    <i class="fas fa-map-marker-alt" style="color: #3b82f6;"></i> <span id="userLocation">Bursa, TR</span>
-                </div>
-            </div>
-        </div>
-
-        <div class="footer-actions">
-            <button class="btn-action btn-back" onclick="window.history.back()">
-                <i class="fas fa-arrow-right"></i> رجوع
-            </button>
-            <button class="btn-action btn-logout" onclick="userLogout()">
-                <i class="fas fa-sign-out-alt"></i> خروج
-            </button>
-        </div>
+<div class="auth-card">
+    <div class="logo-area">
+        <h1>👑 وكالة السبع</h1>
+        <p style="color: #ccc; font-size: 14px; margin-top: -5px;">إمبراطورية السبع V3</p>
     </div>
 
-    <!-- مودال اختيار الجنس -->
-    <div id="genderModal" class="modal-select">
-        <h3 style="color: #a855f7;">اختر الجنس</h3>
-        <button class="btn-action" style="background: #3b82f6; margin-bottom: 10px;" onclick="setGender('ذكر ♂️')">ذكر ♂️</button>
-        <button class="btn-action" style="background: #ec4899;" onclick="setGender('أنثى ♀️')">أنثى ♀️</button>
-    </div>
+    <form id="registerForm">
+        <div class="input-group">
+            <label><i class="fas fa-user"></i> اسم المستخدم</label>
+            <input type="text" id="regName" placeholder="مثال: السبع الحلبي" required>
+        </div>
 
-    <!-- قائمة اختيار الدول -->
-    <select id="countrySelect" class="modal-select" onchange="updateCountry()" style="display: none;">
-        <option value="">-- اختر الدولة --</option>
-        <option value="السعودية 🇸🇦">السعودية 🇸🇦</option>
-        <option value="تركيا 🇹🇷">تركيا 🇹🇷</option>
-        <option value="سوريا 🇸🇾">سوريا 🇸🇾</option>
-        <option value="العراق 🇮🇶">العراق 🇮🇶</option>
-        <option value="مصر 🇪🇬">مصر 🇪🇬</option>
-    </select>
+        <div class="input-group">
+            <label><i class="fas fa-envelope"></i> البريد الإلكتروني</label>
+            <input type="email" id="regEmail" placeholder="example@gmail.com" required>
+        </div>
 
-    <script>
-        const API_URL = 'https://game-server-ayham.onrender.com/api';
+        <div class="input-group">
+            <label><i class="fas fa-lock"></i> كلمة السر</label>
+            <input type="password" id="regPass" placeholder="••••••••" required>
+        </div>
 
-        // حساب العمر من الرزنامة
-        function triggerDatePicker() {
-            document.getElementById('birthDateInput').showPicker();
-        }
+        <div class="input-group">
+            <label><i class="fas fa-venus-mars"></i> الجنس</label>
+            <select id="regGender" required>
+                <option value="ذكر">ذكر ♂️</option>
+                <option value="أنثى">أنثى ♀️</option>
+            </select>
+        </div>
 
-        async function calculateAge(birthDate) {
-            if (!birthDate) return;
-            const birth = new Date(birthDate);
-            const now = new Date();
-            let age = now.getFullYear() - birth.getFullYear();
-            const m = now.getMonth() - birth.getMonth();
-            if (m < 0 || (m === 0 && now.getDate() < birth.getDate())) age--;
-            
-            const ageStr = age + " سنة";
-            document.getElementById('userAge').innerText = ageStr;
-            localStorage.setItem('userAge', ageStr);
-            localStorage.setItem('userBirthDate', birthDate);
-            await updateProfileOnServer({ age: ageStr, birth_date: birthDate });
-        }
+        <div class="input-group">
+            <label><i class="fas fa-globe"></i> الدولة</label>
+            <select id="regCountry" required>
+                <option value="">-- اختر دولتك --</option>
+                <option value="سوريا 🇸🇾">سوريا 🇸🇾</option>
+                <option value="تركيا 🇹🇷">تركيا 🇹🇷</option>
+                <option value="السعودية 🇸🇦">السعودية 🇸🇦</option>
+                <option value="العراق 🇮🇶">العراق 🇮🇶</option>
+                <option value="مصر 🇪🇬">مصر 🇪🇬</option>
+                <option value="فلسطين 🇵🇸">فلسطين 🇵🇸</option>
+                <option value="الأردن 🇯🇴">الأردن 🇯🇴</option>
+                <option value="لبنان 🇱🇧">لبنان 🇱🇧</option>
+                <option value="الكويت 🇰🇼">الكويت 🇰🇼</option>
+                <option value="الإمارات 🇦🇪">الإمارات 🇦🇪</option>
+                <option value="قطر 🇶🇦">قطر 🇶🇦</option>
+                <option value="البحرين 🇧🇭">البحرين 🇧🇭</option>
+                <option value="عمان 🇴🇲">عمان 🇴🇲</option>
+                <option value="اليمن 🇾🇪">اليمن 🇾🇪</option>
+                <option value="المغرب 🇲🇦">المغرب 🇲🇦</option>
+                <option value="الجزائر 🇩🇿">الجزائر 🇩🇿</option>
+                <option value="تونس 🇹🇳">تونس 🇹🇳</option>
+                <option value="ليبيا 🇱🇾">ليبيا 🇱🇾</option>
+                <option value="السودان 🇸🇩">السودان 🇸🇩</option>
+                <option value="ألمانيا 🇩🇪">ألمانيا 🇩🇪</option>
+                <option value="السويد 🇸🇪">السويد 🇸🇪</option>
+            </select>
+        </div>
 
-        // اختيار الجنس
-        function showGenderModal() { document.getElementById('genderModal').style.display = 'block'; }
-        async function setGender(gender) {
-            document.getElementById('userGender').innerText = gender;
-            localStorage.setItem('userGender', gender);
-            document.getElementById('genderModal').style.display = 'none';
-            await updateProfileOnServer({ gender: gender });
-        }
+        <div class="input-group">
+            <label><i class="fas fa-calendar-day"></i> تاريخ الميلاد</label>
+            <input type="date" id="regBirth" required onchange="calculateAge(this.value)">
+            <span id="ageDisplay"></span>
+        </div>
 
-        // بقية الدوال (الاسم، الدولة، الصور...)
-        async function editField(id, label) {
-            const el = document.getElementById(id);
-            const val = prompt(`تعديل ${label}:`, el.innerText);
-            if (val && val.trim() !== "") {
-                el.innerText = val;
-                localStorage.setItem(id, val);
-                await updateProfileOnServer({ [id]: val });
-            }
-        }
+        <button type="submit" class="btn-submit">إنشاء الحساب الملكي</button>
+    </form>
 
-        function chooseCountry() { document.getElementById('countrySelect').style.display = 'block'; }
-        async function updateCountry() {
-            const sel = document.getElementById('countrySelect');
-            if(sel.value !== "") {
-                document.getElementById('userLocation').innerText = sel.value;
-                localStorage.setItem('userLocation', sel.value);
-                await updateProfileOnServer({ country: sel.value });
-            }
-            sel.style.display = 'none';
-        }
+    <div id="errorContainer" class="error-container"></div>
+</div>
 
-        async function updateProfileOnServer(data) {
-            const token = localStorage.getItem('token');
-            if (!token) return;
-            try {
-                await fetch(`${API_URL}/update-profile`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-                    body: JSON.stringify(data)
-                });
-            } catch (err) { console.error("عطل بالسيرفر"); }
-        }
+<script>
+    const API_URL = 'https://game-server-ayham.onrender.com/api';
+    let calculatedAge = "";
 
-        function userLogout() {
-            if(confirm("خروج من الإمبراطورية؟")) {
-                localStorage.removeItem('token');
-                window.location.href = 'login.html';
-            }
-        }
+    function calculateAge(birthDate) {
+        if (!birthDate) return;
+        const birth = new Date(birthDate);
+        const now = new Date();
+        let age = now.getFullYear() - birth.getFullYear();
+        if (now.getMonth() < birth.getMonth() || (now.getMonth() === birth.getMonth() && now.getDate() < birth.getDate())) age--;
+        calculatedAge = age + " سنة";
+        document.getElementById('ageDisplay').innerText = "العمر: " + calculatedAge;
+    }
 
-        // تحميل الصور
-        function triggerAvatarUpload() { document.getElementById('avatarInput').click(); }
-        function previewAvatar(event) {
-            const reader = new FileReader();
-            reader.onload = function() {
-                document.getElementById('avatarImg').src = reader.result;
-                localStorage.setItem('savedAvatar', reader.result);
-            };
-            reader.readAsDataURL(event.target.files[0]);
-        }
+    document.getElementById('registerForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const errorBox = document.getElementById('errorContainer');
+        errorBox.style.display = 'none';
 
-        function triggerCoverUpload() { document.getElementById('coverInput').click(); }
-        function previewCover(event) {
-            const reader = new FileReader();
-            reader.onload = function() {
-                document.getElementById('coverBg').style.backgroundImage = `url('${reader.result}')`;
-                localStorage.setItem('savedCover', reader.result);
-            };
-            reader.readAsDataURL(event.target.files[0]);
-        }
-
-        window.onload = function() {
-            const fields = ['userName', 'userBio', 'userHeight', 'userAge', 'userLocation', 'userGender'];
-            fields.forEach(f => {
-                if(localStorage.getItem(f)) document.getElementById(f).innerText = localStorage.getItem(f);
-            });
-            if(localStorage.getItem('savedAvatar')) document.getElementById('avatarImg').src = localStorage.getItem('savedAvatar');
-            if(localStorage.getItem('savedCover')) document.getElementById('coverBg').style.backgroundImage = `url('${localStorage.getItem('savedCover')}')`;
-            
-            let id = localStorage.getItem('fixed_id');
-            if (!id) {
-                id = Math.floor(100000000 + Math.random() * 900000000);
-                localStorage.setItem('fixed_id', id);
-            }
-            document.getElementById('userID').innerText = id;
+        const userData = {
+            username: document.getElementById('regName').value,
+            email: document.getElementById('regEmail').value,
+            password: document.getElementById('regPass').value,
+            gender: document.getElementById('regGender').value,
+            country: document.getElementById('regCountry').value,
+            birth_date: document.getElementById('regBirth').value,
+            age: calculatedAge
         };
-    </script>
+
+        try {
+            const response = await fetch(`${API_URL}/register`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(userData)
+            });
+
+            if (response.headers.get("content-type")?.includes("application/json")) {
+                const result = await response.json();
+                if (response.ok) {
+                    alert("تم التسجيل بنجاح يا سبع!");
+                    window.location.href = 'login.html';
+                } else {
+                    throw new Error(result.message || "فشل التسجيل");
+                }
+            } else {
+                throw new Error("خطأ في استجابة السيرفر");
+            }
+        } catch (err) {
+            errorBox.innerText = err.message;
+            errorBox.style.display = 'block';
+        }
+    });
+</script>
 </body>
 </html>
