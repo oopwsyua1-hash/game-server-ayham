@@ -2,24 +2,28 @@ const express = require('express');
 const path = require('path');
 const app = express();
 
-// 1. إعداد المجلد العام للملفات (HTML, CSS, Images)
-// تأكد أن ملف index.html موجود داخل مجلد اسمه public
+// 1. تعريف المجلد العام (هون بنحط الصور والـ HTML)
 app.use(express.static(path.join(__dirname, 'public')));
 
-// 2. معالجة البيانات القادمة من الواجهة (عشان تسجيل الدخول مستقبلاً)
+// 2. إعدادات لاستقبال البيانات (مهمة للدردشة والحسابات مستقبلاً)
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// 3. المسار الرئيسي للموقع
+// 3. توجيه الرابط الأساسي لملف index.html
 app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
-// 4. رسالة ترحيبية عند تشغيل السيرفر (تظهر في الـ Logs عندك)
+// 4. حل مشكلة "Cannot GET" لأي صفحة فرعية
+app.get('*', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'index.html'));
+});
+
+// 5. تشغيل السيرفر على البورت المطلوب
 const PORT = process.env.PORT || 10000;
 app.listen(PORT, () => {
-    console.log('====================================');
-    console.log(`🚀 تم تشغيل سيرفر إمبراطورية السبع بنجاح`);
-    console.log(`📍 السيرفر شغال على البورت: ${PORT}`);
-    console.log('====================================');
+    console.log('------------------------------------');
+    console.log('🦁 إمبراطورية السبع V3 جاهزة للعمل');
+    console.log(`🔥 السيرفر شغال الآن يا أبو نمر على بورت: ${PORT}`);
+    console.log('------------------------------------');
 });
