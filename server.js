@@ -4,7 +4,7 @@ const cors = require('cors');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const http = require('http');
-const path = require('path'); 
+const path = require('path');
 const { Server } = require('socket.io');
 
 const app = express();
@@ -13,123 +13,78 @@ const io = new Server(server, { cors: { origin: '*' } });
 
 app.use(cors());
 app.use(express.json());
-app.use(express.static('public')); 
+app.use(express.static('public')); // هذا السطر يربط كل ملفات الـ HTML والـ JS تلقائياً
 
-// ===== الاتصال بقاعدة البيانات =====
-const JWT_SECRET = process.env.JWT_SECRET;
+// إعدادات البيئة
+const JWT_SECRET = process.env.JWT_SECRET || 'lion_secret_key';
 const MONGO_URI = process.env.MONGO_URI;
 
 mongoose.connect(MONGO_URI)
-  .then(() => console.log('تم الاتصال بـ MongoDB بنجاح 🔥'))
-  .catch(err => console.error('خطأ في الاتصال بقاعدة البيانات:', err));
+  .then(() => console.log('اتصلنا بقاعدة بيانات السبع 🔥'))
+  .catch(err => console.error('فشل الاتصال:', err));
 
-// ===== الموديلات (Schemas) =====
+// موديل المستخدم (يدعم كل البيانات اللي في صفحتك)
 const UserSchema = new mongoose.Schema({
-  username: { type: String, unique: true },
-  password: String,
+  username: { type: String, unique: true, required: true },
+  password: { type: String, required: true },
+  email: String,
+  lastName: String,
+  country: String,
+  age: Number,
+  gender: String,
   coins: { type: Number, default: 50000 },
-  targetCoins: { type: Number, default: 1000000 },
-  earnedCoins: { type: Number, default: 0 },
-  role: { type: String, default: 'user' },
-  agency: { type: String, default: 'لا يوجد' }
+  role: { type: String, default: 'user' }
 });
 const User = mongoose.model('User', UserSchema);
 
-const RoomSchema = new mongoose.Schema({
-  name: String,
-  price: Number
-});
-const Room = mongoose.model('Room', RoomSchema);
+// ===== ميكانيكية الربط الذكي لكل المسارات =====
 
-const MessageSchema = new mongoose.Schema({
-  room: String,
-  username: String,
-  text: String,
-  time: { type: Date, default: Date.now }
-});
-const Message = mongoose.model('Message', MessageSchema);
-
-// ===== إنشاء الرومات الأساسية =====
-async function createDefaultRooms() {
-  const count = await Room.countDocuments();
-  if (count === 0) {
-    await Room.create([
-      { name: 'مجانية', price: 0 },
-      { name: 'كبار الشخصيات 100K', price: 100000 },
-      { name: 'VIP 500K', price: 500000 }
-    ]);
-    console.log('تم إنشاء الرومات الأساسية');
-  }
-}
-createDefaultRooms();
-
-// ===== مسارات تسجيل الدخول (مربوطة بـ script.js) =====
-app.get('/', (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'login.html'));
-});
-
-app.post('/register', async (req, res) => {
+// دعم مسار التسجيل (سواء بـ /api أو بدونها ليرتبط بكل النسخ)
+const handleRegister = async (req, res) => {
   try {
-    const { username, password } = req.body;
-    if(!username || !password) return res.json({ msg: 'عبي كل البيانات' });
+    const { username, password, email, lastName, country, age, gender } = req.body;
     const exists = await User.findOne({ username });
-    if(exists) return res.json({ msg: 'الاسم مستخدم مسبقاً' });
+    if(exists) return res.status(400).json({ msg: 'الاسم محجوز' });
+    
     const hash = await bcrypt.hash(password, 10);
-    await User.create({ username, password: hash });
-    res.json({ msg: 'تم إنشاء الحساب بنجاح ✅' });
-  } catch(e) { res.status(400).json({ msg: 'خطأ بالسيرفر' }); }
-});
+    const newUser = await User.create({ username, password: hash, email, lastName, country, age, gender });
+    
+    const token = jwt.sign({ id: newUser._id }, JWT_SECRET);
+    res.json({ msg: 'تم إنشاء الحساب بنجاح ✅', token });
+  } catch(e) { res.status(500).json({ msg: 'خطأ بالسيرفر' }); }
+};
 
-app.post('/login', async (req, res) => {
+app.post('/register', handleRegister);
+app.post('/api/register', handleRegister); // دعم طلبات صفحة الـ HTML القديمة والجديدة
+
+// دعم مسار تسجيل الدخول (Username أو Email)
+const handleLogin = async (req, res) => {
   try {
-    const { username, password } = req.body;
-    const user = await User.findOne({ username });
-    if(!user) return res.json({ msg: 'المستخدم غير موجود' });
+    const { username, email, password } = req.body;
+    const identifier = username || email; // يربط مع أي حقل إدخال
+    const user = await User.findOne({ $or: [{ username: identifier }, { email: identifier }] });
+    
+    if(!user) return res.status(404).json({ msg: 'المستخدم غير موجود' });
     const match = await bcrypt.compare(password, user.password);
-    if(!match) return res.json({ msg: 'كلمة السر غير صحيحة' });
+    if(!match) return res.status(401).json({ msg: 'كلمة السر غلط' });
+    
     const token = jwt.sign({ id: user._id }, JWT_SECRET);
-    res.json({ token, user });
-  } catch(e) { res.status(400).json({ msg: 'خطأ بالسيرفر' }); }
-});
+    res.json({ token, user, msg: 'أهلاً بك في إمبراطورية السبع' });
+  } catch(e) { res.status(500).json({ msg: 'خطأ في الدخول' }); }
+};
 
-// ===== مسارات جلب البيانات (للربط مع باقي ملفات الـ JS) =====
+app.post('/login', handleLogin);
+app.post('/api/login', handleLogin);
 
-// جلب بيانات البروفايل (مربوط مع profile.js)
-app.get('/api/user/profile', async (req, res) => {
+// مسار جلب البيانات للبروفايل والرومات
+app.get(['/api/user/profile', '/profile-data'], async (req, res) => {
   try {
     const token = req.headers.authorization?.split(' ')[1];
     const decoded = jwt.verify(token, JWT_SECRET);
     const user = await User.findById(decoded.id).select('-password');
     res.json(user);
-  } catch (e) { res.status(401).json({ msg: 'انتهت الجلسة، سجل دخول مجدداً' }); }
-});
-
-// جلب قائمة المتصدرين (مربوط مع lobbies.html و script.js)
-app.get('/api/leaderboard', async (req, res) => {
-  try {
-    const topUsers = await User.find().sort({ coins: -1 }).limit(10);
-    res.json(topUsers);
-  } catch (e) { res.json([]); }
-});
-
-// جلب الرومات
-app.get('/rooms', async (req, res) => {
-  const rooms = await Room.find();
-  res.json(rooms);
-});
-
-// ===== نظام الألعاب والدردشة (Socket.io) =====
-io.on('connection', (socket) => {
-  socket.on('joinRoom', async ({ room, username }) => {
-    socket.join(room);
-    const messages = await Message.find({ room }).sort({ time: -1 }).limit(50);
-    socket.emit('history', messages.reverse());
-  });
-  socket.on('chatMessage', async ({ room, username, text }) => {
-    const msg = await Message.create({ room, username, text });
-    io.to(room).emit('message', msg);
-  });
+  } catch (e) { res.status(401).json({ msg: 'سجل دخول' }); }
 });
 
 const PORT = process.env.PORT || 3000;
-server.listen(PORT, () => console.log(`السيرفر شغال على المنفذ ${PORT} 👑`));
+server.listen(PORT, () => console.log(`السيرفر جاهز للربط على منفذ ${PORT} 👑`));
