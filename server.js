@@ -2,24 +2,31 @@ const express = require('express');
 const path = require('path');
 const app = express();
 
-// 1. تعريف المجلد العام (هون بنحط الصور والـ HTML)
+// إعداد المجلد العام للملفات
 app.use(express.static(path.join(__dirname, 'public')));
-
-// 2. إعدادات لاستقبال البيانات (مهمة للدردشة والحسابات مستقبلاً)
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// 3. توجيه الرابط الأساسي لملف index.html
+// مسار تشغيل صفحة تسجيل الدخول (index.html)
 app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
-// 4. حل مشكلة "Cannot GET" لأي صفحة فرعية
+// التعامل مع بيانات تسجيل الدخول
+app.post('/api/login', (req, res) => {
+    res.json({ success: true, message: "أهلاً بك يا سبع في إمبراطوريتك" });
+});
+
+// التعامل مع بيانات إنشاء الحساب
+app.post('/api/register', (req, res) => {
+    res.json({ success: true, message: "تم تأسيس حسابك الملكي بنجاح" });
+});
+
+// ضمان عدم ظهور خطأ Cannot GET
 app.get('*', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
-// 5. تشغيل السيرفر على البورت المطلوب
 const PORT = process.env.PORT || 10000;
 app.listen(PORT, () => {
     console.log('------------------------------------');
