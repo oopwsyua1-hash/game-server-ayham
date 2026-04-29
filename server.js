@@ -4,7 +4,7 @@ const cors = require('cors');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const http = require('http');
-const path = require('path'); // إضافة مكتبة المسارات
+const path = require('path'); 
 const { Server } = require('socket.io');
 
 const app = express();
@@ -13,29 +13,25 @@ const io = new Server(server, { cors: { origin: '*' } });
 
 app.use(cors());
 app.use(express.json());
+app.use(express.static('public')); 
 
-// ===== إضافة الربط مع المجلد العام وواجهة المستخدم =====
-app.use(express.static('public')); // ليتمكن السيرفر من قراءة ملفات الـ HTML والـ CSS
-
-app.get('/', (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'login.html')); // فتح صفحة الدخول تلقائياً عند تشغيل الرابط
-});
-// ===============================================
-
-// ===== بيقرأهم من Render تلقائياً =====
+// ===== الاتصال بقاعدة البيانات =====
 const JWT_SECRET = process.env.JWT_SECRET;
 const MONGO_URI = process.env.MONGO_URI;
 
-mongoose.connect(MONGO_URI);
+mongoose.connect(MONGO_URI)
+  .then(() => console.log('تم الاتصال بـ MongoDB بنجاح 🔥'))
+  .catch(err => console.error('خطأ في الاتصال بقاعدة البيانات:', err));
 
-// ===== Schemas =====
+// ===== الموديلات (Schemas) =====
 const UserSchema = new mongoose.Schema({
   username: { type: String, unique: true },
   password: String,
   coins: { type: Number, default: 50000 },
   targetCoins: { type: Number, default: 1000000 },
   earnedCoins: { type: Number, default: 0 },
-  role: { type: String, default: 'user' }
+  role: { type: String, default: 'user' },
+  agency: { type: String, default: 'لا يوجد' }
 });
 const User = mongoose.model('User', UserSchema);
 
@@ -53,7 +49,7 @@ const MessageSchema = new mongoose.Schema({
 });
 const Message = mongoose.model('Message', MessageSchema);
 
-// ===== انشاء الرومات الاساسية =====
+// ===== إنشاء الرومات الأساسية =====
 async function createDefaultRooms() {
   const count = await Room.countDocuments();
   if (count === 0) {
@@ -62,23 +58,26 @@ async function createDefaultRooms() {
       { name: 'كبار الشخصيات 100K', price: 100000 },
       { name: 'VIP 500K', price: 500000 }
     ]);
-    console.log('تم انشاء الرومات');
+    console.log('تم إنشاء الرومات الأساسية');
   }
 }
 createDefaultRooms();
 
-// ===== تسجيل ودخول =====
+// ===== مسارات تسجيل الدخول (مربوطة بـ script.js) =====
+app.get('/', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'login.html'));
+});
+
 app.post('/register', async (req, res) => {
   try {
     const { username, password } = req.body;
-    if(!username ||!password) return res.json({ msg: 'عبي كل البيانات' });
-    if(username.includes('@')) return res.json({ msg: 'اسم المستخدم ما بصير فيه @' });
+    if(!username || !password) return res.json({ msg: 'عبي كل البيانات' });
     const exists = await User.findOne({ username });
-    if(exists) return res.json({ msg: 'الاسم مستخدم' });
+    if(exists) return res.json({ msg: 'الاسم مستخدم مسبقاً' });
     const hash = await bcrypt.hash(password, 10);
     await User.create({ username, password: hash });
-    res.json({ msg: 'تم انشاء الحساب بنجاح' });
-  } catch(e) { console.log(e); res.status(400).json({ msg: 'خطأ بالسيرفر' }); }
+    res.json({ msg: 'تم إنشاء الحساب بنجاح ✅' });
+  } catch(e) { res.status(400).json({ msg: 'خطأ بالسيرفر' }); }
 });
 
 app.post('/login', async (req, res) => {
@@ -87,58 +86,39 @@ app.post('/login', async (req, res) => {
     const user = await User.findOne({ username });
     if(!user) return res.json({ msg: 'المستخدم غير موجود' });
     const match = await bcrypt.compare(password, user.password);
-    if(!match) return res.json({ msg: 'كلمة السر غلط' });
+    if(!match) return res.json({ msg: 'كلمة السر غير صحيحة' });
     const token = jwt.sign({ id: user._id }, JWT_SECRET);
     res.json({ token, user });
-  } catch(e) { console.log(e); res.status(400).json({ msg: 'خطأ بالسيرفر' }); }
+  } catch(e) { res.status(400).json({ msg: 'خطأ بالسيرفر' }); }
 });
 
-app.get('/me', async (req, res) => {
+// ===== مسارات جلب البيانات (للربط مع باقي ملفات الـ JS) =====
+
+// جلب بيانات البروفايل (مربوط مع profile.js)
+app.get('/api/user/profile', async (req, res) => {
   try {
     const token = req.headers.authorization?.split(' ')[1];
-    if(!token) return res.status(401).json({ msg: 'مافي توكن' });
     const decoded = jwt.verify(token, JWT_SECRET);
     const user = await User.findById(decoded.id).select('-password');
     res.json(user);
-  } catch { res.status(401).json({ msg: 'توكن غلط' }); }
+  } catch (e) { res.status(401).json({ msg: 'انتهت الجلسة، سجل دخول مجدداً' }); }
 });
 
-// ===== نظام الألعاب - 6 العاب =====
-// تم الإبقاء على كود الألعاب كما هو لضمان عمل "إمبراطورية السبع"
-app.post('/game/luck', async (req, res) => {
+// جلب قائمة المتصدرين (مربوط مع lobbies.html و script.js)
+app.get('/api/leaderboard', async (req, res) => {
   try {
-    const { token, bet } = req.body;
-    const betAmount = parseInt(bet);
-    if(!betAmount || betAmount < 100) return res.json({ msg: 'اقل رهان 100' });
-    const decoded = jwt.verify(token, JWT_SECRET);
-    const user = await User.findById(decoded.id);
-    if(user.coins < betAmount) return res.json({ msg: 'رصيدك ما بيكفي' });
-    user.coins -= betAmount;
-    const win = Math.random() < 0.5;
-    if(win) {
-      const winAmount = betAmount * 2;
-      user.coins += winAmount;
-      user.earnedCoins += betAmount;
-      if(user.coins >= 1000000) user.coins = 300000;
-      await user.save();
-      res.json({ msg: `مبروك ربحت ${winAmount.toLocaleString()}! 🎉`, win: true, user });
-    } else {
-      user.coins = 0;
-      await user.save();
-      res.json({ msg: `خسرت! رصيدك صفر 😢`, win: false, user });
-    }
-  } catch { res.status(400).json({ msg: 'خطأ' }); }
+    const topUsers = await User.find().sort({ coins: -1 }).limit(10);
+    res.json(topUsers);
+  } catch (e) { res.json([]); }
 });
 
-// ... باقي الألعاب (Camel, WorldCup, RPS, Wheel, Dice) تبقى كما هي في الكود الأصلي ...
-
-// ===== الرومات =====
+// جلب الرومات
 app.get('/rooms', async (req, res) => {
   const rooms = await Room.find();
   res.json(rooms);
 });
 
-// ===== Socket.io دردشة =====
+// ===== نظام الألعاب والدردشة (Socket.io) =====
 io.on('connection', (socket) => {
   socket.on('joinRoom', async ({ room, username }) => {
     socket.join(room);
@@ -152,4 +132,4 @@ io.on('connection', (socket) => {
 });
 
 const PORT = process.env.PORT || 3000;
-server.listen(PORT, () => console.log(`السيرفر شغال على ${PORT} 👑`));
+server.listen(PORT, () => console.log(`السيرفر شغال على المنفذ ${PORT} 👑`));
