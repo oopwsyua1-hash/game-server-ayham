@@ -3,88 +3,106 @@ const mongoose = require('mongoose');
 const cors = require('cors');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
-const http = require('http');
 const path = require('path');
+const http = require('http');
 const { Server } = require('socket.io');
+require('dotenv').config();
 
 const app = express();
 const server = http.createServer(app);
 const io = new Server(server, { cors: { origin: '*' } });
 
+const PORT = process.env.PORT || 3000;
+const JWT_SECRET = 'ayham-secret-key-2024';
+
+// Middleware الشامل
 app.use(cors());
 app.use(express.json());
-app.use(express.static('public')); // هذا السطر يربط كل ملفات الـ HTML والـ JS تلقائياً
+app.use(express.static(path.join(__dirname, 'public')));
 
-// إعدادات البيئة
-const JWT_SECRET = process.env.JWT_SECRET || 'lion_secret_key';
-const MONGO_URI = process.env.MONGO_URI;
+// الاتصال بقاعدة البيانات
+mongoose.connect(process.env.MONGODB_URI)
+  .then(() => console.log('✅ إمبراطورية السبع متصلة بقاعدة البيانات'))
+  .catch(err => console.log('❌ خطأ اتصال:', err));
 
-mongoose.connect(MONGO_URI)
-  .then(() => console.log('اتصلنا بقاعدة بيانات السبع 🔥'))
-  .catch(err => console.error('فشل الاتصال:', err));
+// --- [ الموديلات المدمجة من GitHub ] ---
 
-// موديل المستخدم (يدعم كل البيانات اللي في صفحتك)
-const UserSchema = new mongoose.Schema({
-  username: { type: String, unique: true, required: true },
-  password: { type: String, required: true },
-  email: String,
-  lastName: String,
-  country: String,
-  age: Number,
-  gender: String,
-  coins: { type: Number, default: 50000 },
-  role: { type: String, default: 'user' }
+// 1. موديل المستخدم (User)
+const userSchema = new mongoose.Schema({
+    username: { type: String, required: true },
+    lastName: String,
+    email: { type: String, required: true, unique: true },
+    password: { type: String, required: true },
+    country: String,
+    age: Number,
+    gender: String,
+    coins: { type: Number, default: 50000 },
+    role: { type: String, default: 'user' }, // user, admin, agent
+    vip: { type: Number, default: 0 },
+    bio: { type: String, default: 'أهلاً بك في إمبراطورية السبع' },
+    agencyId: { type: mongoose.Schema.Types.ObjectId, ref: 'Agency' }
 });
-const User = mongoose.model('User', UserSchema);
+const User = mongoose.model('User', userSchema);
 
-// ===== ميكانيكية الربط الذكي لكل المسارات =====
+// 2. موديل الوكالة (Agency) - مدمج من ملف Agency.js بالصور
+const agencySchema = new mongoose.Schema({
+    name: { type: String, required: true },
+    owner: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+    members: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
+    level: { type: Number, default: 1 }
+});
+const Agency = mongoose.model('Agency', agencySchema);
 
-// دعم مسار التسجيل (سواء بـ /api أو بدونها ليرتبط بكل النسخ)
-const handleRegister = async (req, res) => {
-  try {
-    const { username, password, email, lastName, country, age, gender } = req.body;
-    const exists = await User.findOne({ username });
-    if(exists) return res.status(400).json({ msg: 'الاسم محجوز' });
-    
-    const hash = await bcrypt.hash(password, 10);
-    const newUser = await User.create({ username, password: hash, email, lastName, country, age, gender });
-    
-    const token = jwt.sign({ id: newUser._id }, JWT_SECRET);
-    res.json({ msg: 'تم إنشاء الحساب بنجاح ✅', token });
-  } catch(e) { res.status(500).json({ msg: 'خطأ بالسيرفر' }); }
-};
+// --- [ الأكواد المدمجة (APIs) ] ---
 
-app.post('/register', handleRegister);
-app.post('/api/register', handleRegister); // دعم طلبات صفحة الـ HTML القديمة والجديدة
-
-// دعم مسار تسجيل الدخول (Username أو Email)
-const handleLogin = async (req, res) => {
-  try {
-    const { username, email, password } = req.body;
-    const identifier = username || email; // يربط مع أي حقل إدخال
-    const user = await User.findOne({ $or: [{ username: identifier }, { email: identifier }] });
-    
-    if(!user) return res.status(404).json({ msg: 'المستخدم غير موجود' });
-    const match = await bcrypt.compare(password, user.password);
-    if(!match) return res.status(401).json({ msg: 'كلمة السر غلط' });
-    
-    const token = jwt.sign({ id: user._id }, JWT_SECRET);
-    res.json({ token, user, msg: 'أهلاً بك في إمبراطورية السبع' });
-  } catch(e) { res.status(500).json({ msg: 'خطأ في الدخول' }); }
-};
-
-app.post('/login', handleLogin);
-app.post('/api/login', handleLogin);
-
-// مسار جلب البيانات للبروفايل والرومات
-app.get(['/api/user/profile', '/profile-data'], async (req, res) => {
-  try {
-    const token = req.headers.authorization?.split(' ')[1];
-    const decoded = jwt.verify(token, JWT_SECRET);
-    const user = await User.findById(decoded.id).select('-password');
-    res.json(user);
-  } catch (e) { res.status(401).json({ msg: 'سجل دخول' }); }
+// تسجيل ودخول (موحد لكل الصفحات)
+app.post(['/api/register', '/api/auth/register'], async (req, res) => {
+    try {
+        const { username, password, email, lastName, country, age, gender } = req.body;
+        const hash = await bcrypt.hash(password, 10);
+        const user = await User.create({ username, password: hash, email, lastName, country, age, gender });
+        const token = jwt.sign({ userId: user._id }, JWT_SECRET);
+        res.json({ token, msg: 'تم إنشاء حساب السبع ✅' });
+    } catch (e) { res.status(400).json({ error: 'الحساب موجود أو البيانات ناقصة' }); }
 });
 
-const PORT = process.env.PORT || 3000;
-server.listen(PORT, () => console.log(`السيرفر جاهز للربط على منفذ ${PORT} 👑`));
+app.post(['/api/login', '/api/auth/login'], async (req, res) => {
+    try {
+        const { email, username, password } = req.body;
+        const user = await User.findOne({ $or: [{ email }, { username }] });
+        if (!user || !(await bcrypt.compare(password, user.password))) 
+            return res.status(401).json({ error: 'بيانات الدخول غلط' });
+        const token = jwt.sign({ userId: user._id }, JWT_SECRET);
+        res.json({ token, user });
+    } catch (e) { res.status(500).json({ error: 'خطأ سيرفر' }); }
+});
+
+// جلب البيانات (لصفحة me.html و profile.js)
+app.get(['/api/me', '/api/profile'], async (req, res) => {
+    try {
+        const token = req.headers.authorization?.split(' ')[1];
+        const decoded = jwt.verify(token, JWT_SECRET);
+        const user = await User.findById(decoded.userId).populate('agencyId').select('-password');
+        const userData = user.toObject();
+        userData.userId = user._id.toString().slice(-6); // الـ ID اللي بتحبه الصفحة
+        res.json(userData);
+    } catch (e) { res.status(401).json({ error: 'غير مصرح' }); }
+});
+
+// --- [ نظام الغرف (Socket.io) ] ---
+io.on('connection', (socket) => {
+    console.log('👤 مستخدم دخل الإمبراطورية');
+    socket.on('joinRoom', (roomId) => { socket.join(roomId); });
+    socket.on('sendMessage', (data) => { io.to(data.roomId).emit('newMessage', data); });
+});
+
+// --- [ ربط الصفحات (Static Routes) ] ---
+// هاد الجزء بيربط كل الملفات اللي شفتها بالصور
+app.get('/', (req, res) => res.sendFile(path.join(__dirname, 'public', 'index.html')));
+app.get('/admin', (req, res) => res.sendFile(path.join(__dirname, 'public', 'admin.html')));
+app.get('/agency', (req, res) => res.sendFile(path.join(__dirname, 'public', 'agency.html')));
+app.get('/me', (req, res) => res.sendFile(path.join(__dirname, 'public', 'me.html')));
+
+server.listen(PORT, () => {
+    console.log(`🚀 السيرفر المدمج شغال يا أبو نمر: https://game-server-ayham.onrender.com`);
+});
