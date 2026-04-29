@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>إمبراطورية السبع - التحكم بالمايكات</title>
+  <title>إمبراطورية السبع V3 - الغرفة الحية</title>
   <script src="/socket.io/socket.io.js"></script>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -13,7 +13,7 @@
       overflow: hidden; height: 100vh; display: flex; flex-direction: column;
     }
 
-    /* لوحة الإعدادات */
+    /* لوحة التحكم */
     #settingsPanel {
       position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
       background: #111; border: 2px solid #FFD700; border-radius: 15px;
@@ -21,134 +21,132 @@
     }
     .settings-btn {
       background: #FFD700; color: #000; border: none; padding: 10px;
-      margin: 5px; border-radius: 5px; cursor: pointer; font-weight: bold;
+      margin: 5px; border-radius: 5px; cursor: pointer; font-weight: bold; width: 40%;
     }
 
-    /* شبكة المايكات المرنة */
+    /* المايكات */
     .mics-grid {
-      display: grid;
-      grid-template-columns: repeat(4, 1fr); /* الافتراضي 4 بالعرض */
+      display: grid; grid-template-columns: repeat(4, 1fr);
       gap: 10px; padding: 15px; flex-shrink: 0;
       max-height: 50vh; overflow-y: auto;
     }
     .mic {
       background: #1a1a2e; border-radius: 12px; border: 2px solid #FFD700;
       height: 85px; display: flex; flex-direction: column;
-      align-items: center; justify-content: center; position: relative;
+      align-items: center; justify-content: center; position: relative; cursor: pointer;
     }
-    .mic-number {
-      position: absolute; top: 5px; left: 5px; background: #FFD700;
-      color: #000; border-radius: 50%; width: 18px; height: 18px;
-      font-size: 10px; display: flex; align-items: center; justify-content: center;
-    }
-    .mic img { width: 40px; height: 40px; border-radius: 50%; border: 1px solid #FFD700; }
-    .mic-name { font-size: 9px; margin-top: 5px; color: #FFD700; }
+    .mic img { width: 45px; height: 45px; border-radius: 50%; border: 1px solid #FFD700; }
+    .mic-name { font-size: 10px; margin-top: 5px; color: #FFD700; font-weight: bold; }
 
     /* الشات */
-    .chat-box {
-      flex-grow: 1; background: rgba(0,0,0,0.5);
-      border-top: 2px solid #FFD700; margin-top: 10px;
-      display: flex; flex-direction: column;
-    }
-    #chatMessages { flex: 1; overflow-y: auto; padding: 10px; font-size: 13px; }
-    .chat-input { display: flex; padding: 10px; background: #000; }
-    .chat-input input { flex: 1; background: #111; border: 1px solid #FFD700; color: #fff; border-radius: 20px; padding: 8px 15px; }
-    .chat-input button { background: none; border: none; font-size: 22px; cursor: pointer; margin-left: 10px; }
+    .chat-box { flex-grow: 1; background: rgba(0,0,0,0.5); border-top: 2px solid #FFD700; display: flex; flex-direction: column; }
+    #chatMessages { flex: 1; overflow-y: auto; padding: 10px; font-size: 14px; }
+    .chat-input { display: flex; padding: 10px; background: #000; align-items: center; }
+    .chat-input input { flex: 1; background: #111; border: 1px solid #FFD700; color: #fff; border-radius: 20px; padding: 10px 15px; outline: none; }
+
+    /* أنيميشن الهدايا */
+    #giftAnim { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 20000; pointer-events: none; text-align: center; display: none; }
   </style>
 </head>
 <body>
 
-  <!-- الهيدر مع زر الإعدادات -->
   <div style="padding:15px; display:flex; justify-content:space-between; align-items:center; background:#000;">
-    <div style="color:#FFD700; font-weight:bold;">👑 إمبراطورية السبع</div>
-    <button onclick="toggleSettings()" style="background:none; border:none; color:#FFD700; font-size:20px;">⚙️</button>
+    <div style="color:#FFD700; font-weight:bold; font-size: 18px;">👑 إمبراطورية السبع</div>
+    <button onclick="toggleSettings()" style="background:none; border:none; color:#FFD700; font-size:22px;">⚙️</button>
   </div>
 
-  <!-- لوحة التحكم بالمايكات -->
   <div id="settingsPanel">
-    <h3 style="color:#FFD700; margin-bottom:15px;">إعدادات المايكات</h3>
+    <h3 style="color:#FFD700; margin-bottom:15px;">إعدادات الإمبراطور</h3>
     <button class="settings-btn" onclick="updateMicsCount(6)">6 مايكات</button>
     <button class="settings-btn" onclick="updateMicsCount(8)">8 مايكات</button>
     <button class="settings-btn" onclick="updateMicsCount(10)">10 مايكات</button>
     <button class="settings-btn" onclick="updateMicsCount(20)">20 مايك</button>
-    <button class="settings-btn" onclick="updateMicsCount(30)">30 مايك</button>
-    <br><br>
-    <button onclick="toggleSettings()" style="color:#fff; background:red; border:none; padding:5px 15px; border-radius:5px;">إغلاق</button>
+    <button onclick="toggleSettings()" style="display:block; width:100%; margin-top:10px; color:#fff; background:red; border:none; padding:8px; border-radius:5px;">إغلاق</button>
   </div>
 
-  <!-- شبكة المايكات -->
   <div class="mics-grid" id="micsGrid"></div>
 
-  <!-- الشات -->
   <div class="chat-box">
     <div id="chatMessages"></div>
     <div class="chat-input">
-      <button onclick="alert('قريباً')">🎁</button>
-      <input id="chatInput" placeholder="اكتب رسالة للإمبراطورية...">
-      <button onclick="sendChat()" style="color:#FFD700; font-size:16px;">إرسال</button>
+      <div onclick="alert('لوحة الهدايا قيد التحميل...')" style="font-size:25px; margin-left:10px; cursor:pointer;">🎁</div>
+      <input id="chatInput" placeholder="اكتب رسالة ملكية...">
+      <button onclick="sendChat()" style="background:none; border:none; color:#FFD700; font-size:18px; margin-right:10px; font-weight:bold;">إرسال</button>
     </div>
   </div>
 
+  <div id="giftAnim"></div>
+
 <script>
 const socket = io();
-let currentMics = 8; // العدد الافتراضي
+const user = JSON.parse(localStorage.getItem('user')) || { username: "أبو نمر", avatar: "" };
+let roomData = { mics: [] };
 
 function drawMics(count) {
   const grid = document.getElementById('micsGrid');
   grid.innerHTML = '';
-  // تعديل التوزيع حسب العدد
-  if (count > 10) grid.style.gridTemplateColumns = 'repeat(5, 1fr)';
-  else grid.style.gridTemplateColumns = 'repeat(4, 1fr)';
-
+  grid.style.gridTemplateColumns = count > 10 ? 'repeat(5, 1fr)' : 'repeat(4, 1fr)';
   for (let i = 0; i < count; i++) {
-    grid.innerHTML += `
-      <div class="mic" id="mic${i}">
-        <div class="mic-number">${i+1}</div>
-        <div style="font-size:30px">🎤</div>
-        <div class="mic-name">فارغ</div>
-      </div>`;
+    grid.innerHTML += `<div class="mic" id="mic${i}" onclick="toggleMic(${i})">
+      <div style="font-size:25px">🎤</div>
+      <div class="mic-name">فارغ</div>
+    </div>`;
   }
 }
 
-function toggleSettings() {
-  const panel = document.getElementById('settingsPanel');
-  panel.style.display = panel.style.display === 'block' ? 'none' : 'block';
+// تشغيل المايك أو الخروج منه
+function toggleMic(index) {
+  const mic = roomData.mics[index];
+  if (!mic) {
+    socket.emit('takeMic', { roomId: 'VIP-10000', index, user });
+  } else if (mic.username === user.username) {
+    socket.emit('leaveMic', { roomId: 'VIP-10000', index });
+  }
 }
 
 function updateMicsCount(count) {
-  currentMics = count;
   drawMics(count);
+  socket.emit('configUpdate', { roomId: 'VIP-10000', micCount: count });
   toggleSettings();
-  // إرسال التحديث للسيرفر ليعرف الجميع بتغيير العدد
-  socket.emit('adminChangeMics', { count }); 
 }
 
-// البدء بـ 8 مايكات
-drawMics(8);
-
-socket.on('roomUpdate', (data) => {
-  // تحديث البيانات على المايكات الموجودة فقط
-  data.mics.forEach((micUser, i) => {
-    const mic = document.getElementById(`mic${i}`);
-    if (mic && micUser && micUser !== 'closed') {
-      mic.innerHTML = `<div class="mic-number">${i+1}</div><img src="${micUser.avatar}"><div class="mic-name">${micUser.username}</div>`;
-    }
-  });
-});
+function toggleSettings() {
+  const p = document.getElementById('settingsPanel');
+  p.style.display = p.style.display === 'block' ? 'none' : 'block';
+}
 
 function sendChat() {
   const input = document.getElementById('chatInput');
   if (input.value.trim()) {
-    socket.emit('sendMessage', { roomId: 'VIP-10000', text: input.value });
+    socket.emit('sendMessage', { roomId: 'VIP-10000', text: input.value, user });
     input.value = '';
   }
 }
 
-socket.on('newMessage', (msg) => {
-  const chat = document.getElementById('chatMessages');
-  chat.innerHTML += `<div><span style="color:#FFD700;">${msg.username}:</span> ${msg.text}</div>`;
-  chat.scrollTop = chat.scrollHeight;
+// استلام التحديثات الحية
+socket.on('roomUpdate', (data) => {
+  roomData = data;
+  data.mics.forEach((m, i) => {
+    const el = document.getElementById(`mic${i}`);
+    if (el) {
+      if (m) {
+        el.innerHTML = `<img src="${m.avatar || 'https://via.placeholder.com/45'}"><div class="mic-name">${m.username}</div>`;
+        el.style.borderColor = '#00ff00';
+      } else {
+        el.innerHTML = `<div style="font-size:25px">🎤</div><div class="mic-name">فارغ</div>`;
+        el.style.borderColor = '#FFD700';
+      }
+    }
+  });
 });
+
+socket.on('newMessage', (msg) => {
+  const box = document.getElementById('chatMessages');
+  box.innerHTML += `<div><b style="color:#FFD700">${msg.user.username}:</b> ${msg.text}</div>`;
+  box.scrollTop = box.scrollHeight;
+});
+
+drawMics(8); // البداية بـ 8 مايكات
 </script>
 </body>
 </html>
