@@ -74,6 +74,10 @@
             outline: none;
             transition: 0.3s;
         }
+        .form-group input:focus, .form-group select:focus {
+            border-color: #3498db;
+            box-shadow: 0 0 8px rgba(52, 152, 219, 0.3);
+        }
         
         /* --- واجهة البروفايل المطور الفخم V3 --- */
         .premium-profile {
@@ -114,12 +118,14 @@
             font-size: 11px;
             border-radius: 20px;
             cursor: pointer;
+            transition: 0.2s;
         }
+        .change-cover-btn:hover { background: rgba(0, 0, 0, 0.8); }
 
         .profile-header {
             position: relative;
             padding-bottom: 15px;
-            margin-top: -60px; /* سحب الصورة الشخصية فوق الغلاف */
+            margin-top: -60px;
             border-bottom: 1px solid rgba(255, 255, 255, 0.05);
         }
         .vip-badge {
@@ -165,10 +171,11 @@
             cursor: pointer;
         }
         .warning-text {
-            font-size: 10px;
+            font-size: 11px;
             color: #e74c3c;
             margin-top: 5px;
             font-weight: bold;
+            text-shadow: 0 0 5px rgba(231, 76, 60, 0.2);
         }
 
         .user-title {
@@ -347,8 +354,8 @@
             <div class="form-group">
                 <label>الجنس</label>
                 <select id="regGender">
-                    <option value="String">ذكر</option>
-                    <option value="String">أنثى</option>
+                    <option value="ذكر">ذكر</option>
+                    <option value="أنثى">أنثى</option>
                 </select>
             </div>
             <div class="form-group">
@@ -357,7 +364,7 @@
             </div>
             <div class="form-group">
                 <label>تاريخ الميلاد</label>
-                <input type="date" id="regBirthDate" value="2026-01-01">
+                <input type="date" id="regBirthDate" value="2006-01-01">
             </div>
             <button class="btn-main" onclick="handleRegister()">إنشاء الحساب وانطلاق 🚀</button>
         </div>
@@ -367,7 +374,7 @@
         
         <div class="cover-container">
             <img id="userCover" src="https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=500" alt="Cover">
-            <button class="change-cover-btn" onclick="changeCover()"><i class="fa-solid fa-camera"></i> غلاف</button>
+            <button class="change-cover-btn" onclick="updatePhoto('cover')"><i class="fa-solid fa-camera"></i> غلاف</button>
         </div>
 
         <div class="profile-header">
@@ -375,10 +382,10 @@
             
             <div class="avatar-container">
                 <img id="userAvatar" src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150" alt="Avatar">
-                <div class="change-avatar-btn" onclick="changeAvatar()"><i class="fa-solid fa-pen"></i></div>
+                <div class="change-avatar-btn" onclick="updatePhoto('avatar')"><i class="fa-solid fa-pen"></i></div>
             </div>
             
-            <div class="warning-text">⚠️ يمنع وضع صور إباحية نهائياً</div>
+            <div class="warning-text">⚠️ يمنع وضع صور إباحية أو مخلة نهائياً</div>
 
             <div id="profileName" class="user-title">جاري التحميل...</div>
             <div id="profileId" class="user-uid">ID: --</div>
@@ -453,29 +460,54 @@
             }
         };
 
-        // دالة تغيير صورة الغلاف عبر رابط مباشر
-        function changeCover() {
-            const url = prompt("أدخل رابط صورة الغلاف الجديدة المباشر:\n(تنبيه: يمنع استخدام أي صور إباحية)");
-            if (url) {
-                if(url.includes("porno") || url.includes("sex") || url.includes("xxx")) {
-                    alert("عذراً، هذا المحتوى محظور تماماً في الإمبراطورية!");
-                    return;
-                }
-                document.getElementById('userCover').src = url;
-                localStorage.setItem('custom_cover', url); // حفظ مؤقت على الجهاز
-            }
-        }
+        // دالة موحدة لتحديث الصور (الشخصية والغلاف) ورفعها للسيرفر لحفظها بقاعدة البيانات بشكل دائم
+        async function updatePhoto(type) {
+            const titleText = type === 'cover' ? 'صورة الغلاف الجديدة' : 'الصورة الشخصية الجديدة';
+            const url = prompt(`أدخل رابط ${titleText} المباشر:\n(تنبيه: يمنع استخدام أي صور إباحية أو خادشة للحياء)`);
+            
+            if (!url) return;
 
-        // دالة تغيير الصورة الشخصية عبر رابط مباشر
-        function changeAvatar() {
-            const url = prompt("أدخل رابط صورتك الشخصية الجديدة المباشر:\n(تنبيه: يمنع استخدام أي صور إباحية)");
-            if (url) {
-                if(url.includes("porno") || url.includes("sex") || url.includes("xxx")) {
-                    alert("عذراً، هذا المحتوى محظور تماماً في الإمبراطورية!");
-                    return;
+            // فحص أمان أولي لمنع الروابط غير الأخلاقية
+            const blockedKeywords = ["porno", "sex", "xxx", "naked", "xrated", "adult"];
+            if (blockedKeywords.some(keyword => url.toLowerCase().includes(keyword))) {
+                alert("عذراً، هذا الرابط يحتوي على محتوى محظور تماماً داخل مجتمع الإمبراطورية!");
+                return;
+            }
+
+            const token = localStorage.getItem('user_token');
+            if (!token) return alert("انتهت الجلسة، يرجى إعادة تسجيل الدخول.");
+
+            // تحديد الحقل المطلوب إرساله بناءً على نوع الصورة
+            const bodyData = type === 'cover' ? { coverUrl: url } : { avatarUrl: url };
+
+            try {
+                // إرسال الرابط الجديد إلى نقطة تحديث البيانات بالسيرفر لحفظه دوماً
+                const res = await fetch(`${SERVER_URL}/api/profile/update`, {
+                    method: 'PUT',
+                    headers: { 
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify(bodyData)
+                });
+                
+                if (res.ok) {
+                    if (type === 'cover') {
+                        document.getElementById('userCover').src = url;
+                    } else {
+                        document.getElementById('userAvatar').src = url;
+                    }
+                    alert("تم تحديث الصورة بنجاح وحفظها في قاعدة البيانات واجهة الإمبراطورية! 🌟");
+                } else {
+                    // إذا لم يدعم السيرفر الـ PUT بعد، نقوم بحفظها محلياً لحين اكتمال الـ API
+                    if (type === 'cover') document.getElementById('userCover').src = url;
+                    else document.getElementById('userAvatar').src = url;
+                    localStorage.setItem(`saved_${type}`, url);
                 }
-                document.getElementById('userAvatar').src = url;
-                localStorage.setItem('custom_avatar', url); // حفظ مؤقت على الجهاز
+            } catch (e) {
+                if (type === 'cover') document.getElementById('userCover').src = url;
+                else document.getElementById('userAvatar').src = url;
+                localStorage.setItem(`saved_${type}`, url);
             }
         }
 
@@ -510,13 +542,18 @@
             document.getElementById('userAgency').innerText = user.agencyId || "إمبراطورية السبع العامة";
             document.getElementById('userRole').innerText = user.role === "USER" ? "عضو رسمي" : (user.role || "عضو رسمي");
 
-            // جلب الصورة المحفوظة أو الافتراضية
-            const savedAvatar = localStorage.getItem('custom_avatar');
-            if (savedAvatar) { document.getElementById('userAvatar').src = savedAvatar; }
-            else if (user.avatarUrl) { document.getElementById('userAvatar').src = user.avatarUrl; }
+            // جلب وعرض الصور المحدثة
+            if (user.avatarUrl) { 
+                document.getElementById('userAvatar').src = user.avatarUrl; 
+            } else if (localStorage.getItem('saved_avatar')) {
+                document.getElementById('userAvatar').src = localStorage.getItem('saved_avatar');
+            }
 
-            const savedCover = localStorage.getItem('custom_cover');
-            if (savedCover) { document.getElementById('userCover').src = savedCover; }
+            if (user.coverUrl) { 
+                document.getElementById('userCover').src = user.coverUrl; 
+            } else if (localStorage.getItem('saved_cover')) {
+                document.getElementById('userCover').src = localStorage.getItem('saved_cover');
+            }
         }
 
         async function handleLogin() {
@@ -577,8 +614,8 @@
 
         function logout() { 
             localStorage.removeItem('user_token'); 
-            localStorage.removeItem('custom_avatar');
-            localStorage.removeItem('custom_cover');
+            localStorage.removeItem('saved_avatar');
+            localStorage.removeItem('saved_cover');
             window.location.reload(); 
         }
     </script>
