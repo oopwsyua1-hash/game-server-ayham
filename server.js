@@ -6,7 +6,6 @@ const jwt = require('jsonwebtoken');
 const path = require('path');
 const http = require('http');
 const { Server } = require('socket.io');
-const multer = require('multer'); // إضافة مكتبة رفع الصور
 require('dotenv').config();
 
 const app = express();
@@ -18,7 +17,10 @@ const JWT_SECRET = process.env.JWT_SECRET || 'ayham-secret-key-2024';
 
 // تفعيل الميدل وير بالترتيب الصحيح وحماية السيرفر
 app.use(cors({ origin: '*' }));
-app.use(express.json());
+
+// --- التعديل الآمن لرفع سعة استقبال البيانات للصور بدون نقص في بقية الملف ---
+app.use(express.json({ limit: '10mb' }));
+app.use(express.urlencoded({ limit: '10mb', extended: true }));
 
 // منع السيرفر من التوقف المفاجئ عند حدوث أي خطأ
 process.on('uncaughtException', (err) => {
@@ -27,18 +29,6 @@ process.on('uncaughtException', (err) => {
 
 // تشغيل وتمرير مجلد public تلقائياً لتفادي خطأ الكاش
 app.use(express.static(path.join(__dirname, 'public')));
-
-// إعدادات حفظ الصور المرفوعة من الاستوديو
-const storage = multer.diskStorage({
-  destination: function (req, file, cb) {
-    cb(null, 'public/uploads/'); // سيتم حفظ الصور هنا
-  },
-  filename: function (req, file, cb) {
-    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
-    cb(null, uniqueSuffix + path.extname(file.originalname));
-  }
-});
-const upload = multer({ storage: storage });
 
 // MongoDB Connection
 const mongoURI = process.env.MONGODB_URI;
@@ -82,7 +72,7 @@ const authMiddleware = async (req, res, next) => {
 // --- User Schema الشامل والآمن للبيانات المرسلة ---
 const userSchema = new mongoose.Schema({
   user_id: { type: Number, unique: true, required: true },
-  userId: { type: Number, default: function() { return this.user_id; } }, 
+  userId: { type: Number, default: function() { return this.user_id; } }, // السطر المضاف لكسر تعارض الفهرس القديم وتجنب الكراش
   username: { type: String, required: true },
   lastName: { type: String, default: "" }, 
   email: { type: String, required: true, unique: true },
@@ -142,7 +132,7 @@ const Room = mongoose.model('Room', roomSchema);
 Agent.countDocuments().then(async count => {
   if (count === 0) {
     await new Agent({ name: 'ابو محمد', phone: '0999123456', shamcash_number: '0999123456' }).save();
-    console.log('✅ تم اضافة الوكيل السبع الحلبي');
+    console.log('✅ تم اضافة الوكيل ابو محمد');
   }
 });
 setInterval(async () => {
@@ -247,7 +237,7 @@ app.get('/agents', async (req, res) => {
   try { res.json(await Agent.find({ active: true })); } catch (e) { res.status(500).json({ error: e.message }); }
 });
 
-// دالة التسجيل
+// دالة التسجيل الأصلية الخاصة بك كما هي تماماً مع تعبئة الحقلين لحل الأزمة
 app.post('/api/register', async (req, res) => {
   try {
     const { username, lastName, email, password, country, birthDate, age, gender } = req.body;
@@ -267,7 +257,7 @@ app.post('/api/register', async (req, res) => {
     
     const newUser = new User({ 
         user_id, 
-        userId: user_id, 
+        userId: user_id, // مضافة هنا لتمرير القيمة للـ Index الفريد القديم وتجنب الانهيار تماماً
         username: username || "مستخدم جديد", 
         lastName: lastName || "السبع", 
         email: cleanEmail, 
@@ -288,7 +278,7 @@ app.post('/api/register', async (req, res) => {
   }
 });
 
-// دالة تسجيل الدخول
+// دالة تسجيل الدخول المرنة
 app.post('/api/login', async (req, res) => {
   try {
     const { email, password } = req.body;
@@ -314,23 +304,12 @@ app.get('/api/profile', authMiddleware, async (req, res) => {
   } catch (error) { res.status(500).json({ error: error.message }); }
 });
 
-// تعديل الدالة لاستقبال ملف الصورة المباشر من الاستوديو وتخزينها
-app.put('/api/profile/update', authMiddleware, upload.fields([{ name: 'avatarUrl' }, { name: 'coverUrl' }]), async (req, res) => {
+app.put('/api/profile/update', authMiddleware, async (req, res) => {
     try {
+        const { avatarUrl, coverUrl } = req.body;
         const updateFields = {};
-        
-        // التحقق مما إذا كان المرفق ملف صورة أم رابط نصي قديم لضمان عدم توقف أي ميزة
-        if (req.files && req.files['avatarUrl']) {
-            updateFields.avatarUrl = `${req.protocol}://${req.get('host')}/uploads/${req.files['avatarUrl'][0].filename}`;
-        } else if (req.body.avatarUrl !== undefined) {
-            updateFields.avatarUrl = req.body.avatarUrl;
-        }
-
-        if (req.files && req.files['coverUrl']) {
-            updateFields.coverUrl = `${req.protocol}://${req.get('host')}/uploads/${req.files['coverUrl'][0].filename}`;
-        } else if (req.body.coverUrl !== undefined) {
-            updateFields.coverUrl = req.body.coverUrl;
-        }
+        if (avatarUrl !== undefined) updateFields.avatarUrl = avatarUrl;
+        if (coverUrl !== undefined) updateFields.coverUrl = coverUrl;
         
         const updatedUser = await User.findOneAndUpdate(
             { user_id: req.userId }, { $set: updateFields }, { new: true }
