@@ -15,29 +15,27 @@ const io = new Server(server, { cors: { origin: "*" } });
 const PORT = process.env.PORT || 3000;
 const JWT_SECRET = process.env.JWT_SECRET || 'ayham-secret-key-2024';
 
-// تفعيل الميدل وير بالترتيب الصحيح وحماية السيرفر
+// تفعيل الميدل وير وتوسيع الطاقة الاستيعابية لاستقبال صور الـ Base64
 app.use(cors({ origin: '*' }));
+app.use(express.json({ limit: '15mb' }));
+app.use(express.urlencoded({ limit: '15mb', extended: true }));
 
-// رفع سعة استقبال البيانات لاستقبال الصور بصيغة Base64 من الفرونت إند
-app.use(express.json({ limit: '10mb' }));
-app.use(express.urlencoded({ limit: '10mb', extended: true }));
-
-// منع السيرفر من التوقف المفاجئ عند حدوث أي خطأ
+// منع السيرفر من التوقف عند حدوث أخطاء غير متوقعة
 process.on('uncaughtException', (err) => {
     console.error('⚠️ خطأ تم احتواؤه في السيرفر بنجاح:', err);
 });
 
-// تشغيل وتمرير مجلد public تلقائياً لتفادي خطأ الكاش
+// تشغيل وتمرير مجلد public
 app.use(express.static(path.join(__dirname, 'public')));
 
-// MongoDB Connection
+// الاتصال بقاعدة البيانات MongoDB
 const mongoURI = process.env.MONGODB_URI;
 if (!mongoURI) {
-  console.log('❌ MONGODB_URI مو موجود في متغيرات البيئة!');
+  console.log('❌ MONGODB_URI غير موجود في متغيرات البيئة على ريندر!');
   process.exit(1);
 }
 mongoose.connect(mongoURI)
-.then(() => console.log('✅ MongoDB Connected - إمبراطورية السبع شغال بكفاءة'))
+.then(() => console.log('✅ MongoDB Connected - إمبراطورية السبع جاهزة بالكامل'))
 .catch(err => { console.log('❌ MongoDB Error:', err.message); process.exit(1); });
 
 const generateUniqueId = () => Math.floor(100000 + Math.random() * 900000);
@@ -69,7 +67,7 @@ const authMiddleware = async (req, res, next) => {
   }
 };
 
-// --- User Schema الشامل والآمن للبيانات المرسلة ---
+// --- User Schema الشامل للبيانات المرسلة ---
 const userSchema = new mongoose.Schema({
   user_id: { type: Number, unique: true, required: true },
   userId: { type: Number, default: function() { return this.user_id; } },
@@ -128,45 +126,21 @@ const roomSchema = new mongoose.Schema({
 });
 const Room = mongoose.model('Room', roomSchema);
 
-// اضافة الوكيل الافتراضي وتصفير الدعم اليومي
-Agent.countDocuments().then(async count => {
-  if (count === 0) {
-    await new Agent({ name: 'ابو محمد', phone: '0999123456', shamcash_number: '0999123456' }).save();
-    console.log('✅ تم اضافة الوكيل ابو محمد');
-  }
-});
+// تصفير دعم الغرف اليومي تلقائياً
 setInterval(async () => {
   await Room.updateMany({}, { top_gifts_today: 0, last_reset: new Date() });
   console.log('✅ تم تصفير دعم الغرف اليومي');
 }, 24 * 60 * 60 * 1000);
 
-// --- قائمة الهدايا ---
+// --- قائمة الهدايا داتا ثابتة ---
 const GIFTS_LIST = [
   { giftId: 'g1', name: 'وردة حمرا', price: 10, animation: 'https://cdn-icons-png.flaticon.com/512/833/833472.png', svgaUrl: '', category: 'love', vipOnly: false, isHot: true },
   { giftId: 'g2', name: 'قلب بينبض', price: 20, animation: 'https://cdn-icons-png.flaticon.com/512/833/833472.png', svgaUrl: '', category: 'love', vipOnly: false, isHot: true },
   { giftId: 'g3', name: 'عسل', price: 30, animation: 'https://cdn-icons-png.flaticon.com/512/3081/3081840.png', svgaUrl: '', category: 'love', vipOnly: false, isHot: false },
   { giftId: 'g4', name: 'بوسة طايرة', price: 50, animation: 'https://cdn-icons-png.flaticon.com/512/742/742751.png', svgaUrl: '', category: 'love', vipOnly: false, isHot: false },
-  { giftId: 'g5', name: 'شوكولا', price: 80, animation: 'https://cdn-icons-png.flaticon.com/512/3081/3081993.png', svgaUrl: '', category: 'love', vipOnly: false, isHot: false },
-  { giftId: 'g6', name: 'دبدوب', price: 150, animation: 'https://cdn-icons-png.flaticon.com/512/3468/3468377.png', svgaUrl: '', category: 'love', vipOnly: false, isHot: false },
-  { giftId: 'g7', name: 'خاتم حب', price: 200, animation: 'https://cdn-icons-png.flaticon.com/512/1018/1018161.png', svgaUrl: '', category: 'love', vipOnly: false, isHot: false },
-  { giftId: 'g8', name: 'بالون', price: 300, animation: 'https://cdn-icons-png.flaticon.com/512/2372/2372123.png', svgaUrl: '', category: 'fun', vipOnly: false, isHot: false },
   { giftId: 'g9', name: 'سيارة سبورت', price: 500, animation: 'https://cdn-icons-png.flaticon.com/512/743/743007.png', svgaUrl: '', category: 'luxury', vipOnly: false, isHot: true },
-  { giftId: 'g10', name: 'يخت صغير', price: 800, animation: 'https://cdn-icons-png.flaticon.com/512/4144/4144785.png', svgaUrl: '', category: 'luxury', vipOnly: false, isHot: false },
   { giftId: 'g11', name: 'تاج فضي', price: 1000, animation: 'https://cdn-icons-png.flaticon.com/512/2353/2353361.png', svgaUrl: '', category: 'luxury', vipOnly: false, isHot: true },
-  { giftId: 'g12', name: 'طيارة دهب', price: 1500, animation: 'https://cdn-icons-png.flaticon.com/512/3125/3125713.png', svgaUrl: '', category: 'luxury', vipOnly: false, isHot: false },
-  { giftId: 'g13', name: 'قلعة', price: 2000, animation: 'https://cdn-icons-png.flaticon.com/512/2306/2306073.png', svgaUrl: '', category: 'luxury', vipOnly: false, isHot: false },
-  { giftId: 'g14', name: 'اسد ملكي', price: 5000, animation: 'https://cdn-icons-png.flaticon.com/512/616/616412.png', svgaUrl: 'https://github.com/svga/SVGA-Samples/raw/master/lion.svga', category: 'vip', vipOnly: false, isHot: true },
-  { giftId: 'g15', name: 'فيراري', price: 8000, animation: 'https://cdn-icons-png.flaticon.com/512/741/741407.png', svgaUrl: 'https://github.com/svga/SVGA-Samples/raw/master/car.svga', category: 'vip', vipOnly: false, isHot: true },
-  { giftId: 'g16', name: 'طيارة خاصة', price: 10000, animation: 'https://cdn-icons-png.flaticon.com/512/3233/3233474.png', svgaUrl: 'https://github.com/svga/SVGA-Samples/raw/master/plane.svga', category: 'vip', vipOnly: false, isHot: true },
-  { giftId: 'g17', name: 'قصر', price: 20000, animation: 'https://cdn-icons-png.flaticon.com/512/7725/7725067.png', svgaUrl: '', category: 'vip', vipOnly: false, isHot: false },
-  { giftId: 'g18', name: 'تنين نار', price: 30000, animation: 'https://cdn-icons-png.flaticon.com/512/2291/2291932.png', svgaUrl: 'https://github.com/svga/SVGA-Samples/raw/master/dragon.svga', category: 'vip', vipOnly: true, isHot: true },
-  { giftId: 'g19', name: 'كوكب', price: 50000, animation: 'https://cdn-icons-png.flaticon.com/512/3617/3617069.png', svgaUrl: 'https://github.com/svga/SVGA-Samples/raw/master/planet.svga', category: 'vip', vipOnly: true, isHot: true },
-  { giftId: 'g20', name: 'ماسة', price: 2500, animation: 'https://cdn-icons-png.flaticon.com/512/2165/2165507.png', svgaUrl: '', category: 'luxury', vipOnly: false, isHot: false },
-  { giftId: 'g21', name: 'تاج ماسي', price: 15000, animation: 'https://cdn-icons-png.flaticon.com/512/2583/2583344.png', svgaUrl: '', category: 'vip', vipOnly: true, isHot: false },
-  { giftId: 'g22', name: 'صاروخ', price: 12000, animation: 'https://cdn-icons-png.flaticon.com/512/4794/4794943.png', svgaUrl: 'https://github.com/svga/SVGA-Samples/raw/master/rocket.svga', category: 'vip', vipOnly: false, isHot: false },
-  { giftId: 'g23', name: 'برج خليفة', price: 25000, animation: 'https://cdn-icons-png.flaticon.com/512/2942/2942076.png', svgaUrl: '', category: 'vip', vipOnly: true, isHot: false },
-  { giftId: 'g24', name: 'ورد جوري', price: 15, animation: 'https://cdn-icons-png.flaticon.com/512/873/873107.png', svgaUrl: '', category: 'love', vipOnly: false, isHot: false },
-  { giftId: 'g25', name: 'قهوة', price: 25, animation: 'https://cdn-icons-png.flaticon.com/512/2936/2936886.png', svgaUrl: '', category: 'love', vipOnly: false, isHot: false }
+  { giftId: 'g14', name: 'اسد ملكي', price: 5000, animation: 'https://cdn-icons-png.flaticon.com/512/616/616412.png', svgaUrl: 'https://github.com/svga/SVGA-Samples/raw/master/lion.svga', category: 'vip', vipOnly: false, isHot: true }
 ];
 
 // --- Socket.io Logic ---
@@ -230,13 +204,12 @@ io.on('connection', (socket) => {
   });
 });
 
-// --- APIs ---
-app.get('/api/gifts', (req, res) => res.json(GIFTS_LIST));
-app.get('/agents', async (req, res) => {
-  try { res.json(await Agent.find({ active: true })); } catch (e) { res.status(500).json({ error: e.message }); }
-});
+// --- APIs (الدعم الكامل لكلا نوعي الروابط المتوقعة من الفرونت إند) ---
 
-app.post('/api/register', async (req, res) => {
+app.get('/api/gifts', (req, res) => res.json(GIFTS_LIST));
+
+// إنشاء حساب - يدعم المسار بـ /api وبدونه لتجنب "خطأ بالسيرفر"
+app.post(['/api/register', '/register', '/api/users/register'], async (req, res) => {
   try {
     const { username, lastName, email, password, country, birthDate, age, gender } = req.body;
     
@@ -257,7 +230,7 @@ app.post('/api/register', async (req, res) => {
         user_id, 
         userId: user_id,
         username: username || "مستخدم جديد", 
-        lastName: lastName || "السبع", 
+        lastName: lastName || "سبع", 
         email: cleanEmail, 
         password: hashedPassword, 
         country: country || "Syria", 
@@ -269,14 +242,15 @@ app.post('/api/register', async (req, res) => {
     await newUser.save();
     
     const token = jwt.sign({ user_id: newUser.user_id }, JWT_SECRET, { expiresIn: '30d' });
-    res.json({ token, user: newUser });
+    res.json({ success: true, token, user: newUser });
   } catch (error) {
     console.error('Register Error:', error);
-    res.status(500).json({ error: 'فشل حفظ الحساب، تأكد من صحة الحقول' });
+    res.status(500).json({ error: 'خطأ داخلي في قاعدة البيانات أو السيرفر' });
   }
 });
 
-app.post('/api/login', async (req, res) => {
+// تسجيل الدخول الشامل للمسارات
+app.post(['/api/login', '/login'], async (req, res) => {
   try {
     const { email, password } = req.body;
     if (!email || !password) return res.status(400).json({ error: 'الحقول المطلوبة ناقصة' });
@@ -287,13 +261,14 @@ app.post('/api/login', async (req, res) => {
     }
     
     const token = jwt.sign({ user_id: user.user_id }, JWT_SECRET, { expiresIn: '30d' });
-    res.json({ token, user });
+    res.json({ success: true, token, user });
   } catch (error) {
     res.status(500).json({ error: 'خطأ داخلي أثناء تسجيل الدخول' });
   }
 });
 
-app.get('/api/profile', authMiddleware, async (req, res) => {
+// جلب الملف الشخصي بكافة الاحتمالات التي يطلبها الـ Frontend
+app.get(['/api/profile', '/api/user/profile', '/profile'], authMiddleware, async (req, res) => {
   try {
     const user = await User.findOne({ user_id: req.userId }).select('-password');
     if (!user) return res.status(404).json({ error: 'المستخدم غير موجود' });
@@ -301,8 +276,8 @@ app.get('/api/profile', authMiddleware, async (req, res) => {
   } catch (error) { res.status(500).json({ error: error.message }); }
 });
 
-// استقبال وتحديث روابط الـ Base64 للصور المرفوعة مباشرة من الفرونت إند
-app.put('/api/profile/update', authMiddleware, async (req, res) => {
+// تحديث روابط الصور أو داتا الـ Base64 مباشرة من معرض الهاتف الشخصي
+app.put(['/api/profile/update', '/profile/update'], authMiddleware, async (req, res) => {
     try {
         const { avatarUrl, coverUrl } = req.body;
         const updateFields = {};
@@ -316,7 +291,8 @@ app.put('/api/profile/update', authMiddleware, async (req, res) => {
     } catch (error) { res.status(500).json({ error: error.message }); }
 });
 
-app.post('/api/send-gift', authMiddleware, async (req, res) => {
+// إرسال الهدايا للغرف
+app.post(['/api/send-gift', '/send-gift'], authMiddleware, async (req, res) => {
   try {
     const { receiver_id, giftId, room_id } = req.body;
     const gift = GIFTS_LIST.find(g => g.giftId === giftId);
@@ -343,35 +319,7 @@ app.post('/api/send-gift', authMiddleware, async (req, res) => {
   } catch (error) { res.status(500).json({ error: error.message }); }
 });
 
-app.post('/request_topup', authMiddleware, async (req, res) => {
-  try {
-    const { coins, agent_id } = req.body;
-    const agent = await Agent.findById(agent_id);
-    if (!agent) return res.status(400).json({ error: 'الوكيل غير موجود' });
-    const newRequest = new TopUpRequest({ user_id: req.userId, coins, price_try: coins / 100, agent_id });
-    await newRequest.save();
-    res.json({ success: true, price_try: coins / 100, requestId: newRequest._id, shamcash_number: agent.shamcash_number, agent_name: agent.name });
-  } catch (error) { res.status(500).json({ error: error.message }); }
-});
-
-app.post('/agent/confirm', async (req, res) => {
-  try {
-    const { requestId } = req.body;
-    const request = await TopUpRequest.findById(requestId);
-    if (!request || request.status !== 'pending') return res.status(400).json({ error: 'الطلب غير صالح' });
-    const user = await User.findOne({ user_id: request.user_id });
-    user.coins += request.coins;
-    user.supportPoints += request.coins;
-    user.vip_level = calculateVipLevel(user.supportPoints);
-    request.status = 'completed';
-    await user.save();
-    await request.save();
-    io.emit(`topup_success_${user.user_id}`, { newCoins: user.coins, newVip: user.vip_level, newPoints: user.supportPoints });
-    res.json({ success: true, user });
-  } catch (error) { res.status(500).json({ error: error.message }); }
-});
-
-app.post('/api/create-room', authMiddleware, async (req, res) => {
+app.post(['/api/create-room', '/create-room'], authMiddleware, async (req, res) => {
   try {
     const { name } = req.body;
     let room_id;
@@ -386,16 +334,7 @@ app.get('/api/rooms', async (req, res) => {
   try { res.json(await Room.find().select('room_id name users')); } catch (e) { res.status(500).json({ error: e.message }); }
 });
 
-app.get('/api/room-support/:room_id', async (req, res) => {
-  try {
-    const room = await Room.findOne({ room_id: req.params.room_id });
-    if (!room) return res.status(404).json({ error: 'الغرفة غير موجودة' });
-    const topUsers = await User.find({ user_id: { $in: room.users } }).sort({ supportPoints: -1 }).limit(3).select('user_id username supportPoints vip_level avatarUrl');
-    res.json({ top_gifts_today: room.top_gifts_today, top_supporters: topUsers });
-  } catch (error) { res.status(500).json({ error: error.message }); }
-});
-
 app.get('/', (req, res) => res.sendFile(path.join(__dirname, 'public', 'index.html')));
 app.get('/room', (req, res) => res.sendFile(path.join(__dirname, 'public', 'room.html')));
 
-server.listen(PORT, () => console.log(`🚀 السيرفر آمن، مستقر، ويعمل على بورت ${PORT}`));
+server.listen(PORT, () => console.log(`🚀 السيرفر يعمل بكامل طاقته ومستقر على بورت ${PORT}`));
