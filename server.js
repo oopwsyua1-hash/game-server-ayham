@@ -70,12 +70,12 @@ const authMiddleware = async (req, res, next) => {
 const userSchema = new mongoose.Schema({
   user_id: { type: Number, unique: true, required: true },
   username: { type: String, required: true },
-  lastName: { type: String, default: "" }, // تم إلغاء الإلزام لتفادي أخطاء الـ HTML
+  lastName: { type: String, default: "" }, 
   email: { type: String, required: true, unique: true },
   password: { type: String, required: true },
-  country: { type: String, default: "Syria" }, // قيمة افتراضية في حال لم ترسلها الواجهة
+  country: { type: String, default: "Syria" }, 
   birthDate: { type: String, default: "2006-01-01" },
-  age: { type: Number, default: 20 },
+  age: { type: Number, default: 20 }, 
   gender: { type: String, default: "ذكر" },
   coins: { type: Number, default: 1000 }, 
   diamonds: { type: Number, default: 0 },
