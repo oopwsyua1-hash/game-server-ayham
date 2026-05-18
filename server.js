@@ -18,7 +18,7 @@ const JWT_SECRET = process.env.JWT_SECRET || 'ayham-secret-key-2024';
 // تفعيل الميدل وير بالترتيب الصحيح وحماية السيرفر
 app.use(cors({ origin: '*' }));
 
-// --- التعديل الآمن لرفع سعة استقبال البيانات للصور بدون نقص في بقية الملف ---
+// رفع سعة استقبال البيانات لاستقبال الصور بصيغة Base64 من الفرونت إند
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ limit: '10mb', extended: true }));
 
@@ -72,7 +72,7 @@ const authMiddleware = async (req, res, next) => {
 // --- User Schema الشامل والآمن للبيانات المرسلة ---
 const userSchema = new mongoose.Schema({
   user_id: { type: Number, unique: true, required: true },
-  userId: { type: Number, default: function() { return this.user_id; } }, // السطر المضاف لكسر تعارض الفهرس القديم وتجنب الكراش
+  userId: { type: Number, default: function() { return this.user_id; } },
   username: { type: String, required: true },
   lastName: { type: String, default: "" }, 
   email: { type: String, required: true, unique: true },
@@ -230,14 +230,12 @@ io.on('connection', (socket) => {
   });
 });
 
-// --- APIs المحدثة ---
-
+// --- APIs ---
 app.get('/api/gifts', (req, res) => res.json(GIFTS_LIST));
 app.get('/agents', async (req, res) => {
   try { res.json(await Agent.find({ active: true })); } catch (e) { res.status(500).json({ error: e.message }); }
 });
 
-// دالة التسجيل الأصلية الخاصة بك كما هي تماماً مع تعبئة الحقلين لحل الأزمة
 app.post('/api/register', async (req, res) => {
   try {
     const { username, lastName, email, password, country, birthDate, age, gender } = req.body;
@@ -257,7 +255,7 @@ app.post('/api/register', async (req, res) => {
     
     const newUser = new User({ 
         user_id, 
-        userId: user_id, // مضافة هنا لتمرير القيمة للـ Index الفريد القديم وتجنب الانهيار تماماً
+        userId: user_id,
         username: username || "مستخدم جديد", 
         lastName: lastName || "السبع", 
         email: cleanEmail, 
@@ -278,7 +276,6 @@ app.post('/api/register', async (req, res) => {
   }
 });
 
-// دالة تسجيل الدخول المرنة
 app.post('/api/login', async (req, res) => {
   try {
     const { email, password } = req.body;
@@ -304,6 +301,7 @@ app.get('/api/profile', authMiddleware, async (req, res) => {
   } catch (error) { res.status(500).json({ error: error.message }); }
 });
 
+// استقبال وتحديث روابط الـ Base64 للصور المرفوعة مباشرة من الفرونت إند
 app.put('/api/profile/update', authMiddleware, async (req, res) => {
     try {
         const { avatarUrl, coverUrl } = req.body;
@@ -400,4 +398,4 @@ app.get('/api/room-support/:room_id', async (req, res) => {
 app.get('/', (req, res) => res.sendFile(path.join(__dirname, 'public', 'index.html')));
 app.get('/room', (req, res) => res.sendFile(path.join(__dirname, 'public', 'room.html')));
 
-server.listen(PORT, () => console.log(`🚀 السيرفر المدمج مستقر تماماً ويعمل على بورت ${PORT}`));
+server.listen(PORT, () => console.log(`🚀 السيرفر آمن، مستقر، ويعمل على بورت ${PORT}`));
