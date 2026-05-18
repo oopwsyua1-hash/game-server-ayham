@@ -260,12 +260,29 @@
             }
         };
         
-        function switchTab(type) {
-            document.getElementById('loginTab').classList.toggle('active', type==='login');
-            document.getElementById('registerTab').classList.toggle('active', type==='register');
-            document.getElementById('loginForm').style.display = type==='login'?'block':'none';
-            document.getElementById('registerForm').style.display = type==='register'?'block':'none';
-        }
+        function displayUserProfile(user) {
+    // 1. عرض الاسم والـ ID الصحيح من قاعدة البيانات ومنع الـ undefined
+    document.getElementById('profileName').innerText = user.username;
+    document.getElementById('profileId').innerText = "ID: " + (user.user_id || "000000");
+    
+    // 2. عرض بيانات الكونزات والماس بالمحفظة
+    document.getElementById('profileCoins').innerText = user.coins !== undefined ? user.coins : 0;
+    document.getElementById('profileDiamonds').innerText = user.diamonds !== undefined ? user.diamonds : 0;
+    
+    // 3. عرض نقاط الدعم ومستوى الـ VIP البرمجي المكتوب بسيرفرك
+    document.getElementById('userSupportPoints').innerText = user.supportPoints !== undefined ? user.supportPoints : 0;
+    document.getElementById('userVipLevel').innerText = user.vip_level !== undefined ? user.vip_level : 0;
+    document.getElementById('userVip').innerText = "VIP " + (user.vip_level !== undefined ? user.vip_level : 0);
+    
+    // 4. عرض اسم الوكالة ودور المستخدم
+    document.getElementById('userAgency').innerText = user.agencyId || "إمبراطورية السبع العامة";
+    document.getElementById('userRole').innerText = user.role === "USER" ? "عضو رسمي" : user.role;
+
+    // 5. تحديث صورة الحساب الدائرية إذا وجد لها رابط مخصص
+    if (user.avatarUrl) {
+        document.getElementById('userAvatar').src = user.avatarUrl;
+    }
+}
         async function handleLogin() {
             const email = document.getElementById('loginEmail').value;
             const password = document.getElementById('loginPassword').value;
