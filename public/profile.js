@@ -1,6 +1,6 @@
 const API_URL = 'https://game-server-ayham.onrender.com';
 
-// 1. دالة تحميل بيانات الملف الشخصي وعرضها بالواجهة
+// 1. دالة جلب بيانات الملف الشخصي وعرضها بالواجهة الأساسية لـ إمبراطورية السبع V3
 async function loadProfile() {
     const token = localStorage.getItem('token');
     if (!token) {
@@ -14,7 +14,7 @@ async function loadProfile() {
         });
         const user = await res.json();
         
-        // عرض البيانات داخل العناصر
+        // عرض اسم المستخدم والرصيد
         if (document.getElementById('username-display')) {
             document.getElementById('username-display').innerText = user.username;
         }
@@ -22,7 +22,7 @@ async function loadProfile() {
             document.getElementById('coins-count').innerText = user.coins.toString();
         }
         
-        // تحديث الصور الشخصية والغلاف إذا كانت قادمة من السيرفر
+        // عرض الصورة الشخصية وصورة الغلاف المحدثة
         if (user.avatarUrl && document.getElementById('userAvatar')) {
             document.getElementById('userAvatar').src = user.avatarUrl;
         }
@@ -31,21 +31,20 @@ async function loadProfile() {
         }
 
     } catch (err) {
-        console.log("خطأ في تحميل البيانات");
+        console.log("خطأ في تحميل البيانات الشخصية للمستخدم");
     }
 }
 
-// 2. إعداد ميزة فتح الاستوديو والرفع المباشر فور تحميل الواجهة
+// 2. إعداد مستمعات الأحداث لربط استوديو الهاتف عند النقر على القلم
 document.addEventListener("DOMContentLoaded", () => {
-    // تشغيل جلب البيانات أولاً
+    // تشغيل جلب البيانات فور تحميل الصفحة
     loadProfile();
 
-    // استهداف عناصر التعديل (أيقونة القلم للـ Avatar وزر الغلاف)
-    // ملاحظة: تأكد أن المعرفات (IDs) تطابق المستخدمة في ملف edit-profile.html أو profile.html لديك
-    const editAvatarBtn = document.getElementById("editAvatarBtn") || document.querySelector(".avatar-container .edit-icon");
-    const editCoverBtn = document.getElementById("editCoverBtn") || document.querySelector(".cover-container .edit-icon") || document.getElementById("editCoverBtnNew");
+    // استهداف عناصر التعديل (أيقونة القلم وأزرار التعديل)
+    const editAvatarBtn = document.getElementById("editAvatarBtn") || document.querySelector(".avatar-container .edit-icon") || document.querySelector(".avatar-container svg");
+    const editCoverBtn = document.getElementById("editCoverBtn") || document.querySelector(".cover-container .edit-icon") || document.querySelector(".cover-container button");
 
-    // إنشاء حقول اختيار ملفات مخفية ديناميكياً لتحفيز الهاتف على فتح الاستوديو
+    // بناء حقول اختيار ملفات من المعرض بشكل ديناميكي مخفي
     const avatarInput = document.createElement("input");
     avatarInput.type = "file";
     avatarInput.accept = "image/*";
@@ -54,83 +53,87 @@ document.addEventListener("DOMContentLoaded", () => {
     coverInput.type = "file";
     coverInput.accept = "image/*";
 
-    // عند الضغط على أيقونة تعديل الصورة الشخصية
+    // تفعيل ضغطة الصورة الشخصية
     if (editAvatarBtn) {
-        // إلغاء أي أحداث قديمة أو نوافذ منبثقة مرتبطة بالعنصر
-        editAvatarBtn.removeAttribute('onclick'); 
+        // حظر أي وظائف منبثقة (Prompt) قديمة مدمجة
+        if(editAvatarBtn.getAttribute('onclick')) editAvatarBtn.removeAttribute('onclick');
+        
         editAvatarBtn.addEventListener("click", (e) => {
             e.preventDefault();
-            e.stopPropagation(); // منع تداخل النوافذ المنبثقة القديمة
             avatarInput.click();
         });
     }
 
-    // عند الضغط على زر أو أيقونة الغلاف
+    // تفعيل ضغطة الغلاف
     if (editCoverBtn) {
-        editCoverBtn.removeAttribute('onclick');
+        if(editCoverBtn.getAttribute('onclick')) editCoverBtn.removeAttribute('onclick');
+        
         editCoverBtn.addEventListener("click", (e) => {
             e.preventDefault();
-            e.stopPropagation();
             coverInput.click();
         });
     }
 
-    // حدث التقاط الصورة الشخصية المحددة من الاستوديو
-    avatarInput.addEventListener("change", async () => {
+    // معالجة واختيار الصورة الشخصية الجديدة من المعرض
+    avatarInput.addEventListener("change", () => {
         if (avatarInput.files.length === 0) return;
         const file = avatarInput.files[0];
-        await uploadImageFile(file, 'avatarUrl');
+        
+        const reader = new FileReader();
+        reader.onloadend = async () => {
+            await sendProfileData({ avatarUrl: reader.result });
+        };
+        reader.readAsDataURL(file); // تحويل الصورة لكود نصي آمن وسريع
     });
 
-    // حدث التقاط صورة الغلاف المحددة من الاستوديو
-    coverInput.addEventListener("change", async () => {
+    // معالجة واختيار صورة الغلاف الجديدة من المعرض
+    coverInput.addEventListener("change", () => {
         if (coverInput.files.length === 0) return;
         const file = coverInput.files[0];
-        await uploadImageFile(file, 'coverUrl');
+        
+        const reader = new FileReader();
+        reader.onloadend = async () => {
+            await sendProfileData({ coverUrl: reader.result });
+        };
+        reader.readAsDataURL(file);
     });
 });
 
-// 3. دالة إرسال الملف الفعلي بصيغة FormData إلى السيرفر الرئيسي
-async function uploadImageFile(file, fieldName) {
+// 3. دالة إرسال التحديثات مباشرة إلى السيرفر الرئيسي
+async function sendProfileData(payload) {
     const token = localStorage.getItem("token");
     if (!token) {
-        alert("الرجاء تسجيل الدخول أولاً");
+        alert("انتهت الجلسة، يرجى إعادة تسجيل الدخول.");
         return;
     }
 
-    // تجهيز الملف لإرساله كبيانات متعددة الأجزاء (Multipart)
-    const formData = new FormData();
-    formData.append(fieldName, file);
-
     try {
-        // يتم الإرسال إلى مسار الرفع المخصص في السيرفر الخلفي لديك
         const response = await fetch(`${API_URL}/api/profile/update`, {
             method: "PUT",
             headers: {
-                "Authorization": `Bearer ${token}`
-                // اترك المتصفح يضع الـ Content-Type والحدود تلقائياً ولا تضعها يدوياً
+                "Authorization": `Bearer ${token}`,
+                "Content-Type": "application/json"
             },
-            body: formData
+            body: JSON.stringify(payload)
         });
 
         const data = await response.json();
 
         if (response.ok && data.success) {
-            alert("تم رفع الصورة وتحديثها من الاستوديو بنجاح! 🎉");
+            alert("تم تحديث صورتك بنجاح من الاستوديو! 🎉");
             
-            // تحديث العناصر بشكل فوري بالواجهة بدون إعادة تحميل كامل الصفحة
-            if (fieldName === 'avatarUrl' && document.getElementById("userAvatar")) {
+            // تحديث مرئي فوري لعناصر الصفحة بدون ريفريش كامل
+            if (payload.avatarUrl && document.getElementById("userAvatar")) {
                 document.getElementById("userAvatar").src = data.user.avatarUrl;
-            } else if (fieldName === 'coverUrl' && document.getElementById("userCover")) {
+            }
+            if (payload.coverUrl && document.getElementById("userCover")) {
                 document.getElementById("userCover").style.backgroundImage = `url('${data.user.coverUrl}')`;
-            } else {
-                window.location.reload(); // حل احتياطي لتأكيد التحديث المرئي
             }
         } else {
-            alert(`فشل الرفع: ${data.error || "خطأ غير معروف"}`);
+            alert(`فشل تحديث الصورة: ${data.error || "خطأ غير معروف"}`);
         }
     } catch (error) {
-        console.error("خطأ الشبكة أثناء الرفع:", error);
-        alert("حدث خطأ أثناء الاتصال بالسيرفر لرفع الصورة.");
+        console.error(error);
+        alert("حدث خطأ أثناء الاتصال بالسيرفر، تأكد من عمل السيرفر بشكل طبيعي.");
     }
 }
