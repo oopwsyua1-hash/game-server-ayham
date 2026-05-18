@@ -74,10 +74,6 @@
             outline: none;
             transition: 0.3s;
         }
-        .form-group input:focus, .form-group select:focus {
-            border-color: #3498db;
-            box-shadow: 0 0 8px rgba(52, 152, 219, 0.3);
-        }
         
         /* --- واجهة البروفايل المطور الفخم V3 --- */
         .premium-profile {
@@ -94,8 +90,6 @@
             overflow: hidden;
             position: relative;
         }
-
-        /* غلاف الحساب المطور */
         .cover-container {
             width: 100%;
             height: 140px;
@@ -118,27 +112,12 @@
             font-size: 11px;
             border-radius: 20px;
             cursor: pointer;
-            transition: 0.2s;
         }
-        .change-cover-btn:hover { background: rgba(0, 0, 0, 0.8); }
-
         .profile-header {
             position: relative;
             padding-bottom: 15px;
             margin-top: -60px;
             border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-        }
-        .vip-badge {
-            position: absolute;
-            top: 70px;
-            right: 20px;
-            background: linear-gradient(135deg, #f1c40f, #f39c12);
-            color: #000;
-            font-size: 11px;
-            font-weight: bold;
-            padding: 3px 10px;
-            border-radius: 20px;
-            box-shadow: 0 0 10px rgba(241, 196, 15, 0.5);
         }
         .avatar-container {
             width: 110px;
@@ -152,7 +131,6 @@
             border-radius: 50%;
             object-fit: cover;
             border: 3px solid #f1c40f;
-            box-shadow: 0 0 20px rgba(241, 196, 15, 0.4);
         }
         .change-avatar-btn {
             position: absolute;
@@ -163,7 +141,6 @@
             width: 30px;
             height: 30px;
             border-radius: 50%;
-            border: 2px solid #111a24;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -175,138 +152,61 @@
             color: #e74c3c;
             margin-top: 5px;
             font-weight: bold;
-            text-shadow: 0 0 5px rgba(231, 76, 60, 0.2);
         }
+        .user-title { font-size: 22px; font-weight: bold; margin: 8px 0 3px 0; }
+        .user-uid { font-size: 13px; color: #a4b0be; background: rgba(255, 255, 255, 0.07); padding: 2px 10px; border-radius: 30px; display: inline-block; }
+        
+        .room-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin: 15px 20px; }
+        .stat-box { background: rgba(255, 255, 255, 0.03); padding: 10px 5px; border-radius: 14px; }
+        .stat-box .num { font-size: 16px; font-weight: bold; color: #3498db; }
+        .stat-box .label { font-size: 11px; color: #747d8c; margin-top: 3px; }
 
-        .user-title {
-            font-size: 22px;
-            font-weight: bold;
-            margin: 8px 0 3px 0;
-            color: #fff;
-        }
-        .user-uid {
-            font-size: 13px;
-            color: #a4b0be;
-            background: rgba(255, 255, 255, 0.07);
-            padding: 2px 10px;
-            border-radius: 30px;
-            display: inline-block;
-        }
-        .room-stats {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 10px;
-            margin: 15px 20px;
-        }
-        .stat-box {
-            background: rgba(255, 255, 255, 0.03);
-            padding: 10px 5px;
-            border-radius: 14px;
-            border: 1px solid rgba(255, 255, 255, 0.03);
-        }
-        .stat-box .num {
-            font-size: 16px;
-            font-weight: bold;
-            color: #3498db;
-        }
-        .stat-box .label {
-            font-size: 11px;
-            color: #747d8c;
-            margin-top: 3px;
-        }
-        .wallet-card {
-            background: rgba(20, 30, 43, 0.8);
-            border-radius: 18px;
-            padding: 15px;
-            border: 1px solid rgba(52, 152, 219, 0.15);
-            margin: 0 20px 15px 20px;
-            text-align: right;
-        }
-        .wallet-header {
-            font-size: 14px;
-            color: #f1c40f;
-            font-weight: bold;
-            margin-bottom: 12px;
-            display: flex;
-            justify-content: space-between;
-        }
-        .currency-row {
-            display: flex;
-            justify-content: space-between;
-            gap: 15px;
-        }
-        .currency-item {
-            flex: 1;
-            background: rgba(0, 0, 0, 0.2);
-            padding: 10px;
-            border-radius: 12px;
-            text-align: center;
-        }
-        .currency-item i {
-            font-size: 12px;
-            color: #a4b0be;
-            display: block;
-            margin-bottom: 4px;
-        }
-        .currency-item span {
-            font-size: 16px;
-            font-weight: bold;
-        }
-        .agency-section {
-            background: rgba(255, 255, 255, 0.02);
-            border-radius: 16px;
-            padding: 12px 15px;
-            margin: 0 20px 20px 20px;
-            display: flex;
-            justify-content: space-between;
+        .wallet-card { background: rgba(20, 30, 43, 0.8); border-radius: 18px; padding: 15px; margin: 0 20px 15px 20px; text-align: right; border: 1px solid rgba(52, 152, 219, 0.15); }
+        .wallet-header { font-size: 14px; color: #f1c40f; font-weight: bold; margin-bottom: 12px; }
+        .currency-row { display: flex; justify-content: space-between; gap: 15px; }
+        .currency-item { flex: 1; background: rgba(0, 0, 0, 0.2); padding: 10px; border-radius: 12px; text-align: center; }
+        .currency-item span { font-size: 16px; font-weight: bold; }
+
+        .agency-section { background: rgba(255, 255, 255, 0.02); border-radius: 16px; padding: 12px 15px; margin: 0 20px 20px 20px; display: flex; justify-content: space-between; align-items: center; border: 1px solid rgba(255, 255, 255, 0.05); }
+        .action-buttons { display: flex; gap: 10px; padding: 0 20px 20px 20px; }
+        
+        .btn-main { width: 100%; padding: 12px; background: linear-gradient(135deg, #3498db, #2980b9); color: #fff; border: none; border-radius: 14px; font-size: 14px; font-weight: bold; cursor: pointer; }
+        .btn-danger-logout { padding: 12px; background: rgba(231, 76, 60, 0.15); color: #e74c3c; border: 1px solid rgba(231, 76, 60, 0.3); border-radius: 14px; font-size: 14px; font-weight: bold; cursor: pointer; width: 40%; }
+
+        /* --- نافذة التنبيه الملوكية المخصصة (البديلة لـ Alert) --- */
+        .custom-alert-bg {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.75);
+            z-index: 10000;
+            justify-content: center;
             align-items: center;
-            border: 1px solid rgba(255, 255, 255, 0.05);
         }
-        .agency-info {
-            text-align: right;
+        .custom-alert-box {
+            background: #121b26;
+            border: 2px solid #e74c3c;
+            border-radius: 20px;
+            padding: 25px;
+            width: 85%;
+            max-width: 340px;
+            text-align: center;
+            box-shadow: 0 10px 30px rgba(231, 76, 60, 0.2);
+            animation: fadeIn 0.3s ease;
         }
-        .agency-info .name {
-            font-size: 14px;
-            font-weight: bold;
-            color: #fff;
-        }
-        .agency-info .role {
-            font-size: 11px;
-            color: #e74c3c;
-        }
-        .action-buttons {
-            display: flex;
-            gap: 10px;
-            padding: 0 20px 20px 20px;
-        }
-        .btn-main {
-            flex: 2;
-            padding: 12px;
-            background: linear-gradient(135deg, #3498db, #2980b9);
-            color: #fff;
-            border: none;
-            border-radius: 14px;
-            font-size: 14px;
-            font-weight: bold;
-            cursor: pointer;
-            width: 100%;
-        }
-        .btn-danger-logout {
-            flex: 1;
-            padding: 12px;
-            background: rgba(231, 76, 60, 0.15);
-            color: #e74c3c;
-            border: 1px solid rgba(231, 76, 60, 0.3);
-            border-radius: 14px;
-            font-size: 14px;
-            font-weight: bold;
-            cursor: pointer;
-            transition: 0.3s;
-        }
-        .btn-danger-logout:hover {
-            background: #e74c3c;
-            color: #fff;
-        }
+        .custom-alert-box h3 { color: #e74c3c; margin: 0 0 10px 0; font-size: 18px; }
+        .custom-alert-box p { color: #fff; margin: 0 0 20px 0; font-size: 14px; line-height: 1.5; }
+        .custom-alert-btn { background: #e74c3c; color: white; border: none; padding: 10px 30px; border-radius: 10px; font-weight: bold; cursor: pointer; width: 100%; }
+        
+        /* نافذة إدخال الرابط */
+        .prompt-box { border-color: #3498db; box-shadow: 0 10px 30px rgba(52, 152, 219, 0.2); }
+        .prompt-box h3 { color: #3498db; }
+        .prompt-input { width: 100%; padding: 10px; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.2); border-radius: 10px; color: #fff; margin-bottom: 15px; box-sizing: border-box; text-align: left; }
+        .prompt-buttons { display: flex; gap: 10px; }
+        .btn-confirm { background: #3498db; color: white; border: none; padding: 10px; border-radius: 10px; flex: 1; font-weight: bold; cursor: pointer; }
+        .btn-cancel { background: #747d8c; color: white; border: none; padding: 10px; border-radius: 10px; flex: 1; font-weight: bold; cursor: pointer; }
+
+        @keyframes fadeIn { from { opacity: 0; transform: scale(0.9); } to { opacity: 1; transform: scale(1); } }
     </style>
 </head>
 <body>
@@ -317,129 +217,104 @@
             <button id="loginTab" class="tab-btn active" onclick="switchTab('login')">تسجيل الدخول</button>
             <button id="registerTab" class="tab-btn" onclick="switchTab('register')">إنشاء حساب</button>
         </div>
-
         <div id="loginForm">
-            <div class="form-group">
-                <label>البريد الإلكتروني</label>
-                <input type="email" id="loginEmail" placeholder="example@gmail.com">
-            </div>
-            <div class="form-group">
-                <label>كلمة المرور</label>
-                <input type="password" id="loginPassword" placeholder="••••••••">
-            </div>
+            <div class="form-group"><label>البريد الإلكتروني</label><input type="email" id="loginEmail" placeholder="example@gmail.com"></div>
+            <div class="form-group"><label>كلمة المرور</label><input type="password" id="loginPassword" placeholder="••••••••"></div>
             <button class="btn-main" onclick="handleLogin()">دخول</button>
         </div>
-
         <div id="registerForm" style="display: none;">
-            <div class="form-group">
-                <label>الاسم الأول</label>
-                <input type="text" id="regUser" placeholder="الاسم الأول">
-            </div>
-            <div class="form-group">
-                <label>الاسم الأخير (الكنية)</label>
-                <input type="text" id="regLast" placeholder="الكنية">
-            </div>
-            <div class="form-group">
-                <label>البريد الإلكتروني</label>
-                <input type="email" id="regEmail" placeholder="example@gmail.com">
-            </div>
-            <div class="form-group">
-                <label>كلمة المرور</label>
-                <input type="password" id="regPassword" placeholder="••••••••">
-            </div>
-            <div class="form-group">
-                <label>العمر</label>
-                <input type="number" id="regAge" placeholder="20">
-            </div>
-            <div class="form-group">
-                <label>الجنس</label>
-                <select id="regGender">
-                    <option value="ذكر">ذكر</option>
-                    <option value="أنثى">أنثى</option>
-                </select>
-            </div>
-            <div class="form-group">
-                <label>الدولة</label>
-                <input type="text" id="regCountry" placeholder="مثال: سوريا / تركيا">
-            </div>
-            <div class="form-group">
-                <label>تاريخ الميلاد</label>
-                <input type="date" id="regBirthDate" value="2006-01-01">
-            </div>
+            <div class="form-group"><label>الاسم الأول</label><input type="text" id="regUser" placeholder="الاسم الأول"></div>
+            <div class="form-group"><label>الاسم الأخير (الكنية)</label><input type="text" id="regLast" placeholder="الكنية"></div>
+            <div class="form-group"><label>البريد الإلكتروني</label><input type="email" id="regEmail" placeholder="example@gmail.com"></div>
+            <div class="form-group"><label>كلمة المرور</label><input type="password" id="regPassword" placeholder="••••••••"></div>
+            <div class="form-group"><label>العمر</label><input type="number" id="regAge" placeholder="20"></div>
+            <div class="form-group"><label>الجنس</label><select id="regGender"><option value="ذكر">ذكر</option><option value="أنثى">أنثى</option></select></div>
+            <div class="form-group"><label>الدولة</label><input type="text" id="regCountry" placeholder="مثال: سوريا"></div>
+            <div class="form-group"><label>تاريخ الميلاد</label><input type="date" id="regBirthDate" value="2006-01-01"></div>
             <button class="btn-main" onclick="handleRegister()">إنشاء الحساب وانطلاق 🚀</button>
         </div>
     </div>
 
     <div id="profilePage" class="premium-profile" style="display: none;">
-        
         <div class="cover-container">
             <img id="userCover" src="https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=500" alt="Cover">
-            <button class="change-cover-btn" onclick="updatePhoto('cover')"><i class="fa-solid fa-camera"></i> غلاف</button>
+            <button class="change-cover-btn" onclick="showPhotoPrompt('cover')"><i class="fa-solid fa-camera"></i> غلاف</button>
         </div>
-
         <div class="profile-header">
-            <div id="userVip" class="vip-badge">VIP 0</div>
-            
             <div class="avatar-container">
                 <img id="userAvatar" src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150" alt="Avatar">
-                <div class="change-avatar-btn" onclick="updatePhoto('avatar')"><i class="fa-solid fa-pen"></i></div>
+                <div class="change-avatar-btn" onclick="showPhotoPrompt('avatar')"><i class="fa-solid fa-pen"></i></div>
             </div>
-            
             <div class="warning-text">⚠️ يمنع وضع صور إباحية أو مخلة نهائياً</div>
-
             <div id="profileName" class="user-title">جاري التحميل...</div>
             <div id="profileId" class="user-uid">ID: --</div>
         </div>
-
         <div class="room-stats">
-            <div class="stat-box">
-                <div id="userVipLevel" class="num">0</div>
-                <div class="label">مستوى الـ VIP</div>
-            </div>
-            <div class="stat-box">
-                <div id="userSupportPoints" class="num">0</div>
-                <div class="label">نقاط الدعم</div>
-            </div>
-            <div class="stat-box">
-                <div class="num" style="color: #2ecc71;">نشط</div>
-                <div class="label">حالة الحساب</div>
-            </div>
+            <div class="stat-box"><div id="userVipLevel" class="num">0</div><div class="label">مستوى VIP</div></div>
+            <div class="stat-box"><div id="userSupportPoints" class="num">0</div><div class="label">نقاط الدعم</div></div>
+            <div class="stat-box"><div class="num" style="color: #2ecc71;">نشط</div><div class="label">الحالة</div></div>
         </div>
-
         <div class="wallet-card">
-            <div class="wallet-header">
-                <span>المحفظة والرصيد الرسمي</span>
-                <small style="color: #a4b0be; font-weight: normal;">شحن فوري</small>
-            </div>
+            <div class="wallet-header">المحفظة والرصيد الرسمي</div>
             <div class="currency-row">
-                <div class="currency-item">
-                    <i>الذهب المتوفر</i>
-                    <span id="profileCoins" style="color: #f1c40f;">1000</span>
-                </div>
-                <div class="currency-item">
-                    <i>الماس المستلم</i>
-                    <span id="profileDiamonds" style="color: #00d2d3;">0</span>
-                </div>
+                <div class="currency-item"><i>الذهب</i><span id="profileCoins" style="color: #f1c40f;">1000</span></div>
+                <div class="currency-item"><i>الماس</i><span id="profileDiamonds" style="color: #00d2d3;">0</span></div>
             </div>
         </div>
-
         <div class="agency-section">
-            <div class="agency-info">
-                <div class="name" id="userAgency">تحميل الوكالة...</div>
-                <div class="role" id="userRole">عضو الإمبراطورية</div>
-            </div>
+            <div style="text-align: right;"><div class="name" id="userAgency">تحميل...</div><div style="font-size:11px;color:#e74c3c;" id="userRole">عضو</div></div>
             <div style="font-size: 12px; color: #3498db; font-weight: bold;">الوكالة 👑</div>
         </div>
-
         <div class="action-buttons">
-            <button class="btn-main" onclick="alert('جاري تجهيز دخول غرف الصوت الفورية V3...')">دخول غرف الشات</button>
+            <button class="btn-main" onclick="showCustomAlert('الغرف الصوتية','جاري تجهيز دخول غرف الصوت الفورية V3...')">دخول غرف الشات</button>
             <button class="btn-danger-logout" onclick="logout()">خروج</button>
+        </div>
+    </div>
+
+    <div id="customAlert" class="custom-alert-bg">
+        <div class="custom-alert-box">
+            <h3 id="alertTitle">تنبيه</h3>
+            <p id="alertMessage">خطأ بالسيرفر</p>
+            <button class="custom-alert-btn" onclick="hideCustomAlert()">حسناً</button>
+        </div>
+    </div>
+
+    <div id="customPrompt" class="custom-alert-bg">
+        <div class="custom-alert-box prompt-box">
+            <h3 id="promptTitle">تحديث الصورة</h3>
+            <p id="promptMessage">أدخل رابط الصورة المباشر:</p>
+            <input type="text" id="promptInput" class="prompt-input" placeholder="https://...">
+            <div class="prompt-buttons">
+                <button class="btn-confirm" id="promptConfirmBtn">حفظ</button>
+                <button class="btn-cancel" onclick="hideCustomPrompt()">إلغاء</button>
+            </div>
         </div>
     </div>
 
     <script>
         const SERVER_URL = 'https://game-server-ayham.onrender.com';
-        
+        let currentPromptType = '';
+
+        // دوال التحكم بالتنبيهات المخصصة
+        function showCustomAlert(title, message) {
+            document.getElementById('alertTitle').innerText = title;
+            document.getElementById('alertMessage').innerText = message;
+            document.getElementById('customAlert').style.display = 'flex';
+        }
+        function hideCustomAlert() { document.getElementById('customAlert').style.display = 'none'; }
+
+        function showPhotoPrompt(type) {
+            currentPromptType = type;
+            document.getElementById('promptInput').value = '';
+            document.getElementById('customPrompt').style.display = 'flex';
+        }
+        document.getElementById('promptConfirmBtn').onclick = function() {
+            const url = document.getElementById('promptInput').value;
+            hideCustomPrompt();
+            if(url) { processPhotoUpdate(currentPromptType, url); }
+        };
+        function hideCustomPrompt() { document.getElementById('customPrompt').style.display = 'none'; }
+
         window.onload = async function() {
             const token = localStorage.getItem('user_token');
             if (token) {
@@ -449,119 +324,49 @@
                         headers: { 'Authorization': `Bearer ${token}` }
                     });
                     const data = await res.json();
-                    if(data && (data.user_id || data._id)) { 
-                        displayUserProfile(data); 
-                    } else { 
-                        localStorage.removeItem('user_token'); 
-                    }
-                } catch(e) { 
-                    console.log('خطأ الفحص التلقائي للتوكن'); 
-                }
+                    if(data && (data.user_id || data._id)) { displayUserProfile(data); }
+                } catch(e) {}
             }
         };
 
-        // دالة موحدة لتحديث الصور (الشخصية والغلاف) ورفعها للسيرفر لحفظها بقاعدة البيانات بشكل دائم
-        async function updatePhoto(type) {
-            const titleText = type === 'cover' ? 'صورة الغلاف الجديدة' : 'الصورة الشخصية الجديدة';
-            const url = prompt(`أدخل رابط ${titleText} المباشر:\n(تنبيه: يمنع استخدام أي صور إباحية أو خادشة للحياء)`);
-            
-            if (!url) return;
-
-            // فحص أمان أولي لمنع الروابط غير الأخلاقية
-            const blockedKeywords = ["porno", "sex", "xxx", "naked", "xrated", "adult"];
-            if (blockedKeywords.some(keyword => url.toLowerCase().includes(keyword))) {
-                alert("عذراً، هذا الرابط يحتوي على محتوى محظور تماماً داخل مجتمع الإمبراطورية!");
-                return;
+        async function processPhotoUpdate(type, url) {
+            const blocked = ["porno", "sex", "xxx", "naked"];
+            if (blocked.some(k => url.toLowerCase().includes(k))) {
+                return showCustomAlert("محتوى محظور", "عذراً، هذا الرابط يحتوي على محتوى ممنوع في الإمبراطورية!");
             }
-
-            const token = localStorage.getItem('user_token');
-            if (!token) return alert("انتهت الجلسة، يرجى إعادة تسجيل الدخول.");
-
-            // تحديد الحقل المطلوب إرساله بناءً على نوع الصورة
-            const bodyData = type === 'cover' ? { coverUrl: url } : { avatarUrl: url };
-
-            try {
-                // إرسال الرابط الجديد إلى نقطة تحديث البيانات بالسيرفر لحفظه دوماً
-                const res = await fetch(`${SERVER_URL}/api/profile/update`, {
-                    method: 'PUT',
-                    headers: { 
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${token}`
-                    },
-                    body: JSON.stringify(bodyData)
-                });
-                
-                if (res.ok) {
-                    if (type === 'cover') {
-                        document.getElementById('userCover').src = url;
-                    } else {
-                        document.getElementById('userAvatar').src = url;
-                    }
-                    alert("تم تحديث الصورة بنجاح وحفظها في قاعدة البيانات واجهة الإمبراطورية! 🌟");
-                } else {
-                    // إذا لم يدعم السيرفر الـ PUT بعد، نقوم بحفظها محلياً لحين اكتمال الـ API
-                    if (type === 'cover') document.getElementById('userCover').src = url;
-                    else document.getElementById('userAvatar').src = url;
-                    localStorage.setItem(`saved_${type}`, url);
-                }
-            } catch (e) {
-                if (type === 'cover') document.getElementById('userCover').src = url;
-                else document.getElementById('userAvatar').src = url;
-                localStorage.setItem(`saved_${type}`, url);
-            }
+            if (type === 'cover') document.getElementById('userCover').src = url;
+            else document.getElementById('userAvatar').src = url;
+            localStorage.setItem(`saved_${type}`, url);
+            showCustomAlert("نجاح", "تم تحديث مظهر الصورة الشخصية بنجاح! ✨");
         }
 
         function switchTab(type) {
-            if(type === 'login') {
-                document.getElementById('loginForm').style.display = 'block';
-                document.getElementById('registerForm').style.display = 'none';
-                document.getElementById('loginTab').classList.add('active');
-                document.getElementById('registerTab').classList.remove('active');
-            } else {
-                document.getElementById('loginForm').style.display = 'none';
-                document.getElementById('registerForm').style.display = 'block';
-                document.getElementById('loginTab').classList.remove('active');
-                document.getElementById('registerTab').classList.add('active');
-            }
+            document.getElementById('loginForm').style.display = type === 'login' ? 'block' : 'none';
+            document.getElementById('registerForm').style.display = type === 'login' ? 'none' : 'block';
+            document.getElementById('loginTab').className = type === 'login' ? 'tab-btn active' : 'tab-btn';
+            document.getElementById('registerTab').className = type === 'login' ? 'tab-btn' : 'tab-btn';
         }
         
         function displayUserProfile(user) {
             document.getElementById('authSection').style.display = 'none';
             document.getElementById('profilePage').style.display = 'block';
-
             document.getElementById('profileName').innerText = user.username + " " + (user.lastName || "");
             document.getElementById('profileId').innerText = "ID: " + (user.user_id || "000000");
-            
-            document.getElementById('profileCoins').innerText = user.coins !== undefined ? user.coins : 1000;
-            document.getElementById('profileDiamonds').innerText = user.diamonds !== undefined ? user.diamonds : 0;
-            
-            document.getElementById('userSupportPoints').innerText = user.supportPoints !== undefined ? user.supportPoints : 0;
-            document.getElementById('userVipLevel').innerText = user.vip_level !== undefined ? user.vip_level : 0;
-            document.getElementById('userVip').innerText = "VIP " + (user.vip_level !== undefined ? user.vip_level : 0);
-            
+            document.getElementById('profileCoins').innerText = user.coins || 1000;
+            document.getElementById('profileDiamonds').innerText = user.diamonds || 0;
+            document.getElementById('userSupportPoints').innerText = user.supportPoints || 0;
+            document.getElementById('userVipLevel').innerText = user.vip_level || 0;
             document.getElementById('userAgency').innerText = user.agencyId || "إمبراطورية السبع العامة";
             document.getElementById('userRole').innerText = user.role === "USER" ? "عضو رسمي" : (user.role || "عضو رسمي");
 
-            // جلب وعرض الصور المحدثة
-            if (user.avatarUrl) { 
-                document.getElementById('userAvatar').src = user.avatarUrl; 
-            } else if (localStorage.getItem('saved_avatar')) {
-                document.getElementById('userAvatar').src = localStorage.getItem('saved_avatar');
-            }
-
-            if (user.coverUrl) { 
-                document.getElementById('userCover').src = user.coverUrl; 
-            } else if (localStorage.getItem('saved_cover')) {
-                document.getElementById('userCover').src = localStorage.getItem('saved_cover');
-            }
+            if (localStorage.getItem('saved_avatar')) document.getElementById('userAvatar').src = localStorage.getItem('saved_avatar');
+            if (localStorage.getItem('saved_cover')) document.getElementById('userCover').src = localStorage.getItem('saved_cover');
         }
 
         async function handleLogin() {
             const email = document.getElementById('loginEmail').value;
             const password = document.getElementById('loginPassword').value;
-            
-            if(!email || !password) { return alert('الرجاء تعبئة كل الحقول'); }
-
+            if(!email || !password) return showCustomAlert('تنبيه', 'الرجاء تعبئة كل الحقول');
             try {
                 const res = await fetch(`${SERVER_URL}/api/login`, {
                     method: 'POST',
@@ -569,15 +374,9 @@
                     body: JSON.stringify({ email, password })
                 });
                 const data = await res.json();
-                if(data.token) { 
-                    localStorage.setItem('user_token', data.token); 
-                    displayUserProfile(data.user); 
-                } else { 
-                    alert(data.error || 'خطأ في الدخول'); 
-                }
-            } catch(e) { 
-                alert('خطأ في الاتصال بالسيرفر'); 
-            }
+                if(data.token) { localStorage.setItem('user_token', data.token); displayUserProfile(data.user); }
+                else { showCustomAlert('نظام الحماية', 'خطأ بالسيرفر: البريد أو كلمة المرور غير صحيحة'); }
+            } catch(e) { showCustomAlert('نظام الاتصال', 'خطأ بالسيرفر'); }
         }
 
         async function handleRegister() {
@@ -590,10 +389,9 @@
             const country = document.getElementById('regCountry').value;
             const birthDate = document.getElementById('regBirthDate').value;
 
-            if(!username || !lastName || !email || !password || !country || !birthDate) { 
-                return alert('الرجاء تعبئة كافة الحقول المطلوبة لضمان توافق قاعدة البيانات'); 
+            if(!username || !lastName || !email || !password || !country) { 
+                return showCustomAlert('نظام التسجيل', 'الرجاء تعبئة كافة الحقول المطلوبة'); 
             }
-
             try {
                 const res = await fetch(`${SERVER_URL}/api/register`, {
                     method: 'POST',
@@ -601,23 +399,12 @@
                     body: JSON.stringify({ username, lastName, email, password, age, country, gender, birthDate })
                 });
                 const data = await res.json();
-                if(data.token) { 
-                    localStorage.setItem('user_token', data.token); 
-                    displayUserProfile(data.user); 
-                } else { 
-                    alert(data.error || 'فشل التسجيل: تأكد من الشروط بالسيرفر'); 
-                }
-            } catch(e) { 
-                alert('خطأ في الاتصال بالسيرفر، تفقد الـ Logs'); 
-            }
+                if(data.token) { localStorage.setItem('user_token', data.token); displayUserProfile(data.user); }
+                else { showCustomAlert('نظام الحماية', 'خطأ بالسيرفر'); }
+            } catch(e) { showCustomAlert('نظام الاتصال', 'خطأ بالسيرفر'); }
         }
 
-        function logout() { 
-            localStorage.removeItem('user_token'); 
-            localStorage.removeItem('saved_avatar');
-            localStorage.removeItem('saved_cover');
-            window.location.reload(); 
-        }
+        function logout() { localStorage.clear(); window.location.reload(); }
     </script>
 </body>
 </html>
