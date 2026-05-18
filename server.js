@@ -15,8 +15,11 @@ const io = new Server(server, { cors: { origin: "*" } });
 const PORT = process.env.PORT || 3000;
 const JWT_SECRET = process.env.JWT_SECRET || 'ayham-secret-key-2024';
 
+// تفعيل الميدل وير بالترتيب الصحيح
 app.use(cors());
 app.use(express.json());
+
+// تشغيل وتمرير مجلد public تلقائياً لتفادي خطأ الكاش داخل التطبيق
 app.use(express.static(path.join(__dirname, 'public')));
 
 // MongoDB Connection
@@ -373,7 +376,7 @@ app.get('/api/room-support/:room_id', async (req, res) => {
   }
 });
 
-// Routes الصفحات
+// توجيه روابط الصفحات وعرض الـ index.html بشكل افتراضي وتلقائي عند فتح الرابط الرئيسي
 app.get('/', (req, res) => res.sendFile(path.join(__dirname, 'public', 'index.html')));
 app.get('/room', (req, res) => res.sendFile(path.join(__dirname, 'public', 'room.html')));
 
