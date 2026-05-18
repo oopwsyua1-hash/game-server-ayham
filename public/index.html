@@ -6,7 +6,6 @@
     <title>إمبراطورية السبع V3</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
-        /* --- التنسيق العام للموقع --- */
         body {
             background-color: #0b1118;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -18,7 +17,6 @@
             align-items: center;
             min-height: 100vh;
         }
-
         /* --- حاوية الدخول والتسجيل --- */
         .auth-container {
             width: 100%;
@@ -30,20 +28,17 @@
             box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
             text-align: center;
         }
-
         .auth-container h2 {
             color: #3498db;
             margin-bottom: 20px;
             text-shadow: 0 0 10px rgba(52, 152, 219, 0.3);
         }
-
         .tabs {
             display: flex;
             justify-content: space-around;
             margin-bottom: 20px;
             border-bottom: 1px solid rgba(255, 255, 255, 0.1);
         }
-
         .tab-btn {
             background: none;
             border: none;
@@ -54,24 +49,20 @@
             cursor: pointer;
             transition: 0.3s;
         }
-
         .tab-btn.active {
             color: #3498db;
             border-bottom: 3px solid #3498db;
         }
-
         .form-group {
             margin-bottom: 15px;
             text-align: right;
         }
-
         .form-group label {
             display: block;
             font-size: 13px;
             color: #a4b0be;
             margin-bottom: 5px;
         }
-
         .form-group input, .form-group select {
             width: 100%;
             padding: 12px;
@@ -83,18 +74,12 @@
             outline: none;
             transition: 0.3s;
         }
-
-        .form-group input:focus, .form-group select:focus {
-            border-color: #3498db;
-            box-shadow: 0 0 8px rgba(52, 152, 219, 0.3);
-        }
-
-        /* --- واجهة البروفايل المطور للإمبراطورية V3 --- */
+        
+        /* --- واجهة البروفايل المطور الفخم V3 --- */
         .premium-profile {
             width: 100%;
             max-width: 450px;
             margin: 0 auto;
-            padding: 20px;
             background: linear-gradient(185deg, #111a24 0%, #0b1118 100%);
             border-radius: 28px;
             border: 1px solid rgba(241, 196, 15, 0.2);
@@ -102,18 +87,45 @@
             color: #fff;
             text-align: center;
             box-sizing: border-box;
+            overflow: hidden;
+            position: relative;
+        }
+
+        /* غلاف الحساب المطور */
+        .cover-container {
+            width: 100%;
+            height: 140px;
+            position: relative;
+            background: #1e272e;
+        }
+        .cover-container img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        .change-cover-btn {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            background: rgba(0, 0, 0, 0.6);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            color: #fff;
+            padding: 5px 10px;
+            font-size: 11px;
+            border-radius: 20px;
+            cursor: pointer;
         }
 
         .profile-header {
             position: relative;
             padding-bottom: 15px;
+            margin-top: -60px; /* سحب الصورة الشخصية فوق الغلاف */
             border-bottom: 1px solid rgba(255, 255, 255, 0.05);
         }
-
         .vip-badge {
             position: absolute;
-            top: 0;
-            right: 15px;
+            top: 70px;
+            right: 20px;
             background: linear-gradient(135deg, #f1c40f, #f39c12);
             color: #000;
             font-size: 11px;
@@ -122,14 +134,12 @@
             border-radius: 20px;
             box-shadow: 0 0 10px rgba(241, 196, 15, 0.5);
         }
-
         .avatar-container {
             width: 110px;
             height: 110px;
-            margin: 10px auto;
+            margin: 0 auto 10px auto;
             position: relative;
         }
-
         .avatar-container img {
             width: 100%;
             height: 100%;
@@ -138,6 +148,28 @@
             border: 3px solid #f1c40f;
             box-shadow: 0 0 20px rgba(241, 196, 15, 0.4);
         }
+        .change-avatar-btn {
+            position: absolute;
+            bottom: 0;
+            right: 0;
+            background: #3498db;
+            color: white;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            border: 2px solid #111a24;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            cursor: pointer;
+        }
+        .warning-text {
+            font-size: 10px;
+            color: #e74c3c;
+            margin-top: 5px;
+            font-weight: bold;
+        }
 
         .user-title {
             font-size: 22px;
@@ -145,7 +177,6 @@
             margin: 8px 0 3px 0;
             color: #fff;
         }
-
         .user-uid {
             font-size: 13px;
             color: #a4b0be;
@@ -154,42 +185,36 @@
             border-radius: 30px;
             display: inline-block;
         }
-
         .room-stats {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
             gap: 10px;
-            margin: 20px 0;
+            margin: 15px 20px;
         }
-
         .stat-box {
             background: rgba(255, 255, 255, 0.03);
             padding: 10px 5px;
             border-radius: 14px;
             border: 1px solid rgba(255, 255, 255, 0.03);
         }
-
         .stat-box .num {
             font-size: 16px;
             font-weight: bold;
             color: #3498db;
         }
-
         .stat-box .label {
             font-size: 11px;
             color: #747d8c;
             margin-top: 3px;
         }
-
         .wallet-card {
             background: rgba(20, 30, 43, 0.8);
             border-radius: 18px;
             padding: 15px;
             border: 1px solid rgba(52, 152, 219, 0.15);
-            margin-bottom: 15px;
+            margin: 0 20px 15px 20px;
             text-align: right;
         }
-
         .wallet-header {
             font-size: 14px;
             color: #f1c40f;
@@ -198,13 +223,11 @@
             display: flex;
             justify-content: space-between;
         }
-
         .currency-row {
             display: flex;
             justify-content: space-between;
             gap: 15px;
         }
-
         .currency-item {
             flex: 1;
             background: rgba(0, 0, 0, 0.2);
@@ -212,51 +235,43 @@
             border-radius: 12px;
             text-align: center;
         }
-
         .currency-item i {
             font-size: 12px;
             color: #a4b0be;
             display: block;
             margin-bottom: 4px;
         }
-
         .currency-item span {
             font-size: 16px;
             font-weight: bold;
         }
-
         .agency-section {
             background: rgba(255, 255, 255, 0.02);
             border-radius: 16px;
             padding: 12px 15px;
-            margin-bottom: 20px;
+            margin: 0 20px 20px 20px;
             display: flex;
             justify-content: space-between;
             align-items: center;
             border: 1px solid rgba(255, 255, 255, 0.05);
         }
-
         .agency-info {
             text-align: right;
         }
-
         .agency-info .name {
             font-size: 14px;
             font-weight: bold;
             color: #fff;
         }
-
         .agency-info .role {
             font-size: 11px;
             color: #e74c3c;
         }
-
-        /* --- الأزرار الموحدة --- */
         .action-buttons {
             display: flex;
             gap: 10px;
+            padding: 0 20px 20px 20px;
         }
-
         .btn-main {
             flex: 2;
             padding: 12px;
@@ -269,7 +284,6 @@
             cursor: pointer;
             width: 100%;
         }
-
         .btn-danger-logout {
             flex: 1;
             padding: 12px;
@@ -282,7 +296,6 @@
             cursor: pointer;
             transition: 0.3s;
         }
-
         .btn-danger-logout:hover {
             background: #e74c3c;
             color: #fff;
@@ -334,24 +347,39 @@
             <div class="form-group">
                 <label>الجنس</label>
                 <select id="regGender">
-                    <option value="male">ذكر</option>
-                    <option value="female">أنثى</option>
+                    <option value="String">ذكر</option>
+                    <option value="String">أنثى</option>
                 </select>
             </div>
             <div class="form-group">
                 <label>الدولة</label>
                 <input type="text" id="regCountry" placeholder="مثال: سوريا / تركيا">
             </div>
+            <div class="form-group">
+                <label>تاريخ الميلاد</label>
+                <input type="date" id="regBirthDate" value="2026-01-01">
+            </div>
             <button class="btn-main" onclick="handleRegister()">إنشاء الحساب وانطلاق 🚀</button>
         </div>
     </div>
 
     <div id="profilePage" class="premium-profile" style="display: none;">
+        
+        <div class="cover-container">
+            <img id="userCover" src="https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=500" alt="Cover">
+            <button class="change-cover-btn" onclick="changeCover()"><i class="fa-solid fa-camera"></i> غلاف</button>
+        </div>
+
         <div class="profile-header">
             <div id="userVip" class="vip-badge">VIP 0</div>
+            
             <div class="avatar-container">
                 <img id="userAvatar" src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150" alt="Avatar">
+                <div class="change-avatar-btn" onclick="changeAvatar()"><i class="fa-solid fa-pen"></i></div>
             </div>
+            
+            <div class="warning-text">⚠️ يمنع وضع صور إباحية نهائياً</div>
+
             <div id="profileName" class="user-title">جاري التحميل...</div>
             <div id="profileId" class="user-uid">ID: --</div>
         </div>
@@ -379,7 +407,7 @@
             <div class="currency-row">
                 <div class="currency-item">
                     <i>الذهب المتوفر</i>
-                    <span id="profileCoins" style="color: #f1c40f;">0</span>
+                    <span id="profileCoins" style="color: #f1c40f;">1000</span>
                 </div>
                 <div class="currency-item">
                     <i>الماس المستلم</i>
@@ -405,7 +433,6 @@
     <script>
         const SERVER_URL = 'https://game-server-ayham.onrender.com';
         
-        // الفحص التلقائي عند فتح التطبيق
         window.onload = async function() {
             const token = localStorage.getItem('user_token');
             if (token) {
@@ -426,7 +453,32 @@
             }
         };
 
-        // التبديل بين واجهة الدخول والتسجيل
+        // دالة تغيير صورة الغلاف عبر رابط مباشر
+        function changeCover() {
+            const url = prompt("أدخل رابط صورة الغلاف الجديدة المباشر:\n(تنبيه: يمنع استخدام أي صور إباحية)");
+            if (url) {
+                if(url.includes("porno") || url.includes("sex") || url.includes("xxx")) {
+                    alert("عذراً، هذا المحتوى محظور تماماً في الإمبراطورية!");
+                    return;
+                }
+                document.getElementById('userCover').src = url;
+                localStorage.setItem('custom_cover', url); // حفظ مؤقت على الجهاز
+            }
+        }
+
+        // دالة تغيير الصورة الشخصية عبر رابط مباشر
+        function changeAvatar() {
+            const url = prompt("أدخل رابط صورتك الشخصية الجديدة المباشر:\n(تنبيه: يمنع استخدام أي صور إباحية)");
+            if (url) {
+                if(url.includes("porno") || url.includes("sex") || url.includes("xxx")) {
+                    alert("عذراً، هذا المحتوى محظور تماماً في الإمبراطورية!");
+                    return;
+                }
+                document.getElementById('userAvatar').src = url;
+                localStorage.setItem('custom_avatar', url); // حفظ مؤقت على الجهاز
+            }
+        }
+
         function switchTab(type) {
             if(type === 'login') {
                 document.getElementById('loginForm').style.display = 'block';
@@ -441,7 +493,6 @@
             }
         }
         
-        // عرض البيانات داخل البروفايل المطور
         function displayUserProfile(user) {
             document.getElementById('authSection').style.display = 'none';
             document.getElementById('profilePage').style.display = 'block';
@@ -449,7 +500,7 @@
             document.getElementById('profileName').innerText = user.username + " " + (user.lastName || "");
             document.getElementById('profileId').innerText = "ID: " + (user.user_id || "000000");
             
-            document.getElementById('profileCoins').innerText = user.coins !== undefined ? user.coins : 0;
+            document.getElementById('profileCoins').innerText = user.coins !== undefined ? user.coins : 1000;
             document.getElementById('profileDiamonds').innerText = user.diamonds !== undefined ? user.diamonds : 0;
             
             document.getElementById('userSupportPoints').innerText = user.supportPoints !== undefined ? user.supportPoints : 0;
@@ -459,12 +510,15 @@
             document.getElementById('userAgency').innerText = user.agencyId || "إمبراطورية السبع العامة";
             document.getElementById('userRole').innerText = user.role === "USER" ? "عضو رسمي" : (user.role || "عضو رسمي");
 
-            if (user.avatarUrl) {
-                document.getElementById('userAvatar').src = user.avatarUrl;
-            }
+            // جلب الصورة المحفوظة أو الافتراضية
+            const savedAvatar = localStorage.getItem('custom_avatar');
+            if (savedAvatar) { document.getElementById('userAvatar').src = savedAvatar; }
+            else if (user.avatarUrl) { document.getElementById('userAvatar').src = user.avatarUrl; }
+
+            const savedCover = localStorage.getItem('custom_cover');
+            if (savedCover) { document.getElementById('userCover').src = savedCover; }
         }
 
-        // معالجة تسجيل الدخول
         async function handleLogin() {
             const email = document.getElementById('loginEmail').value;
             const password = document.getElementById('loginPassword').value;
@@ -489,7 +543,6 @@
             }
         }
 
-        // معالجة إنشاء الحساب
         async function handleRegister() {
             const username = document.getElementById('regUser').value;
             const lastName = document.getElementById('regLast').value;
@@ -498,9 +551,11 @@
             const age = parseInt(document.getElementById('regAge').value) || 20;
             const gender = document.getElementById('regGender').value;
             const country = document.getElementById('regCountry').value;
-            const birthDate = '2026-01-01';
+            const birthDate = document.getElementById('regBirthDate').value;
 
-            if(!username || !email || !password) { return alert('الرجاء تعبئة الحقول الأساسية'); }
+            if(!username || !lastName || !email || !password || !country || !birthDate) { 
+                return alert('الرجاء تعبئة كافة الحقول المطلوبة لضمان توافق قاعدة البيانات'); 
+            }
 
             try {
                 const res = await fetch(`${SERVER_URL}/api/register`, {
@@ -513,16 +568,17 @@
                     localStorage.setItem('user_token', data.token); 
                     displayUserProfile(data.user); 
                 } else { 
-                    alert(data.error || 'فشل التسجيل'); 
+                    alert(data.error || 'فشل التسجيل: تأكد من الشروط بالسيرفر'); 
                 }
             } catch(e) { 
-                alert('خطأ في الاتصال بالسيرفر'); 
+                alert('خطأ في الاتصال بالسيرفر، تفقد الـ Logs'); 
             }
         }
 
-        // تسجيل الخروج
         function logout() { 
             localStorage.removeItem('user_token'); 
+            localStorage.removeItem('custom_avatar');
+            localStorage.removeItem('custom_cover');
             window.location.reload(); 
         }
     </script>
