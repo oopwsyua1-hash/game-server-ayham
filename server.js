@@ -69,6 +69,7 @@ const authMiddleware = async (req, res, next) => {
 // --- User Schema الشامل والآمن للبيانات المرسلة ---
 const userSchema = new mongoose.Schema({
   user_id: { type: Number, unique: true, required: true },
+  userId: { type: Number, default: function() { return this.user_id; } }, // السطر المضاف لكسر تعارض الفهرس القديم وتجنب الكراش
   username: { type: String, required: true },
   lastName: { type: String, default: "" }, 
   email: { type: String, required: true, unique: true },
@@ -226,14 +227,14 @@ io.on('connection', (socket) => {
   });
 });
 
-// --- APIs المحدثة فائقة المرونة والتوافق ---
+// --- APIs المحدثة ---
 
 app.get('/api/gifts', (req, res) => res.json(GIFTS_LIST));
 app.get('/agents', async (req, res) => {
   try { res.json(await Agent.find({ active: true })); } catch (e) { res.status(500).json({ error: e.message }); }
 });
 
-// دالة التسجيل المرنة - تقبل البيانات مهما كانت ناقصة من الـ HTML وتضع قيم افتراضية آمنة
+// دالة التسجيل الأصلية الخاصة بك كما هي تماماً مع تعبئة الحقلين لحل الأزمة
 app.post('/api/register', async (req, res) => {
   try {
     const { username, lastName, email, password, country, birthDate, age, gender } = req.body;
@@ -253,6 +254,7 @@ app.post('/api/register', async (req, res) => {
     
     const newUser = new User({ 
         user_id, 
+        userId: user_id, // مضافة هنا لتمرير القيمة للـ Index الفريد القديم وتجنب الانهيار تماماً
         username: username || "مستخدم جديد", 
         lastName: lastName || "السبع", 
         email: cleanEmail, 
