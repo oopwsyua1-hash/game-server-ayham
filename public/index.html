@@ -6,245 +6,240 @@
     <title>إمبراطورية السبع V3</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
-        @keyframes nameGlow {
-            0% { text-shadow: 0 0 5px #fff, 0 0 10px #3498db; }
-            50% { text-shadow: 0 0 20px #3498db, 0 0 30px #2980b9; color: #d4e6f1; }
-            100% { text-shadow: 0 0 5px #fff, 0 0 10px #3498db; }
-        }
-        @keyframes rotateVerify {
-            0% { transform: scale(1) rotate(0deg); }
-            50% { transform: scale(1.2) rotate(10deg); }
-            100% { transform: scale(1) rotate(0deg); }
-        }
-        @keyframes fadeInScale {
-            from { opacity: 0; transform: scale(0.9) translateY(20px); }
-            to { opacity: 1; transform: scale(1) translateY(0); }
-        }
-        body {
-            background-color: #050a0f;
-            color: #ffffff;
-            margin: 0;
-            font-family: 'Segoe UI', sans-serif;
-            overflow-x: hidden;
-        }
-        .auth-container {
-            max-width: 450px;
-            margin: 20px auto;
-            padding: 25px;
-            background: rgba(18, 27, 38, 0.95);
-            border-radius: 20px;
-            border: 1px solid rgba(52, 152, 219, 0.3);
-            box-shadow: 0 10px 25px rgba(0,0,0,0.5);
-            animation: fadeInScale 0.5s ease-out;
-        }
-        .auth-container h2 {
-            text-align: center;
-            color: #3498db;
-            margin-bottom: 20px;
-            font-size: 22px;
-            animation: nameGlow 3s infinite ease-in-out;
-        }
-        .tabs {
-            display: flex;
-            justify-content: space-around;
-            margin-bottom: 20px;
-            border-bottom: 1px solid rgba(255,255,255,0.1);
-        }
-        .tab-btn {
-            background: none;
-            border: none;
-            color: #8e99a3;
-            padding: 10px;
-            font-size: 16px;
-            cursor: pointer;
-            font-weight: bold;
-            transition: 0.3s;
-        }
-        .tab-btn.active {
-            color: #3498db;
-            border-bottom: 3px solid #3498db;
-        }
-        .form-group {
-            margin-bottom: 15px;
-            position: relative;
-        }
-        .form-group label {
-            display: block;
-            font-size: 13px;
-            color: #8e99a3;
-            margin-bottom: 5px;
-        }
-        .form-group input, .form-group select {
-            width: 100%;
-            padding: 10px 15px;
-            box-sizing: border-box;
-            background: rgba(28, 42, 58, 0.7);
-            border: 1px solid rgba(255,255,255,0.1);
-            border-radius: 10px;
-            color: #fff;
-            font-size: 14px;
-            outline: none;
-        }
-        .form-group select option {
-            background: #121b26;
-            color: #fff;
-        }
-        .auth-btn {
-            width: 100%;
-            padding: 12px;
-            background: linear-gradient(135deg, #3498db, #2980b9);
-            border: none;
-            border-radius: 10px;
-            color: white;
-            font-size: 15px;
-            font-weight: bold;
-            cursor: pointer;
-            margin-top: 10px;
-        }
-        .profile-container {
-            display: none;
-            position: relative;
-            z-index: 1;
-            animation: fadeInScale 0.7s ease-out;
-        }
-        .cover-area {
-            height: 180px;
-            background: #1a2a3a;
-            background-size: cover;
-            background-position: center;
-            position: relative;
-        }
-        .avatar-wrapper {
-            position: absolute;
-            bottom: -45px;
-            right: 20px;
-            width: 90px;
-            height: 90px;
-            background: linear-gradient(135deg, #f5d496, #e2b35c);
-            border-radius: 50%;
-            padding: 4px;
-        }
-        .avatar-wrapper img {
-            width: 100%; height: 100%;
-            border-radius: 50%;
-            border: 3px solid #070d14;
-            object-fit: cover;
-        }
-        .user-details { padding: 55px 20px 10px; text-align: right; }
-        .name {
-            font-size: 22px;
-            font-weight: bold;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            animation: nameGlow 3s infinite ease-in-out;
-        }
-        .verify-gold { color: #f1c40f; animation: rotateVerify 2s infinite ease-in-out; }
-        .id-badge {
-            display: inline-block;
-            background: rgba(255,255,255,0.05);
-            padding: 4px 12px;
-            border-radius: 20px;
-            font-size: 12px;
-            color: #8e99a3;
-        }
-        .card {
-            background: rgba(18, 27, 38, 0.9);
-            margin: 12px;
-            padding: 15px;
-            border-radius: 15px;
-            border: 1px solid rgba(255,255,255,0.05);
-        }
-        .info-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 10px;
-        }
-        .info-item {
-            background: rgba(28, 42, 58, 0.7);
-            padding: 10px;
-            border-radius: 10px;
-            font-size: 13px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-        .logout-btn {
-            background: #e74c3c;
-            color: white;
-            border: none;
-            padding: 8px 16px;
-            border-radius: 10px;
-            margin: 12px;
-            float: left;
-            cursor: pointer;
-        }
+        /* --- أكواد البروفايل المطور للإمبراطورية V3 --- */
+.premium-profile {
+    max-width: 480px;
+    margin: 15px auto;
+    padding: 20px;
+    background: linear-gradient(185deg, #111a24 0%, #0b1118 100%);
+    border-radius: 28px;
+    border: 1px solid rgba(241, 196, 15, 0.2);
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.7);
+    color: #fff;
+    text-align: center;
+}
+.profile-header {
+    position: relative;
+    padding-bottom: 15px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+.vip-badge {
+    position: absolute;
+    top: 0;
+    right: 15px;
+    background: linear-gradient(135deg, #f1c40f, #f39c12);
+    color: #000;
+    font-size: 11px;
+    font-weight: bold;
+    padding: 3px 10px;
+    border-radius: 20px;
+    box-shadow: 0 0 10px rgba(241, 196, 15, 0.5);
+}
+.avatar-container {
+    width: 110px;
+    height: 110px;
+    margin: 10px auto;
+    position: relative;
+}
+.avatar-container img {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 3px solid #f1c40f;
+    box-shadow: 0 0 20px rgba(241, 196, 15, 0.4);
+}
+.user-title {
+    font-size: 22px;
+    font-weight: bold;
+    margin: 8px 0 3px 0;
+    color: #fff;
+}
+.user-uid {
+    font-size: 13px;
+    color: #a4b0be;
+    background: rgba(255, 255, 255, 0.07);
+    padding: 2px 10px;
+    border-radius: 30px;
+    display: inline-block;
+}
+.room-stats {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+    margin: 20px 0;
+}
+.stat-box {
+    background: rgba(255, 255, 255, 0.03);
+    padding: 10px 5px;
+    border-radius: 14px;
+    border: 1px solid rgba(255, 255, 255, 0.03);
+}
+.stat-box .num {
+    font-size: 16px;
+    font-weight: bold;
+    color: #3498db;
+}
+.stat-box .label {
+    font-size: 11px;
+    color: #747d8c;
+    margin-top: 3px;
+}
+.wallet-card {
+    background: rgba(20, 30, 43, 0.8);
+    border-radius: 18px;
+    padding: 15px;
+    border: 1px solid rgba(52, 152, 219, 0.15);
+    margin-bottom: 15px;
+    text-align: right;
+}
+.wallet-header {
+    font-size: 14px;
+    color: #f1c40f;
+    font-weight: bold;
+    margin-bottom: 12px;
+    display: flex;
+    justify-content: space-between;
+}
+.currency-row {
+    display: flex;
+    justify-content: space-between;
+    gap: 15px;
+}
+.currency-item {
+    flex: 1;
+    background: rgba(0, 0, 0, 0.2);
+    padding: 10px;
+    border-radius: 12px;
+    text-align: center;
+}
+.currency-item i {
+    font-size: 12px;
+    color: #a4b0be;
+    display: block;
+    margin-bottom: 4px;
+}
+.currency-item span {
+    font-size: 16px;
+    font-weight: bold;
+}
+.agency-section {
+    background: rgba(255, 255, 255, 0.02);
+    border-radius: 16px;
+    padding: 12px 15px;
+    margin-bottom: 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+}
+.agency-info {
+    text-align: right;
+}
+.agency-info .name {
+    font-size: 14px;
+    font-weight: bold;
+    color: #fff;
+}
+.agency-info .role {
+    font-size: 11px;
+    color: #e74c3c;
+}
+.action-buttons {
+    display: flex;
+    gap: 10px;
+}
+.btn-main {
+    flex: 2;
+    padding: 12px;
+    background: linear-gradient(135deg, #3498db, #2980b9);
+    color: #fff;
+    border: none;
+    border-radius: 14px;
+    font-size: 14px;
+    font-weight: bold;
+    cursor: pointer;
+}
+.btn-danger-logout {
+    flex: 1;
+    padding: 12px;
+    background: rgba(231, 76, 60, 0.15);
+    color: #e74c3c;
+    border: 1px solid rgba(231, 76, 60, 0.3);
+    border-radius: 14px;
+    font-size: 14px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: 0.3s;
+}
+.btn-danger-logout:hover {
+    background: #e74c3c;
+    color: #fff;
+}
+
     </style>
 </head>
 <body>
-    <div class="auth-container" id="authSection">
-        <h2>إمبراطورية السبع V3</h2>
-        <div class="tabs">
-            <button class="tab-btn active" id="loginTab" onclick="switchTab('login')">تسجيل الدخول</button>
-            <button class="tab-btn" id="registerTab" onclick="switchTab('register')">إنشاء حساب</button>
+    <div id="profilePage" class="premium-profile" style="display: none;">
+    
+    <div class="profile-header">
+        <div id="userVip" class="vip-badge">VIP 0</div>
+        
+        <div class="avatar-container">
+            <img id="userAvatar" src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150" alt="Avatar">
         </div>
-        <div id="loginForm">
-            <div class="form-group">
-                <label>البريد الإلكتروني</label>
-                <input type="email" id="loginEmail" placeholder="example@test.com">
-            </div>
-            <div class="form-group">
-                <label>كلمة السر</label>
-                <input type="password" id="loginPassword" placeholder="******">
-            </div>
-            <button class="auth-btn" onclick="handleLogin()">دخول</button>
+
+        <div id="profileName" class="user-title">جاري التحميل...</div>
+        <div id="profileId" class="user-uid">ID: --</div>
+    </div>
+
+    <div class="room-stats">
+        <div class="stat-box">
+            <div id="userVipLevel" class="num">0</div>
+            <div class="label">مستوى الـ VIP</div>
         </div>
-        <div id="registerForm" style="display: none;">
-            <div class="form-group"><input type="text" id="regUser" placeholder="الاسم الأول"></div>
-            <div class="form-group"><input type="text" id="regLast" placeholder="اسم العائلة"></div>
-            <div class="form-group"><input type="email" id="regEmail" placeholder="البريد الإلكتروني"></div>
-            <div class="form-group"><input type="password" id="regPassword" placeholder="كلمة السر"></div>
-            <div class="form-group"><input type="number" id="regAge" placeholder="العمر"></div>
-            <div class="form-group">
-                <select id="regGender">
-                    <option value="male">ذكر</option>
-                    <option value="female">أنثى</option>
-                </select>
-            </div>
-            <div class="form-group">
-                <select id="regCountry">
-                    <option value="تركيا">تركيا</option>
-                    <option value="سوريا">سوريا</option>
-                    <option value="العراق">العراق</option>
-                    <option value="السعودية">السعودية</option>
-                    <option value="مصر">مصر</option>
-                    <option value="الأردن">الأردن</option>
-                    <option value="الإمارات">الإمارات</option>
-                    <option value="فلسطين">فلسطين</option>
-                </select>
-            </div>
-            <div class="form-group">
-                <label style="margin-top:5px;">تاريخ الميلاد</label>
-                <input type="date" id="regBirthDate">
-            </div>
-            <button class="auth-btn" onclick="handleRegister()">تسجيل حساب جديد</button>
+        <div class="stat-box">
+            <div id="userSupportPoints" class="num">0</div>
+            <div class="label">نقاط الدعم</div>
+        </div>
+        <div class="stat-box">
+            <div class="num" style="color: #2ecc71;">نشط</div>
+            <div class="label">حالة الحساب</div>
         </div>
     </div>
-    <div class="profile-container" id="profileSection">
-        <div class="cover-area" style="background-image: url('https://via.placeholder.com/800x400/1a2a3a/ffffff');">
-            <div class="avatar-wrapper"><img src="https://via.placeholder.com/150" id="avatarImg"></div>
+
+    <div class="wallet-card">
+        <div class="wallet-header">
+            <span>المحفظة والرصيد الرسمي</span>
+            <small style="color: #a4b0be; font-weight: normal;">شحن فوري</small>
         </div>
-        <div class="user-details">
-            <div class="name"><span id="userName">جاري التحميل...</span><i class="fas fa-certificate verify-gold"></i></div>
-            <div class="id-badge">ID: <span id="userID">000000</span></div>
-        </div>
-        <div class="card">
-            <h3>المحفظة والرصيد</h3>
-            <div class="info-grid">
-                <div class="info-item">كونزات: <span id="userCoins">0</span></div>
-                <div class="info-item">الماسي: <span id="userDiamonds">0</span></div>
+        <div class="currency-row">
+            <div class="currency-item">
+                <i>الذهب المتوفر</i>
+                <span id="profileCoins" style="color: #f1c40f;">0</span>
+            </div>
+            <div class="currency-item">
+                <i>الماس المستلم</i>
+                <span id="profileDiamonds" style="color: #00d2d3;">0</span>
             </div>
         </div>
+    </div>
+
+    <div class="agency-section">
+        <div class="agency-info">
+            <div class="name" id="userAgency">تحميل الوكالة...</div>
+            <div class="role" id="userRole">عضو الإمبراطورية</div>
+        </div>
+        <div style="font-size: 12px; color: #3498db; font-weight: bold;">الوكالة 👑</div>
+    </div>
+
+    <div class="action-buttons">
+        <button class="btn-main" onclick="alert('جاري تجهيز دخول غرف الصوت الفورية V3...')">دخول غرف الشات</button>
+        <button class="btn-danger-logout" onclick="logout()">خروج</button>
+    </div>
+
+</div>
+
         <button class="logout-btn" onclick="logout()">خروج</button>
     </div>
     <script>
