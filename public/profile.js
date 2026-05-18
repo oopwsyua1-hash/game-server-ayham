@@ -1,6 +1,6 @@
 const API_URL = 'https://game-server-ayham.onrender.com';
 
-// دالة جلب بيانات الحساب وعرضها فور فتح الصفحة
+// 1. جلب بيانات الحساب وعرضها داخل عناصر الـ HTML المعدلة
 async function loadProfile() {
     const token = localStorage.getItem('token');
     if (!token) { 
@@ -19,15 +19,15 @@ async function loadProfile() {
             return;
         }
 
-        // عرض اسم المستخدم والرصيد
+        // ربط البيانات مع الـ IDs المضافة حديثاً في ملف الـ HTML
         if (document.getElementById('username-display')) {
-            document.getElementById('username-display').innerText = user.username || "مستخدم جديد";
+            document.getElementById('username-display').innerText = user.username ? `${user.username} ☀️` : "مستخدم جديد ☀️";
         }
-        if (document.getElementById('coins-count')) {
-            document.getElementById('coins-count').innerText = user.coins !== undefined ? user.coins.toString() : "0";
+        if (document.getElementById('user-id-display')) {
+            document.getElementById('user-id-display').innerText = `ID: ${user.user_id || user.userId || '0000000'}`;
         }
         
-        // عرض الصورة الشخصية المباشرة
+        // عرض الصورة الشخصية الحقيقية من قاعدة البيانات بدل الصورة العشوائية
         const avatarImg = document.getElementById('avatar-img');
         if (avatarImg && user.avatarUrl) {
             avatarImg.src = user.avatarUrl;
@@ -37,38 +37,39 @@ async function loadProfile() {
     }
 }
 
-// تشغيل الدالة فوراً
+// تشغيل جلب البيانات تلقائياً عند فتح الصفحة
 loadProfile();
 
-// عند الضغط على أيقونة تعديل الصورة (تأكد أن الزر أو الأيقونة في الـ HTML تملك id="edit-avatar-btn")
+// 2. التنصت على الضغط على أيقونة القلم (تعديل الصورة) لفتح الاستوديو مباشرة
 document.body.addEventListener('click', function(e) {
     if (e.target && (e.target.id === 'edit-avatar-btn' || e.target.closest('#edit-avatar-btn'))) {
         e.preventDefault();
         const fileInput = document.getElementById('avatarFileInput');
         if (fileInput) {
-            fileInput.click(); // يفتح الاستوديو مباشرة بدلاً من نافذة الرابط المزعجة
+            fileInput.click(); // يفتح معرض الاستوديو في الهاتف فوراً وبشكل صامت
         }
     }
 });
 
-// معالجة الصورة المحددة من المعرض وتحويلها لـ Base64 ورفعها تلقائياً
+// 3. معالجة تحويل الصورة المحددة إلى كود باينري مباشر (Base64) ورفعها للسيرفر
 document.body.addEventListener('change', function(e) {
     if (e.target && e.target.id === 'avatarFileInput') {
         const file = e.target.files[0];
         if (!file) return;
 
-        // التأكد من حجم الصورة
-        if (file.size > 5 * 1024 * 1024) {
-            alert('حجم الصورة كبير، يرجى اختيار صورة أصغر');
+        // التحقق من أن حجم الصورة معقول لتفادي مشاكل الشبكة (أقل من 8 ميجا)
+        if (file.size > 8 * 1024 * 1024) {
+            alert('حجم الصورة كبير بعض الشيء، يرجى اختيار صورة أخرى');
             return;
         }
 
         const reader = new FileReader();
         reader.onloadend = async function() {
-            const base64Image = reader.result; // الصورة المباشرة جاهزة بالإحداثيات كاملة
+            const base64Image = reader.result; // البيانات الثنائية المباشرة للصورة
             const token = localStorage.getItem('token');
 
             try {
+                // إرسال طلب التحديث إلى السيرفر المستقر
                 const res = await fetch(`${API_URL}/api/profile/update`, {
                     method: 'PUT',
                     headers: {
@@ -80,14 +81,14 @@ document.body.addEventListener('change', function(e) {
                 
                 const data = await res.json();
                 if (data.success) {
-                    alert('تم تحديث صورتك الشخصية مباشرة من الاستوديو بنجاح! 🎉');
-                    loadProfile(); // تحديث الصورة في الصفحة فوراً
+                    alert('تم تحديث صورتك الشخصية مباشرة من المعرض بنجاح! 🎉');
+                    loadProfile(); // إعادة تحميل الواجهة لعرض الصورة الجديدة فوراً
                 } else {
-                    alert('فشل حفظ الصورة: ' + data.error);
+                    alert('فشل حفظ الصورة في السيرفر: ' + data.error);
                 }
             } catch (err) {
                 console.error(err);
-                alert('حدث خطأ أثناء رفع الصورة الشخصية للسيرفر');
+                alert('حدث خطأ أثناء رفع الصورة، تأكد من اتصالك بالإنترنت');
             }
         };
         reader.readAsDataURL(file);
