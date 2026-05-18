@@ -6,7 +6,7 @@
     <title>إمبراطورية السبع - الملف الشخصي</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
-        /* التنسيق الأساسي كما في صورتك */
+        /* التنسيق الأساسي المستقر للواجهة */
         html, body { overscroll-behavior: none; overflow: hidden; width: 100%; height: 100%; background: #050a0f; color: #fff; font-family: 'Segoe UI', sans-serif; margin: 0; }
         
         .header-nav { display: flex; align-items: center; justify-content: space-between; padding: 15px; background: #101520; }
@@ -15,8 +15,8 @@
         
         .avatar-section { position: absolute; bottom: -40px; right: 20px; }
         .avatar-wrapper { width: 100px; height: 100px; background: linear-gradient(135deg, #ff00ff, #00ffff); border-radius: 50%; padding: 3px; position: relative; }
-        .avatar-wrapper img { width: 100%; height: 100%; border-radius: 50%; border: 3px solid #050a0f; }
-        .edit-icon { position: absolute; bottom: 0; left: 0; background: #00ffff; color: #000; width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center; border: 2px solid #050a0f; }
+        .avatar-wrapper img { width: 100%; height: 100%; border-radius: 50%; border: 3px solid #050a0f; object-fit: cover; }
+        .edit-icon { position: absolute; bottom: 0; left: 0; background: #00ffff; color: #000; width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center; border: 2px solid #050a0f; cursor: pointer; }
 
         .user-name-title { padding: 50px 20px 10px; text-align: right; }
         .id-tag { background: rgba(0,255,255,0.1); color: #00ffff; padding: 5px 15px; border-radius: 20px; font-size: 12px; display: inline-block; border: 1px solid #00ffff; }
@@ -27,9 +27,9 @@
         /* شريط البحث والأزرار */
         .search-box { width: 100%; background: #050a0f; border: 1px solid #333; padding: 12px; border-radius: 10px; color: #fff; margin-bottom: 10px; box-sizing: border-box; }
         .action-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; }
-        .btn-action { background: #1a2030; border: 1px solid #333; padding: 10px; border-radius: 10px; color: #fff; font-size: 12px; text-align: center; }
+        .btn-action { background: #1a2030; border: 1px solid #333; padding: 10px; border-radius: 10px; color: #fff; font-size: 12px; text-align: center; cursor: pointer; }
 
-        /* شريط التنقل السفلي - هاد اللي كان ناقصك */
+        /* شريط التنقل السفلي */
         .bottom-nav { 
             position: fixed; bottom: 0; width: 100%; background: #101520; 
             display: flex; justify-content: space-around; padding: 12px 0; 
@@ -42,8 +42,10 @@
 </head>
 <body>
 
+    <input type="file" id="avatarFileInput" accept="image/*" style="display: none;">
+
     <div class="header-nav">
-        <i class="fas fa-arrow-right"></i>
+        <i class="fas fa-arrow-right" onclick="window.history.back()" style="cursor: pointer;"></i>
         <div style="font-weight: bold;">إعدادات الحساب</div>
         <div style="width: 20px;"></div>
     </div>
@@ -51,15 +53,15 @@
     <div class="cover-area">
         <div class="avatar-section">
             <div class="avatar-wrapper">
-                <img src="https://via.placeholder.com/150" alt="أبو نمر">
-                <div class="edit-icon"><i class="fas fa-pen"></i></div>
+                <img id="avatar-img" src="https://via.placeholder.com/150" alt="الملف الشخصي">
+                <div class="edit-icon" id="edit-avatar-btn"><i class="fas fa-pen"></i></div>
             </div>
         </div>
     </div>
 
     <div class="user-name-title">
-        <h2 style="margin:0;">أبو نمر ☀️</h2>
-        <div class="id-tag">ID: 7084474</div>
+        <h2 id="username-display" style="margin:0;">جاري التحميل... ☀️</h2>
+        <div class="id-tag" id="user-id-display">ID: 0000000</div>
     </div>
 
     <div class="menu-card">
@@ -72,9 +74,8 @@
         </div>
     </div>
 
-    <!-- شريط التنقل السفلي - هاد اللي بيوديك للدردشة -->
     <div class="bottom-nav">
-        <div class="nav-item" onclick="alert('جاري الانتقال للغرف...')">
+        <div class="nav-item" onclick="window.location.href='lobbies.html'">
             <i class="fas fa-comments"></i>
             <span>الغرف</span>
         </div>
@@ -87,6 +88,8 @@
             <span>أنا</span>
         </div>
     </div>
+
+    <script src="profile.js"></script>
 
 </body>
 </html>
