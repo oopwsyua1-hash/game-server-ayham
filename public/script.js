@@ -1,8 +1,8 @@
-// دالة سحرية لتحويل الأرقام العربية لهندية/إنجليزية لعدم ضرب قاعدة البيانات
-const parseArabicNumbers = (str) => {
+// دالة لتنظيف الأرقام من الهندي/العربي إلى الإنجليزي عشان قاعدة البيانات ما ترفضها
+const fixDateNumbers = (str) => {
     if(!str) return "2006-01-01";
-    return str.replace(/[٠-٩]/g, d => "٠١٢٣٤٥٦٧٨٩".indexOf(d))
-              .replace(/\//g, '-');
+    let fixed = str.replace(/[٠-٩]/g, d => "٠١٢٣٤٥٦٧٨٩".indexOf(d));
+    return fixed.replace(/\//g, '-');
 };
 
 const registerForm = document.getElementById('register-form') || document.querySelector('form');
@@ -11,26 +11,27 @@ if (registerForm && window.location.href.includes('register')) {
     registerForm.addEventListener('submit', async (e) => {
         e.preventDefault();
 
-        const usernameInput = document.getElementById('username') || document.querySelector('input[placeholder*="الاسم"]');
-        const emailInput = document.getElementById('email') || document.querySelector('input[type="email"]');
-        const passwordInput = document.getElementById('password') || document.querySelector('input[type="password"]');
-        const birthInput = document.getElementById('birthDate');
+        // جلب كل خانات الإدخال بالترتيب لضمان عدم ضياع أي قيمة
+        const inputs = registerForm.querySelectorAll('input');
+        
+        let username = inputs[0] ? inputs[0].value.trim() : "مستخدم جديد";
+        let lastName = inputs[1] ? inputs[1].value.trim() : "السبع";
+        let email = inputs[2] ? inputs[2].value.trim().toLowerCase() : "";
+        let password = inputs[3] ? inputs[3].value : "";
+        let birthDate = inputs[4] ? inputs[4].value : "2006-01-01";
 
-        if (!emailInput || !passwordInput || !emailInput.value || !passwordInput.value) {
+        if (!email || !password) {
             alert('الرجاء إدخال البريد الإلكتروني وكلمة المرور بشكل صحيح');
             return;
         }
 
-        let rawBirth = birthInput ? birthInput.value : "2006-01-01";
-        let cleanBirth = parseArabicNumbers(rawBirth);
-
         const formData = {
-            username: usernameInput ? usernameInput.value.trim() : "مستخدم جديد",
-            lastName: "السبع",
-            email: emailInput.value.toLowerCase().trim(),
-            password: passwordInput.value,
+            username: username || "مستخدم جديد",
+            lastName: lastName || "السبع",
+            email: email,
+            password: password,
             country: "Syria",
-            birthDate: cleanBirth,
+            birthDate: fixDateNumbers(birthDate),
             age: 20,
             gender: "ذكر"
         };
@@ -57,25 +58,26 @@ if (registerForm && window.location.href.includes('register')) {
     });
 }
 
-// كود تسجيل الدخول المستقر
+// كود تسجيل الدخول المستقر والمرن
 const loginForm = document.getElementById('login-form') || (!window.location.href.includes('register') && document.querySelector('form'));
 if (loginForm) {
     loginForm.addEventListener('submit', async (e) => {
         e.preventDefault();
-        const emailInput = document.getElementById('email') || document.querySelector('input[type="email"]');
-        const passwordInput = document.getElementById('password') || document.querySelector('input[type="password"]');
+        const inputs = loginForm.querySelectorAll('input');
+        const email = inputs[0] ? inputs[0].value.trim().toLowerCase() : "";
+        const password = inputs[1] ? inputs[1].value : "";
 
         try {
             const res = await fetch('/api/login', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ email: emailInput.value.toLowerCase().trim(), password: passwordInput.value })
+                body: JSON.stringify({ email, password })
             });
             const data = await res.json();
             if (res.ok && data.token) {
                 localStorage.setItem('token', data.token);
                 window.location.href = 'me.html';
             } else { alert(data.error || 'البيانات غير صحيحة'); }
-        } catch (err) { alert('خطأ في الاتصال'); }
+        } catch (err) { alert('خطأ في الاتصال بالسيرفر'); }
     });
 }
