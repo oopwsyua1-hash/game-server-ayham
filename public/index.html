@@ -6,245 +6,406 @@
     <title>إمبراطورية السبع V3</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
-        /* --- أكواد البروفايل المطور للإمبراطورية V3 --- */
-.premium-profile {
-    max-width: 480px;
-    margin: 15px auto;
-    padding: 20px;
-    background: linear-gradient(185deg, #111a24 0%, #0b1118 100%);
-    border-radius: 28px;
-    border: 1px solid rgba(241, 196, 15, 0.2);
-    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.7);
-    color: #fff;
-    text-align: center;
-}
-.profile-header {
-    position: relative;
-    padding-bottom: 15px;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-}
-.vip-badge {
-    position: absolute;
-    top: 0;
-    right: 15px;
-    background: linear-gradient(135deg, #f1c40f, #f39c12);
-    color: #000;
-    font-size: 11px;
-    font-weight: bold;
-    padding: 3px 10px;
-    border-radius: 20px;
-    box-shadow: 0 0 10px rgba(241, 196, 15, 0.5);
-}
-.avatar-container {
-    width: 110px;
-    height: 110px;
-    margin: 10px auto;
-    position: relative;
-}
-.avatar-container img {
-    width: 100%;
-    height: 100%;
-    border-radius: 50%;
-    object-fit: cover;
-    border: 3px solid #f1c40f;
-    box-shadow: 0 0 20px rgba(241, 196, 15, 0.4);
-}
-.user-title {
-    font-size: 22px;
-    font-weight: bold;
-    margin: 8px 0 3px 0;
-    color: #fff;
-}
-.user-uid {
-    font-size: 13px;
-    color: #a4b0be;
-    background: rgba(255, 255, 255, 0.07);
-    padding: 2px 10px;
-    border-radius: 30px;
-    display: inline-block;
-}
-.room-stats {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 10px;
-    margin: 20px 0;
-}
-.stat-box {
-    background: rgba(255, 255, 255, 0.03);
-    padding: 10px 5px;
-    border-radius: 14px;
-    border: 1px solid rgba(255, 255, 255, 0.03);
-}
-.stat-box .num {
-    font-size: 16px;
-    font-weight: bold;
-    color: #3498db;
-}
-.stat-box .label {
-    font-size: 11px;
-    color: #747d8c;
-    margin-top: 3px;
-}
-.wallet-card {
-    background: rgba(20, 30, 43, 0.8);
-    border-radius: 18px;
-    padding: 15px;
-    border: 1px solid rgba(52, 152, 219, 0.15);
-    margin-bottom: 15px;
-    text-align: right;
-}
-.wallet-header {
-    font-size: 14px;
-    color: #f1c40f;
-    font-weight: bold;
-    margin-bottom: 12px;
-    display: flex;
-    justify-content: space-between;
-}
-.currency-row {
-    display: flex;
-    justify-content: space-between;
-    gap: 15px;
-}
-.currency-item {
-    flex: 1;
-    background: rgba(0, 0, 0, 0.2);
-    padding: 10px;
-    border-radius: 12px;
-    text-align: center;
-}
-.currency-item i {
-    font-size: 12px;
-    color: #a4b0be;
-    display: block;
-    margin-bottom: 4px;
-}
-.currency-item span {
-    font-size: 16px;
-    font-weight: bold;
-}
-.agency-section {
-    background: rgba(255, 255, 255, 0.02);
-    border-radius: 16px;
-    padding: 12px 15px;
-    margin-bottom: 20px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    border: 1px solid rgba(255, 255, 255, 0.05);
-}
-.agency-info {
-    text-align: right;
-}
-.agency-info .name {
-    font-size: 14px;
-    font-weight: bold;
-    color: #fff;
-}
-.agency-info .role {
-    font-size: 11px;
-    color: #e74c3c;
-}
-.action-buttons {
-    display: flex;
-    gap: 10px;
-}
-.btn-main {
-    flex: 2;
-    padding: 12px;
-    background: linear-gradient(135deg, #3498db, #2980b9);
-    color: #fff;
-    border: none;
-    border-radius: 14px;
-    font-size: 14px;
-    font-weight: bold;
-    cursor: pointer;
-}
-.btn-danger-logout {
-    flex: 1;
-    padding: 12px;
-    background: rgba(231, 76, 60, 0.15);
-    color: #e74c3c;
-    border: 1px solid rgba(231, 76, 60, 0.3);
-    border-radius: 14px;
-    font-size: 14px;
-    font-weight: bold;
-    cursor: pointer;
-    transition: 0.3s;
-}
-.btn-danger-logout:hover {
-    background: #e74c3c;
-    color: #fff;
-}
+        /* --- التنسيق العام للموقع --- */
+        body {
+            background-color: #0b1118;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            color: #fff;
+            margin: 0;
+            padding: 15px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
 
+        /* --- حاوية الدخول والتسجيل --- */
+        .auth-container {
+            width: 100%;
+            max-width: 420px;
+            background: rgba(18, 27, 38, 0.95);
+            padding: 25px;
+            border-radius: 24px;
+            border: 1px solid rgba(52, 152, 219, 0.2);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+            text-align: center;
+        }
+
+        .auth-container h2 {
+            color: #3498db;
+            margin-bottom: 20px;
+            text-shadow: 0 0 10px rgba(52, 152, 219, 0.3);
+        }
+
+        .tabs {
+            display: flex;
+            justify-content: space-around;
+            margin-bottom: 20px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .tab-btn {
+            background: none;
+            border: none;
+            color: #a4b0be;
+            padding: 10px 20px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        .tab-btn.active {
+            color: #3498db;
+            border-bottom: 3px solid #3498db;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+            text-align: right;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 13px;
+            color: #a4b0be;
+            margin-bottom: 5px;
+        }
+
+        .form-group input, .form-group select {
+            width: 100%;
+            padding: 12px;
+            background: rgba(0, 0, 0, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            color: #fff;
+            box-sizing: border-box;
+            outline: none;
+            transition: 0.3s;
+        }
+
+        .form-group input:focus, .form-group select:focus {
+            border-color: #3498db;
+            box-shadow: 0 0 8px rgba(52, 152, 219, 0.3);
+        }
+
+        /* --- واجهة البروفايل المطور للإمبراطورية V3 --- */
+        .premium-profile {
+            width: 100%;
+            max-width: 450px;
+            margin: 0 auto;
+            padding: 20px;
+            background: linear-gradient(185deg, #111a24 0%, #0b1118 100%);
+            border-radius: 28px;
+            border: 1px solid rgba(241, 196, 15, 0.2);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.7);
+            color: #fff;
+            text-align: center;
+            box-sizing: border-box;
+        }
+
+        .profile-header {
+            position: relative;
+            padding-bottom: 15px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .vip-badge {
+            position: absolute;
+            top: 0;
+            right: 15px;
+            background: linear-gradient(135deg, #f1c40f, #f39c12);
+            color: #000;
+            font-size: 11px;
+            font-weight: bold;
+            padding: 3px 10px;
+            border-radius: 20px;
+            box-shadow: 0 0 10px rgba(241, 196, 15, 0.5);
+        }
+
+        .avatar-container {
+            width: 110px;
+            height: 110px;
+            margin: 10px auto;
+            position: relative;
+        }
+
+        .avatar-container img {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 3px solid #f1c40f;
+            box-shadow: 0 0 20px rgba(241, 196, 15, 0.4);
+        }
+
+        .user-title {
+            font-size: 22px;
+            font-weight: bold;
+            margin: 8px 0 3px 0;
+            color: #fff;
+        }
+
+        .user-uid {
+            font-size: 13px;
+            color: #a4b0be;
+            background: rgba(255, 255, 255, 0.07);
+            padding: 2px 10px;
+            border-radius: 30px;
+            display: inline-block;
+        }
+
+        .room-stats {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            margin: 20px 0;
+        }
+
+        .stat-box {
+            background: rgba(255, 255, 255, 0.03);
+            padding: 10px 5px;
+            border-radius: 14px;
+            border: 1px solid rgba(255, 255, 255, 0.03);
+        }
+
+        .stat-box .num {
+            font-size: 16px;
+            font-weight: bold;
+            color: #3498db;
+        }
+
+        .stat-box .label {
+            font-size: 11px;
+            color: #747d8c;
+            margin-top: 3px;
+        }
+
+        .wallet-card {
+            background: rgba(20, 30, 43, 0.8);
+            border-radius: 18px;
+            padding: 15px;
+            border: 1px solid rgba(52, 152, 219, 0.15);
+            margin-bottom: 15px;
+            text-align: right;
+        }
+
+        .wallet-header {
+            font-size: 14px;
+            color: #f1c40f;
+            font-weight: bold;
+            margin-bottom: 12px;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .currency-row {
+            display: flex;
+            justify-content: space-between;
+            gap: 15px;
+        }
+
+        .currency-item {
+            flex: 1;
+            background: rgba(0, 0, 0, 0.2);
+            padding: 10px;
+            border-radius: 12px;
+            text-align: center;
+        }
+
+        .currency-item i {
+            font-size: 12px;
+            color: #a4b0be;
+            display: block;
+            margin-bottom: 4px;
+        }
+
+        .currency-item span {
+            font-size: 16px;
+            font-weight: bold;
+        }
+
+        .agency-section {
+            background: rgba(255, 255, 255, 0.02);
+            border-radius: 16px;
+            padding: 12px 15px;
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .agency-info {
+            text-align: right;
+        }
+
+        .agency-info .name {
+            font-size: 14px;
+            font-weight: bold;
+            color: #fff;
+        }
+
+        .agency-info .role {
+            font-size: 11px;
+            color: #e74c3c;
+        }
+
+        /* --- الأزرار الموحدة --- */
+        .action-buttons {
+            display: flex;
+            gap: 10px;
+        }
+
+        .btn-main {
+            flex: 2;
+            padding: 12px;
+            background: linear-gradient(135deg, #3498db, #2980b9);
+            color: #fff;
+            border: none;
+            border-radius: 14px;
+            font-size: 14px;
+            font-weight: bold;
+            cursor: pointer;
+            width: 100%;
+        }
+
+        .btn-danger-logout {
+            flex: 1;
+            padding: 12px;
+            background: rgba(231, 76, 60, 0.15);
+            color: #e74c3c;
+            border: 1px solid rgba(231, 76, 60, 0.3);
+            border-radius: 14px;
+            font-size: 14px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        .btn-danger-logout:hover {
+            background: #e74c3c;
+            color: #fff;
+        }
     </style>
 </head>
 <body>
+
+    <div id="authSection" class="auth-container">
+        <h2>إمبراطورية السبع V3</h2>
+        <div class="tabs">
+            <button id="loginTab" class="tab-btn active" onclick="switchTab('login')">تسجيل الدخول</button>
+            <button id="registerTab" class="tab-btn" onclick="switchTab('register')">إنشاء حساب</button>
+        </div>
+
+        <div id="loginForm">
+            <div class="form-group">
+                <label>البريد الإلكتروني</label>
+                <input type="email" id="loginEmail" placeholder="example@gmail.com">
+            </div>
+            <div class="form-group">
+                <label>كلمة المرور</label>
+                <input type="password" id="loginPassword" placeholder="••••••••">
+            </div>
+            <button class="btn-main" onclick="handleLogin()">دخول</button>
+        </div>
+
+        <div id="registerForm" style="display: none;">
+            <div class="form-group">
+                <label>الاسم الأول</label>
+                <input type="text" id="regUser" placeholder="الاسم الأول">
+            </div>
+            <div class="form-group">
+                <label>الاسم الأخير (الكنية)</label>
+                <input type="text" id="regLast" placeholder="الكنية">
+            </div>
+            <div class="form-group">
+                <label>البريد الإلكتروني</label>
+                <input type="email" id="regEmail" placeholder="example@gmail.com">
+            </div>
+            <div class="form-group">
+                <label>كلمة المرور</label>
+                <input type="password" id="regPassword" placeholder="••••••••">
+            </div>
+            <div class="form-group">
+                <label>العمر</label>
+                <input type="number" id="regAge" placeholder="20">
+            </div>
+            <div class="form-group">
+                <label>الجنس</label>
+                <select id="regGender">
+                    <option value="male">ذكر</option>
+                    <option value="female">أنثى</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>الدولة</label>
+                <input type="text" id="regCountry" placeholder="مثال: سوريا / تركيا">
+            </div>
+            <button class="btn-main" onclick="handleRegister()">إنشاء الحساب وانطلاق 🚀</button>
+        </div>
+    </div>
+
     <div id="profilePage" class="premium-profile" style="display: none;">
-    
-    <div class="profile-header">
-        <div id="userVip" class="vip-badge">VIP 0</div>
-        
-        <div class="avatar-container">
-            <img id="userAvatar" src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150" alt="Avatar">
-        </div>
-
-        <div id="profileName" class="user-title">جاري التحميل...</div>
-        <div id="profileId" class="user-uid">ID: --</div>
-    </div>
-
-    <div class="room-stats">
-        <div class="stat-box">
-            <div id="userVipLevel" class="num">0</div>
-            <div class="label">مستوى الـ VIP</div>
-        </div>
-        <div class="stat-box">
-            <div id="userSupportPoints" class="num">0</div>
-            <div class="label">نقاط الدعم</div>
-        </div>
-        <div class="stat-box">
-            <div class="num" style="color: #2ecc71;">نشط</div>
-            <div class="label">حالة الحساب</div>
-        </div>
-    </div>
-
-    <div class="wallet-card">
-        <div class="wallet-header">
-            <span>المحفظة والرصيد الرسمي</span>
-            <small style="color: #a4b0be; font-weight: normal;">شحن فوري</small>
-        </div>
-        <div class="currency-row">
-            <div class="currency-item">
-                <i>الذهب المتوفر</i>
-                <span id="profileCoins" style="color: #f1c40f;">0</span>
+        <div class="profile-header">
+            <div id="userVip" class="vip-badge">VIP 0</div>
+            <div class="avatar-container">
+                <img id="userAvatar" src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150" alt="Avatar">
             </div>
-            <div class="currency-item">
-                <i>الماس المستلم</i>
-                <span id="profileDiamonds" style="color: #00d2d3;">0</span>
+            <div id="profileName" class="user-title">جاري التحميل...</div>
+            <div id="profileId" class="user-uid">ID: --</div>
+        </div>
+
+        <div class="room-stats">
+            <div class="stat-box">
+                <div id="userVipLevel" class="num">0</div>
+                <div class="label">مستوى الـ VIP</div>
+            </div>
+            <div class="stat-box">
+                <div id="userSupportPoints" class="num">0</div>
+                <div class="label">نقاط الدعم</div>
+            </div>
+            <div class="stat-box">
+                <div class="num" style="color: #2ecc71;">نشط</div>
+                <div class="label">حالة الحساب</div>
             </div>
         </div>
-    </div>
 
-    <div class="agency-section">
-        <div class="agency-info">
-            <div class="name" id="userAgency">تحميل الوكالة...</div>
-            <div class="role" id="userRole">عضو الإمبراطورية</div>
+        <div class="wallet-card">
+            <div class="wallet-header">
+                <span>المحفظة والرصيد الرسمي</span>
+                <small style="color: #a4b0be; font-weight: normal;">شحن فوري</small>
+            </div>
+            <div class="currency-row">
+                <div class="currency-item">
+                    <i>الذهب المتوفر</i>
+                    <span id="profileCoins" style="color: #f1c40f;">0</span>
+                </div>
+                <div class="currency-item">
+                    <i>الماس المستلم</i>
+                    <span id="profileDiamonds" style="color: #00d2d3;">0</span>
+                </div>
+            </div>
         </div>
-        <div style="font-size: 12px; color: #3498db; font-weight: bold;">الوكالة 👑</div>
+
+        <div class="agency-section">
+            <div class="agency-info">
+                <div class="name" id="userAgency">تحميل الوكالة...</div>
+                <div class="role" id="userRole">عضو الإمبراطورية</div>
+            </div>
+            <div style="font-size: 12px; color: #3498db; font-weight: bold;">الوكالة 👑</div>
+        </div>
+
+        <div class="action-buttons">
+            <button class="btn-main" onclick="alert('جاري تجهيز دخول غرف الصوت الفورية V3...')">دخول غرف الشات</button>
+            <button class="btn-danger-logout" onclick="logout()">خروج</button>
+        </div>
     </div>
 
-    <div class="action-buttons">
-        <button class="btn-main" onclick="alert('جاري تجهيز دخول غرف الصوت الفورية V3...')">دخول غرف الشات</button>
-        <button class="btn-danger-logout" onclick="logout()">خروج</button>
-    </div>
-
-</div>
-
-        <button class="logout-btn" onclick="logout()">خروج</button>
-    </div>
     <script>
         const SERVER_URL = 'https://game-server-ayham.onrender.com';
         
+        // الفحص التلقائي عند فتح التطبيق
         window.onload = async function() {
             const token = localStorage.getItem('user_token');
             if (token) {
@@ -254,38 +415,62 @@
                         headers: { 'Authorization': `Bearer ${token}` }
                     });
                     const data = await res.json();
-                    if(data.user_id) { showProfile(data); }
-                    else { localStorage.removeItem('user_token'); }
-                } catch(e) { console.log('خطأ الفحص التلقائي للتوكن'); }
+                    if(data && (data.user_id || data._id)) { 
+                        displayUserProfile(data); 
+                    } else { 
+                        localStorage.removeItem('user_token'); 
+                    }
+                } catch(e) { 
+                    console.log('خطأ الفحص التلقائي للتوكن'); 
+                }
             }
         };
-        
-        function displayUserProfile(user) {
-    // 1. عرض الاسم والـ ID الصحيح من قاعدة البيانات ومنع الـ undefined
-    document.getElementById('profileName').innerText = user.username;
-    document.getElementById('profileId').innerText = "ID: " + (user.user_id || "000000");
-    
-    // 2. عرض بيانات الكونزات والماس بالمحفظة
-    document.getElementById('profileCoins').innerText = user.coins !== undefined ? user.coins : 0;
-    document.getElementById('profileDiamonds').innerText = user.diamonds !== undefined ? user.diamonds : 0;
-    
-    // 3. عرض نقاط الدعم ومستوى الـ VIP البرمجي المكتوب بسيرفرك
-    document.getElementById('userSupportPoints').innerText = user.supportPoints !== undefined ? user.supportPoints : 0;
-    document.getElementById('userVipLevel').innerText = user.vip_level !== undefined ? user.vip_level : 0;
-    document.getElementById('userVip').innerText = "VIP " + (user.vip_level !== undefined ? user.vip_level : 0);
-    
-    // 4. عرض اسم الوكالة ودور المستخدم
-    document.getElementById('userAgency').innerText = user.agencyId || "إمبراطورية السبع العامة";
-    document.getElementById('userRole').innerText = user.role === "USER" ? "عضو رسمي" : user.role;
 
-    // 5. تحديث صورة الحساب الدائرية إذا وجد لها رابط مخصص
-    if (user.avatarUrl) {
-        document.getElementById('userAvatar').src = user.avatarUrl;
-    }
-}
+        // التبديل بين واجهة الدخول والتسجيل
+        function switchTab(type) {
+            if(type === 'login') {
+                document.getElementById('loginForm').style.display = 'block';
+                document.getElementById('registerForm').style.display = 'none';
+                document.getElementById('loginTab').classList.add('active');
+                document.getElementById('registerTab').classList.remove('active');
+            } else {
+                document.getElementById('loginForm').style.display = 'none';
+                document.getElementById('registerForm').style.display = 'block';
+                document.getElementById('loginTab').classList.remove('active');
+                document.getElementById('registerTab').classList.add('active');
+            }
+        }
+        
+        // عرض البيانات داخل البروفايل المطور
+        function displayUserProfile(user) {
+            document.getElementById('authSection').style.display = 'none';
+            document.getElementById('profilePage').style.display = 'block';
+
+            document.getElementById('profileName').innerText = user.username + " " + (user.lastName || "");
+            document.getElementById('profileId').innerText = "ID: " + (user.user_id || "000000");
+            
+            document.getElementById('profileCoins').innerText = user.coins !== undefined ? user.coins : 0;
+            document.getElementById('profileDiamonds').innerText = user.diamonds !== undefined ? user.diamonds : 0;
+            
+            document.getElementById('userSupportPoints').innerText = user.supportPoints !== undefined ? user.supportPoints : 0;
+            document.getElementById('userVipLevel').innerText = user.vip_level !== undefined ? user.vip_level : 0;
+            document.getElementById('userVip').innerText = "VIP " + (user.vip_level !== undefined ? user.vip_level : 0);
+            
+            document.getElementById('userAgency').innerText = user.agencyId || "إمبراطورية السبع العامة";
+            document.getElementById('userRole').innerText = user.role === "USER" ? "عضو رسمي" : (user.role || "عضو رسمي");
+
+            if (user.avatarUrl) {
+                document.getElementById('userAvatar').src = user.avatarUrl;
+            }
+        }
+
+        // معالجة تسجيل الدخول
         async function handleLogin() {
             const email = document.getElementById('loginEmail').value;
             const password = document.getElementById('loginPassword').value;
+            
+            if(!email || !password) { return alert('الرجاء تعبئة كل الحقول'); }
+
             try {
                 const res = await fetch(`${SERVER_URL}/api/login`, {
                     method: 'POST',
@@ -293,19 +478,30 @@
                     body: JSON.stringify({ email, password })
                 });
                 const data = await res.json();
-                if(data.token) { localStorage.setItem('user_token', data.token); showProfile(data.user); }
-                else { alert(data.error || 'خطأ في الدخول'); }
-            } catch(e) { alert('خطأ في السيرفر'); }
+                if(data.token) { 
+                    localStorage.setItem('user_token', data.token); 
+                    displayUserProfile(data.user); 
+                } else { 
+                    alert(data.error || 'خطأ في الدخول'); 
+                }
+            } catch(e) { 
+                alert('خطأ في الاتصال بالسيرفر'); 
+            }
         }
+
+        // معالجة إنشاء الحساب
         async function handleRegister() {
             const username = document.getElementById('regUser').value;
             const lastName = document.getElementById('regLast').value;
             const email = document.getElementById('regEmail').value;
             const password = document.getElementById('regPassword').value;
-            const age = parseInt(document.getElementById('regAge').value);
+            const age = parseInt(document.getElementById('regAge').value) || 20;
             const gender = document.getElementById('regGender').value;
             const country = document.getElementById('regCountry').value;
-            const birthDate = document.getElementById('regBirthDate').value || '2026-01-01';
+            const birthDate = '2026-01-01';
+
+            if(!username || !email || !password) { return alert('الرجاء تعبئة الحقول الأساسية'); }
+
             try {
                 const res = await fetch(`${SERVER_URL}/api/register`, {
                     method: 'POST',
@@ -313,19 +509,22 @@
                     body: JSON.stringify({ username, lastName, email, password, age, country, gender, birthDate })
                 });
                 const data = await res.json();
-                if(data.token) { localStorage.setItem('user_token', data.token); showProfile(data.user); }
-                else { alert(data.error || 'فشل التسجيل'); }
-            } catch(e) { alert('خطأ في السيرفر'); }
+                if(data.token) { 
+                    localStorage.setItem('user_token', data.token); 
+                    displayUserProfile(data.user); 
+                } else { 
+                    alert(data.error || 'فشل التسجيل'); 
+                }
+            } catch(e) { 
+                alert('خطأ في الاتصال بالسيرفر'); 
+            }
         }
-        function showProfile(user) {
-            document.getElementById('authSection').style.display = 'none';
-            document.getElementById('profileSection').style.display = 'block';
-            document.getElementById('userName').innerText = `${user.username} ${user.lastName}`;
-            document.getElementById('userID').innerText = user.user_id;
-            document.getElementById('userCoins').innerText = user.coins || 0;
-            document.getElementById('userDiamonds').innerText = user.diamonds || 0;
+
+        // تسجيل الخروج
+        function logout() { 
+            localStorage.removeItem('user_token'); 
+            window.location.reload(); 
         }
-        function logout() { localStorage.removeItem('user_token'); window.location.reload(); }
     </script>
 </body>
 </html>
