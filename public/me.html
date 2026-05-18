@@ -14,10 +14,8 @@ body { font-family: 'Segoe UI', sans-serif; background: linear-gradient(135deg, 
 @keyframes ownerPulse { 0%, 100% { box-shadow: 0 0 20px #FFD700, 0 0 40px #ff00ff; } 50% { box-shadow: 0 0 40px #FFD700, 0 0 60px #ff00ff; } }
 
 .avatar-container { position: relative; width: 100px; height: 100px; margin: 0 auto 15px; }
-.avatar { width: 100%; height: 100%; border-radius: 50%; background: linear-gradient(45deg, #ff00ff, #00ffff); display: flex; align-items: center; justify-content: center; font-size: 40px; border: 4px solid #FFD700; object-fit: cover; }
-.owner-avatar { background: linear-gradient(45deg, #FFD700, #ff00ff); }
+.avatar { width: 100%; height: 100%; border-radius: 50%; background: linear-gradient(45deg, #ff00ff, #00ffff); display: flex; align-items: center; justify-content: center; border: 4px solid #FFD700; object-fit: cover; }
 
-/* زر القلم لفتح الاستوديو */
 .edit-badge { position: absolute; bottom: 0; left: 0; background: #00ffff; color: #000; width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; border: 2px solid #141428; cursor: pointer; z-index: 10; }
 
 .username { font-size: 24px; font-weight: bold; margin-bottom: 10px; color: #ff00ff; }
@@ -42,7 +40,7 @@ body { font-family: 'Segoe UI', sans-serif; background: linear-gradient(135deg, 
       <div class="edit-badge" id="editAvatarBtn"><i class="fas fa-pen"></i></div>
     </div>
     <div class="username" id="username">جاري التحميل...</div>
-    <div class="level" id="level">...</div>
+    <div class="level" id="level">ID: ...</div>
     <div class="level" id="vip">VIP 0</div>
   </div>
 
@@ -52,8 +50,8 @@ body { font-family: 'Segoe UI', sans-serif; background: linear-gradient(135deg, 
       <div class="stat-label">العملات</div>
     </div>
     <div class="stat">
-      <div class="stat-value">20</div>
-      <div class="stat-label">المايكات</div>
+      <div class="stat-value" id="diamonds">0</div>
+      <div class="stat-label">الماس</div>
     </div>
   </div>
 
@@ -65,57 +63,51 @@ body { font-family: 'Segoe UI', sans-serif; background: linear-gradient(135deg, 
 const token = localStorage.getItem('token');
 if (!token) location.href = '/';
 
-// كسر كاش المتصفح أو التطبيق لضمان قراءة الأكواد الجديدة فوراً
-if (!sessionStorage.getItem('refreshed')) {
-    sessionStorage.setItem('refreshed', 'true');
-    window.location.reload(true);
-}
-
+// دالة جلب البيانات المتوافقة مع الميدل وير والسيرفر الأصلي تبعك
 function fetchUserData() {
-    fetch('/api/me', { headers: { 'Authorization': 'Bearer ' + token } })
+    fetch('/api/profile', { 
+        headers: { 'Authorization': 'Bearer ' + token } 
+    })
     .then(r => r.json())
     .then(user => {
-        if (user.error) return location.href = '/';
+        if (user.error) {
+            localStorage.removeItem('token');
+            location.href = '/';
+            return;
+        }
         document.getElementById('username').textContent = user.username;
-        document.getElementById('level').textContent = user.level;
-        document.getElementById('vip').textContent = 'VIP ' + user.vip;
+        document.getElementById('level').textContent = 'ID: ' + user.user_id;
+        document.getElementById('vip').textContent = 'VIP ' + (user.vip_level || 0);
         document.getElementById('coins').textContent = user.coins;
+        document.getElementById('diamonds').textContent = user.diamonds || 0;
         
+        // عرض الصورة المرفوعة إذا كانت موجودة
         if (user.avatarUrl) {
             document.getElementById('avatar').src = user.avatarUrl;
         }
 
-        if (user.level === '10000 TOP') {
+        if (user.role === 'ADMIN' || user.vip_level >= 10) {
             document.getElementById('header').classList.add('owner-glow');
             document.getElementById('avatar').classList.add('owner-avatar');
         }
     })
-    .catch(() => location.href = '/');
+    .catch(() => { console.log("خطأ في الاتصال"); });
 }
 
 fetchUserData();
 
-// كود قتل النوافذ المنبثقة القديمة المبرمجة بالتطبيق وإجبار فتح المعرض
-function triggerFileSelect(e) {
-    if (e) { e.preventDefault(); e.stopPropagation(); }
-    
-    // إخفاء أي نافذة تحديث صورة مصممة قديماً تظهر بالتطبيق تلقائياً
-    const oldModals = document.querySelectorAll('[class*="modal"], [class*="popup"], [id*="modal"]');
-    oldModals.forEach(modal => modal.style.display = 'none');
-    
+// عند الضغط على القلم يفتح الاستوديو مباشرة
+document.getElementById('editAvatarBtn').addEventListener('click', function() {
     document.getElementById('avatarFileInput').click();
-}
+});
 
-document.getElementById('editAvatarBtn').addEventListener('click', triggerFileSelect);
-document.getElementById('avatar').addEventListener('click', triggerFileSelect);
-
-// معالجة اختيار الصورة ورفعها المشفرة للسيرفر مباشرة
+// تحويل الصورة المحددة ورفعها للسيرفر
 document.getElementById('avatarFileInput').addEventListener('change', function(e) {
     const file = e.target.files[0];
     if (!file) return;
 
-    if (file.size > 6 * 1024 * 1024) {
-        alert('حجم الصورة كبير، يرجى اختيار صورة أصغر');
+    if (file.size > 5 * 1024 * 1024) {
+        alert('حجم الصورة كبير، اختر صورة أقل من 5 ميجا');
         return;
     }
 
@@ -134,8 +126,8 @@ document.getElementById('avatarFileInput').addEventListener('change', function(e
         .then(res => res.json())
         .then(data => {
             if (data.success) {
-                alert('تم تحديث صورتك الشخصية مباشرة من المعرض بنجاح! 🎉');
-                fetchUserData();
+                alert('تم تحديث صورتك الشخصية بنجاح! 🎉');
+                fetchUserData(); 
             } else {
                 alert('فشل حفظ الصورة: ' + data.error);
             }
@@ -146,8 +138,21 @@ document.getElementById('avatarFileInput').addEventListener('change', function(e
 });
 
 function createRoom() {
-  const roomId = Math.floor(Math.random() * 90000) + 10000;
-  location.href = '/room.html?roomId=' + roomId;
+  const roomName = prompt("أدخل اسم الغرفة:");
+  if(!roomName) return;
+  fetch('/api/create-room', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+      body: JSON.stringify({ name: roomName })
+  })
+  .then(r => r.json())
+  .then(data => {
+      if(data.success) {
+          location.href = '/room?roomId=' + data.room.room_id;
+      } else {
+          alert(data.error);
+      }
+  });
 }
 function logout() { localStorage.removeItem('token'); location.href = '/'; }
 </script>
