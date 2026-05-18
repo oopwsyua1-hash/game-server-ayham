@@ -1,222 +1,325 @@
-<!DOCTYPE html>
-<html lang="ar" dir="rtl">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>إنشاء حساب - إمبراطورية السبع</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <style>
-        body {
-            background-color: #050a0f;
-            color: #ffffff;
-            font-family: 'Segoe UI', 'Cairo', sans-serif;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-            margin: 0;
-            padding: 20px 0;
-        }
+webview1.getSettings().setJavaScriptEnabled(true);
+webview1.getSettings().setDomStorageEnabled(true);
+webview1.getSettings().setDatabaseEnabled(true);
 
-        .auth-card {
-            background: #1a1a2e;
-            width: 90%;
-            max-width: 450px;
-            padding: 25px;
-            border-radius: 25px;
-            border: 2px solid #a855f7;
-            box-shadow: 0 0 30px rgba(168, 85, 247, 0.3);
-            text-align: center;
-        }
+String customHtml = "<!DOCTYPE html>\n" +
+"<html lang=\"ar\" dir=\"rtl\">\n" +
+"<head>\n" +
+"    <meta charset=\"UTF-8\">\n" +
+"    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n" +
+"    <title>إمبراطورية السبع V3</title>\n" +
+"    <link rel=\"stylesheet\" href=\"https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css\">\n" +
+"    <style>\n" +
+"        @keyframes nameGlow {\n" +
+"            0% { text-shadow: 0 0 5px #fff, 0 0 10px #3498db; }\n" +
+"            50% { text-shadow: 0 0 20px #3498db, 0 0 30px #2980b9; color: #d4e6f1; }\n" +
+"            100% { text-shadow: 0 0 5px #fff, 0 0 10px #3498db; }\n" +
+"        }\n" +
+"        @keyframes rotateVerify {\n" +
+"            0% { transform: scale(1) rotate(0deg); }\n" +
+"            50% { transform: scale(1.2) rotate(10deg); }\n" +
+"            100% { transform: scale(1) rotate(0deg); }\n" +
+"        }\n" +
+"        @keyframes fadeInScale {\n" +
+"            from { opacity: 0; transform: scale(0.9) translateY(20px); }\n" +
+"            to { opacity: 1; transform: scale(1) translateY(0); }\n" +
+"        }\n" +
+"        body {\n" +
+"            background-color: #050a0f;\n" +
+"            color: #ffffff;\n" +
+"            margin: 0;\n" +
+"            font-family: 'Segoe UI', sans-serif;\n" +
+"            overflow-x: hidden;\n" +
+"        }\n" +
+"        .auth-container {\n" +
+"            max-width: 450px;\n" +
+"            margin: 20px auto;\n" +
+"            padding: 25px;\n" +
+"            background: rgba(18, 27, 38, 0.95);\n" +
+"            border-radius: 20px;\n" +
+"            border: 1px solid rgba(52, 152, 219, 0.3);\n" +
+"            box-shadow: 0 10px 25px rgba(0,0,0,0.5);\n" +
+"            animation: fadeInScale 0.5s ease-out;\n" +
+"        }\n" +
+"        .auth-container h2 {\n" +
+"            text-align: center;\n" +
+"            color: #3498db;\n" +
+"            margin-bottom: 20px;\n" +
+"            font-size: 22px;\n" +
+"            animation: nameGlow 3s infinite ease-in-out;\n" +
+"        }\n" +
+"        .tabs {\n" +
+"            display: flex;\n" +
+"            justify-content: space-around;\n" +
+"            margin-bottom: 20px;\n" +
+"            border-bottom: 1px solid rgba(255,255,255,0.1);\n" +
+"        }\n" +
+"        .tab-btn {\n" +
+"            background: none;\n" +
+"            border: none;\n" +
+"            color: #8e99a3;\n" +
+"            padding: 10px;\n" +
+"            font-size: 16px;\n" +
+"            cursor: pointer;\n" +
+"            font-weight: bold;\n" +
+"            transition: 0.3s;\n" +
+"        }\n" +
+"        .tab-btn.active {\n" +
+"            color: #3498db;\n" +
+"            border-bottom: 3px solid #3498db;\n" +
+"        }\n" +
+"        .form-group {\n" +
+"            margin-bottom: 15px;\n" +
+"            position: relative;\n" +
+"        }\n" +
+"        .form-group label {\n" +
+"            display: block;\n" +
+"            font-size: 13px;\n" +
+"            color: #8e99a3;\n" +
+"            margin-bottom: 5px;\n" +
+"        }\n" +
+"        .form-group input, .form-group select {\n" +
+"            width: 100%;\n" +
+"            padding: 10px 15px;\n" +
+"            box-sizing: border-box;\n" +
+"            background: rgba(28, 42, 58, 0.7);\n" +
+"            border: 1px solid rgba(255,255,255,0.1);\n" +
+"            border-radius: 10px;\n" +
+"            color: #fff;\n" +
+"            font-size: 14px;\n" +
+"            outline: none;\n" +
+"        }\n" +
+"        .form-group select option {\n" +
+"            background: #121b26;\n" +
+"            color: #fff;\n" +
+"        }\n" +
+"        .auth-btn {\n" +
+"            width: 100%;\n" +
+"            padding: 12px;\n" +
+"            background: linear-gradient(135deg, #3498db, #2980b9);\n" +
+"            border: none;\n" +
+"            border-radius: 10px;\n" +
+"            color: white;\n" +
+"            font-size: 15px;\n" +
+"            font-weight: bold;\n" +
+"            cursor: pointer;\n" +
+"            margin-top: 10px;\n" +
+"        }\n" +
+"        .profile-container {\n" +
+"            display: none;\n" +
+"            position: relative;\n" +
+"            z-index: 1;\n" +
+"            animation: fadeInScale 0.7s ease-out;\n" +
+"        }\n" +
+"        .cover-area {\n" +
+"            height: 180px;\n" +
+"            background: #1a2a3a;\n" +
+"            background-size: cover;\n" +
+"            background-position: center;\n" +
+"            position: relative;\n" +
+"        }\n" +
+"        .avatar-wrapper {\n" +
+"            position: absolute;\n" +
+"            bottom: -45px;\n" +
+"            right: 20px;\n" +
+"            width: 90px;\n" +
+"            height: 90px;\n" +
+"            background: linear-gradient(135deg, #f5d496, #e2b35c);\n" +
+"            border-radius: 50%;\n" +
+"            padding: 4px;\n" +
+"        }\n" +
+"        .avatar-wrapper img {\n" +
+"            width: 100%; height: 100%;\n" +
+"            border-radius: 50%;\n" +
+"            border: 3px solid #070d14;\n" +
+"            object-fit: cover;\n" +
+"        }\n" +
+"        .user-details { padding: 55px 20px 10px; text-align: right; }\n" +
+"        .name {\n" +
+"            font-size: 22px;\n" +
+"            font-weight: bold;\n" +
+"            display: flex;\n" +
+"            align-items: center;\n" +
+"            gap: 8px;\n" +
+"            animation: nameGlow 3s infinite ease-in-out;\n" +
+"        }\n" +
+"        .verify-gold { color: #f1c40f; animation: rotateVerify 2s infinite ease-in-out; }\n" +
+"        .id-badge {\n" +
+"            display: inline-block;\n" +
+"            background: rgba(255,255,255,0.05);\n" +
+"            padding: 4px 12px;\n" +
+"            border-radius: 20px;\n" +
+"            font-size: 12px;\n" +
+"            color: #8e99a3;\n" +
+"        }\n" +
+"        .card {\n" +
+"            background: rgba(18, 27, 38, 0.9);\n" +
+"            margin: 12px;\n" +
+"            padding: 15px;\n" +
+"            border-radius: 15px;\n" +
+"            border: 1px solid rgba(255,255,255,0.05);\n" +
+"        }\n" +
+"        .info-grid {\n" +
+"            display: grid;\n" +
+"            grid-template-columns: 1fr 1fr;\n" +
+"            gap: 10px;\n" +
+"        }\n" +
+"        .info-item {\n" +
+"            background: rgba(28, 42, 58, 0.7);\n" +
+"            padding: 10px;\n" +
+"            border-radius: 10px;\n" +
+"            font-size: 13px;\n" +
+"            display: flex;\n" +
+"            align-items: center;\n" +
+"            gap: 8px;\n" +
+"        }\n" +
+"        .logout-btn {\n" +
+"            background: #e74c3c;\n" +
+"            color: white;\n" +
+"            border: none;\n" +
+"            padding: 8px 16px;\n" +
+"            border-radius: 10px;\n" +
+"            margin: 12px;\n" +
+"            float: left;\n" +
+"            cursor: pointer;\n" +
+"        }\n" +
+"    </style>\n" +
+"</head>\n" +
+"<body>\n" +
+"    <div class=\"auth-container\" id=\"authSection\">\n" +
+"        <h2>إمبراطورية السبع V3</h2>\n" +
+"        <div class=\"tabs\">\n" +
+"            <button class=\"tab-btn active\" id=\"loginTab\" onclick=\"switchTab('login')\">تسجيل الدخول</button>\n" +
+"            <button class=\"tab-btn\" id=\"registerTab\" onclick=\"switchTab('register')\">إنشاء حساب</button>\n" +
+"        </div>\n" +
+"        <div id=\"loginForm\">\n" +
+"            <div class=\"form-group\">\n" +
+"                <label>البريد الإلكتروني</label>\n" +
+"                <input type=\"email\" id=\"loginEmail\" placeholder=\"example@test.com\">\n" +
+"            </div>\n" +
+"            <div class=\"form-group\">\n" +
+"                <label>كلمة السر</label>\n" +
+"                <input type=\"password\" id=\"loginPassword\" placeholder=\"******\">\n" +
+"            </div>\n" +
+"            <button class=\"auth-btn\" onclick=\"handleLogin()\">دخول</button>\n" +
+"        </div>\n" +
+"        <div id=\"registerForm\" style=\"display: none;\">\n" +
+"            <div class=\"form-group\"><input type=\"text\" id=\"regUser\" placeholder=\"الاسم الأول\"></div>\n" +
+"            <div class=\"form-group\"><input type=\"text\" id=\"regLast\" placeholder=\"اسم العائلة\"></div>\n" +
+"            <div class=\"form-group\"><input type=\"email\" id=\"regEmail\" placeholder=\"البريد الإلكتروني\"></div>\n" +
+"            <div class=\"form-group\"><input type=\"password\" id=\"regPassword\" placeholder=\"كلمة السر\"></div>\n" +
+"            <div class=\"form-group\"><input type=\"number\" id=\"regAge\" placeholder=\"العمر\"></div>\n" +
+"            <div class=\"form-group\">\n" +
+"                <select id=\"regGender\">\n" +
+"                    <option value=\"male\">ذكر</option>\n" +
+"                    <option value=\"female\">أنثى</option>\n" +
+"                </select>\n" +
+"            </div>\n" +
+"            <div class=\"form-group\">\n" +
+"                <select id=\"regCountry\">\n" +
+"                    <option value=\"تركيا\">تركيا</option>\n" +
+"                    <option value=\"سوريا\">سوريا</option>\n" +
+"                    <option value=\"العراق\">العراق</option>\n" +
+"                    <option value=\"السعودية\">السعودية</option>\n" +
+"                    <option value=\"مصر\">مصر</option>\n" +
+"                    <option value=\"الأردن\">الأردن</option>\n" +
+"                    <option value=\"الإمارات\">الإمارات</option>\n" +
+"                    <option value=\"فلسطين\">فلسطين</option>\n" +
+"                </select>\n" +
+"            </div>\n" +
+"            <div class=\"form-group\">\n" +
+"                <label style=\"margin-top:5px;\">تاريخ الميلاد</label>\n" +
+"                <input type=\"date\" id=\"regBirthDate\">\n" +
+"            </div>\n" +
+"            <button class=\"auth-btn\" onclick=\"handleRegister()\">تسجيل حساب جديد</button>\n" +
+"        </div>\n" +
+"    </div>\n" +
+"    <div class=\"profile-container\" id=\"profileSection\">\n" +
+"        <div class=\"cover-area\" style=\"background-image: url('https://via.placeholder.com/800x400/1a2a3a/ffffff');\">\n" +
+"            <div class=\"avatar-wrapper\"><img src=\"https://via.placeholder.com/150\" id=\"avatarImg\"></div>\n" +
+"        </div>\n" +
+"        <div class=\"user-details\">\n" +
+"            <div class=\"name\"><span id=\"userName\">جاري التحميل...</span><i class=\"fas fa-certificate verify-gold\"></i></div>\n" +
+"            <div class=\"id-badge\">ID: <span id=\"userID\">000000</span></div>\n" +
+"        </div>\n" +
+"        <div class=\"card\">\n" +
+"            <h3>المحفظة والرصيد</h3>\n" +
+"            <div class=\"info-grid\">\n" +
+"                <div class=\"info-item\">كونزات: <span id=\"userCoins\">0</span></div>\n" +
+"                <div class=\"info-item\">الماسي: <span id=\"userDiamonds\">0</span></div>\n" +
+"            </div>\n" +
+"        </div>\n" +
+"        <button class=\"logout-btn\" onclick=\"logout()\">خروج</button>\n" +
+"    </div>\n" +
+"    <script>\n" +
+"        const SERVER_URL = 'https://game-server-ayham.onrender.com';\n" +
+"        \n" +
+"        window.onload = async function() {\n" +
+"            const token = localStorage.getItem('user_token');\n" +
+"            if (token) {\n" +
+"                try {\n" +
+"                    const res = await fetch(`${SERVER_URL}/api/profile`, {\n" +
+"                        method: 'GET',\n" +
+"                        headers: { 'Authorization': `Bearer ${token}` }\n" +
+"                    });\n" +
+"                    const data = await res.json();\n" +
+"                    if(data.user_id) { showProfile(data); }\n" +
+"                    else { localStorage.removeItem('user_token'); }\n" +
+"                } catch(e) { console.log('خطأ الفحص التلقائي للتوكن'); }\n" +
+"            }\n" +
+"        };\n" +
+"        \n" +
+"        function switchTab(type) {\n" +
+"            document.getElementById('loginTab').classList.toggle('active', type==='login');\n" +
+"            document.getElementById('registerTab').classList.toggle('active', type==='register');\n" +
+"            document.getElementById('loginForm').style.display = type==='login'?'block':'none';\n" +
+"            document.getElementById('registerForm').style.display = type==='register'?'block':'none';\n" +
+"        }\n" +
+"        async function handleLogin() {\n" +
+"            const email = document.getElementById('loginEmail').value;\n" +
+"            const password = document.getElementById('loginPassword').value;\n" +
+"            try {\n" +
+"                const res = await fetch(`${SERVER_URL}/api/login`, {\n" +
+"                    method: 'POST',\n" +
+"                    headers: { 'Content-Type': 'application/json' },\n" +
+"                    body: JSON.stringify({ email, password })\n" +
+"                });\n" +
+"                const data = await res.json();\n" +
+"                if(data.token) { localStorage.setItem('user_token', data.token); showProfile(data.user); }\n" +
+"                else { alert(data.error || 'خطأ في الدخول'); }\n" +
+"            } catch(e) { alert('خطأ في السيرفر'); }\n" +
+"        }\n" +
+"        async function handleRegister() {\n" +
+"            const username = document.getElementById('regUser').value;\n" +
+"            const lastName = document.getElementById('regLast').value;\n" +
+"            const email = document.getElementById('regEmail').value;\n" +
+"            const password = document.getElementById('regPassword').value;\n" +
+"            const age = parseInt(document.getElementById('regAge').value);\n" +
+"            const gender = document.getElementById('regGender').value;\n" +
+"            const country = document.getElementById('regCountry').value;\n" +
+"            const birthDate = document.getElementById('regBirthDate').value || '2026-01-01';\n" +
+"            try {\n" +
+"                const res = await fetch(`${SERVER_URL}/api/register`, {\n" +
+"                    method: 'POST',\n" +
+"                    headers: { 'Content-Type': 'application/json' },\n" +
+"                    body: JSON.stringify({ username, lastName, email, password, age, country, gender, birthDate })\n" +
+"                });\n" +
+"                const data = await res.json();\n" +
+"                if(data.token) { localStorage.setItem('user_token', data.token); showProfile(data.user); }\n" +
+"                else { alert(data.error || 'فشل التسجيل'); }\n" +
+"            } catch(e) { alert('خطأ في السيرفر'); }\n" +
+"        }\n" +
+"        function showProfile(user) {\n" +
+"            document.getElementById('authSection').style.display = 'none';\n" +
+"            document.getElementById('profileSection').style.display = 'block';\n" +
+"            document.getElementById('userName').innerText = `${user.username} ${user.lastName}`;\n" +
+"            document.getElementById('userID').innerText = user.user_id;\n" +
+"            document.getElementById('userCoins').innerText = user.coins || 0;\n" +
+"            document.getElementById('userDiamonds').innerText = user.diamonds || 0;\n" +
+"        }\n" +
+"        function logout() { localStorage.removeItem('user_token'); window.location.reload(); }\n" +
+"    </script>\n" +
+"</body>\n" +
+"</html>";
 
-        .logo-area h1 {
-            color: #f1c40f;
-            font-size: 26px;
-            margin-bottom: 10px;
-            text-shadow: 0 0 10px rgba(241, 196, 15, 0.6);
-        }
-
-        .input-group {
-            text-align: right;
-            margin-bottom: 15px;
-        }
-
-        .input-group label {
-            display: block;
-            margin-bottom: 8px;
-            font-size: 14px;
-            color: #a855f7;
-            font-weight: bold;
-        }
-
-        .input-group input, .input-group select {
-            width: 100%;
-            padding: 12px;
-            border-radius: 12px;
-            border: 1px solid #334155;
-            background: #0f172a;
-            color: white;
-            box-sizing: border-box;
-            outline: none;
-            font-size: 14px;
-        }
-
-        .input-group input:focus, .input-group select:focus {
-            border-color: #f1c40f;
-        }
-
-        .btn-submit {
-            width: 100%;
-            padding: 16px;
-            background: linear-gradient(135deg, #f1c40f, #d4af37);
-            border: none;
-            border-radius: 15px;
-            color: #000;
-            font-weight: bold;
-            font-size: 17px;
-            cursor: pointer;
-            box-shadow: 0 5px 15px rgba(241, 196, 15, 0.3);
-            margin-top: 10px;
-        }
-
-        .error-container {
-            background: rgba(239, 68, 68, 0.1);
-            color: #ef4444;
-            padding: 12px;
-            border-radius: 10px;
-            margin-top: 15px;
-            border: 1px solid #ef4444;
-            display: none;
-            font-size: 13px;
-        }
-
-        #ageDisplay { color: #f1c40f; font-size: 12px; display: block; margin-top: 5px; }
-    </style>
-</head>
-<body>
-
-<div class="auth-card">
-    <div class="logo-area">
-        <h1>👑 وكالة السبع</h1>
-        <p style="color: #ccc; font-size: 14px; margin-top: -5px;">إمبراطورية السبع V3</p>
-    </div>
-
-    <form id="registerForm">
-        <div class="input-group">
-            <label><i class="fas fa-user"></i> اسم المستخدم</label>
-            <input type="text" id="regName" placeholder="مثال: السبع الحلبي" required>
-        </div>
-
-        <div class="input-group">
-            <label><i class="fas fa-envelope"></i> البريد الإلكتروني</label>
-            <input type="email" id="regEmail" placeholder="example@gmail.com" required>
-        </div>
-
-        <div class="input-group">
-            <label><i class="fas fa-lock"></i> كلمة السر</label>
-            <input type="password" id="regPass" placeholder="••••••••" required>
-        </div>
-
-        <div class="input-group">
-            <label><i class="fas fa-venus-mars"></i> الجنس</label>
-            <select id="regGender" required>
-                <option value="ذكر">ذكر ♂️</option>
-                <option value="أنثى">أنثى ♀️</option>
-            </select>
-        </div>
-
-        <div class="input-group">
-            <label><i class="fas fa-globe"></i> الدولة</label>
-            <select id="regCountry" required>
-                <option value="">-- اختر دولتك --</option>
-                <option value="سوريا 🇸🇾">سوريا 🇸🇾</option>
-                <option value="تركيا 🇹🇷">تركيا 🇹🇷</option>
-                <option value="السعودية 🇸🇦">السعودية 🇸🇦</option>
-                <option value="العراق 🇮🇶">العراق 🇮🇶</option>
-                <option value="مصر 🇪🇬">مصر 🇪🇬</option>
-                <option value="فلسطين 🇵🇸">فلسطين 🇵🇸</option>
-                <option value="الأردن 🇯🇴">الأردن 🇯🇴</option>
-                <option value="لبنان 🇱🇧">لبنان 🇱🇧</option>
-                <option value="الكويت 🇰🇼">الكويت 🇰🇼</option>
-                <option value="الإمارات 🇦🇪">الإمارات 🇦🇪</option>
-                <option value="قطر 🇶🇦">قطر 🇶🇦</option>
-                <option value="البحرين 🇧🇭">البحرين 🇧🇭</option>
-                <option value="عمان 🇴🇲">عمان 🇴🇲</option>
-                <option value="اليمن 🇾🇪">اليمن 🇾🇪</option>
-                <option value="المغرب 🇲🇦">المغرب 🇲🇦</option>
-                <option value="الجزائر 🇩🇿">الجزائر 🇩🇿</option>
-                <option value="تونس 🇹🇳">تونس 🇹🇳</option>
-                <option value="ليبيا 🇱🇾">ليبيا 🇱🇾</option>
-                <option value="السودان 🇸🇩">السودان 🇸🇩</option>
-                <option value="ألمانيا 🇩🇪">ألمانيا 🇩🇪</option>
-                <option value="السويد 🇸🇪">السويد 🇸🇪</option>
-            </select>
-        </div>
-
-        <div class="input-group">
-            <label><i class="fas fa-calendar-day"></i> تاريخ الميلاد</label>
-            <input type="date" id="regBirth" required onchange="calculateAge(this.value)">
-            <span id="ageDisplay"></span>
-        </div>
-
-        <button type="submit" class="btn-submit">إنشاء الحساب الملكي</button>
-    </form>
-
-    <div id="errorContainer" class="error-container"></div>
-</div>
-
-<script>
-    const API_URL = 'https://game-server-ayham.onrender.com/api';
-    let calculatedAge = "";
-
-    function calculateAge(birthDate) {
-        if (!birthDate) return;
-        const birth = new Date(birthDate);
-        const now = new Date();
-        let age = now.getFullYear() - birth.getFullYear();
-        if (now.getMonth() < birth.getMonth() || (now.getMonth() === birth.getMonth() && now.getDate() < birth.getDate())) age--;
-        calculatedAge = age + " سنة";
-        document.getElementById('ageDisplay').innerText = "العمر: " + calculatedAge;
-    }
-
-    document.getElementById('registerForm').addEventListener('submit', async (e) => {
-        e.preventDefault();
-        const errorBox = document.getElementById('errorContainer');
-        errorBox.style.display = 'none';
-
-        const userData = {
-            username: document.getElementById('regName').value,
-            email: document.getElementById('regEmail').value,
-            password: document.getElementById('regPass').value,
-            gender: document.getElementById('regGender').value,
-            country: document.getElementById('regCountry').value,
-            birth_date: document.getElementById('regBirth').value,
-            age: calculatedAge
-        };
-
-        try {
-            const response = await fetch(`${API_URL}/register`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(userData)
-            });
-
-            if (response.headers.get("content-type")?.includes("application/json")) {
-                const result = await response.json();
-                if (response.ok) {
-                    alert("تم التسجيل بنجاح يا سبع!");
-                    window.location.href = 'login.html';
-                } else {
-                    throw new Error(result.message || "فشل التسجيل");
-                }
-            } else {
-                throw new Error("خطأ في استجابة السيرفر");
-            }
-        } catch (err) {
-            errorBox.innerText = err.message;
-            errorBox.style.display = 'block';
-        }
-    });
-</script>
-</body>
-</html>
+webview1.loadDataWithBaseURL("https://game-server-ayham.onrender.com", customHtml, "text/html", "UTF-8", null);
