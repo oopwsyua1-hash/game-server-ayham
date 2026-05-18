@@ -1,96 +1,98 @@
 const API_URL = 'https://game-server-ayham.onrender.com';
 
-// 1. جلب بيانات الحساب وعرضها داخل عناصر الـ HTML المعدلة
-async function loadProfile() {
-    const token = localStorage.getItem('token');
-    if (!token) { 
-        window.location.href = 'login.html'; 
-        return; 
-    }
+// ====== أولاً: كود إنشاء حساب جديد (Register) ======
+const registerForm = document.getElementById('register-form') || document.querySelector('form');
 
-    try {
-        const res = await fetch(`${API_URL}/api/profile`, {
-            headers: { 'Authorization': `Bearer ${token}` }
-        });
-        const user = await res.json();
-        
-        if (user.error) {
-            console.log(user.error);
+if (registerForm && window.location.href.includes('register')) {
+    registerForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+
+        // جلب الحقول من الواجهة بناءً على عناصر الإدخال بالتطبيق
+        const usernameInput = document.getElementById('username') || document.querySelector('input[placeholder*="عمران"]') || document.querySelector('input[type="text"]');
+        const lastNameInput = document.getElementById('lastName') || document.querySelector('input[placeholder*="سبع"]');
+        const emailInput = document.getElementById('email') || document.querySelector('input[type="email"]');
+        const passwordInput = document.getElementById('password') || document.querySelector('input[type="password"]');
+        const countryInput = document.getElementById('country') || { value: "سوريا" };
+        const birthDateInput = document.getElementById('birthDate') || { value: "2006-01-01" };
+        const genderInput = document.getElementById('gender') || { value: "ذكر" };
+
+        if (!emailInput || !passwordInput || !emailInput.value || !passwordInput.value) {
+            alert('يرجى ملء الحقول الأساسية (البريد الإلكتروني وكلمة المرور)');
             return;
         }
 
-        // ربط البيانات مع الـ IDs المضافة حديثاً في ملف الـ HTML
-        if (document.getElementById('username-display')) {
-            document.getElementById('username-display').innerText = user.username ? `${user.username} ☀️` : "مستخدم جديد ☀️";
+        // تجهيز البيانات بشكل سليم 100% للسيرفر لتفادي أي حقل ناقص
+        const formData = {
+            username: usernameInput ? usernameInput.value.trim() : "مستخدم جديد",
+            lastName: lastNameInput ? lastNameInput.value.trim() : "سبع",
+            email: emailInput.value.trim(),
+            password: passwordInput.value,
+            country: countryInput.value || "سوريا",
+            birthDate: birthDateInput.value || "2006-01-01",
+            age: 20,
+            gender: genderInput.value || "ذكر"
+        };
+
+        try {
+            // إرسال الطلب للمسار الشامل بالسيرفر
+            const res = await fetch(`${API_URL}/api/register`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(formData)
+            });
+
+            const data = await res.json();
+
+            if (res.ok && data.success) {
+                localStorage.setItem('token', data.token);
+                alert('تم إنشاء الحساب بنجاح! أهلاً بك في إمبراطورية السبع 🎉');
+                window.location.href = 'profile.html'; // الانتقال للملف الشخصي فوراً
+            } else {
+                alert(data.error || 'خطأ غير معروف أثناء إنشاء الحساب');
+            }
+        } catch (err) {
+            console.error(err);
+            alert('تعذر الاتصال بالسيرفر، يرجى المحاولة مرة أخرى لاحقاً');
         }
-        if (document.getElementById('user-id-display')) {
-            document.getElementById('user-id-display').innerText = `ID: ${user.user_id || user.userId || '0000000'}`;
-        }
-        
-        // عرض الصورة الشخصية الحقيقية من قاعدة البيانات بدل الصورة العشوائية
-        const avatarImg = document.getElementById('avatar-img');
-        if (avatarImg && user.avatarUrl) {
-            avatarImg.src = user.avatarUrl;
-        }
-    } catch (err) { 
-        console.log("خطأ في تحميل بيانات الحساب:", err); 
-    }
+    });
 }
 
-// تشغيل جلب البيانات تلقائياً عند فتح الصفحة
-loadProfile();
+// ====== ثانياً: كود تسجيل الدخول (Login) ======
+const loginForm = document.getElementById('login-form') || (!window.location.href.includes('register') && document.querySelector('form'));
 
-// 2. التنصت على الضغط على أيقونة القلم (تعديل الصورة) لفتح الاستوديو مباشرة
-document.body.addEventListener('click', function(e) {
-    if (e.target && (e.target.id === 'edit-avatar-btn' || e.target.closest('#edit-avatar-btn'))) {
+if (loginForm) {
+    loginForm.addEventListener('submit', async (e) => {
         e.preventDefault();
-        const fileInput = document.getElementById('avatarFileInput');
-        if (fileInput) {
-            fileInput.click(); // يفتح معرض الاستوديو في الهاتف فوراً وبشكل صامت
-        }
-    }
-});
 
-// 3. معالجة تحويل الصورة المحددة إلى كود باينري مباشر (Base64) ورفعها للسيرفر
-document.body.addEventListener('change', function(e) {
-    if (e.target && e.target.id === 'avatarFileInput') {
-        const file = e.target.files[0];
-        if (!file) return;
+        const emailInput = document.getElementById('email') || document.querySelector('input[type="email"]');
+        const passwordInput = document.getElementById('password') || document.querySelector('input[type="password"]');
 
-        // التحقق من أن حجم الصورة معقول لتفادي مشاكل الشبكة (أقل من 8 ميجا)
-        if (file.size > 8 * 1024 * 1024) {
-            alert('حجم الصورة كبير بعض الشيء، يرجى اختيار صورة أخرى');
+        if (!emailInput || !passwordInput || !emailInput.value || !passwordInput.value) {
+            alert('يرجى إدخال البريد الإلكتروني وكلمة المرور');
             return;
         }
 
-        const reader = new FileReader();
-        reader.onloadend = async function() {
-            const base64Image = reader.result; // البيانات الثنائية المباشرة للصورة
-            const token = localStorage.getItem('token');
+        try {
+            const res = await fetch(`${API_URL}/api/login`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    email: emailInput.value.trim(),
+                    password: passwordInput.value
+                })
+            });
 
-            try {
-                // إرسال طلب التحديث إلى السيرفر المستقر
-                const res = await fetch(`${API_URL}/api/profile/update`, {
-                    method: 'PUT',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${token}`
-                    },
-                    body: JSON.stringify({ avatarUrl: base64Image })
-                });
-                
-                const data = await res.json();
-                if (data.success) {
-                    alert('تم تحديث صورتك الشخصية مباشرة من المعرض بنجاح! 🎉');
-                    loadProfile(); // إعادة تحميل الواجهة لعرض الصورة الجديدة فوراً
-                } else {
-                    alert('فشل حفظ الصورة في السيرفر: ' + data.error);
-                }
-            } catch (err) {
-                console.error(err);
-                alert('حدث خطأ أثناء رفع الصورة، تأكد من اتصالك بالإنترنت');
+            const data = await res.json();
+
+            if (res.ok && data.success) {
+                localStorage.setItem('token', data.token);
+                window.location.href = 'profile.html';
+            } else {
+                alert(data.error || 'البريد الإلكتروني أو كلمة المرور غير صحيحة');
             }
-        };
-        reader.readAsDataURL(file);
-    }
-});
+        } catch (err) {
+            console.error(err);
+            alert('حدث خطأ أثناء الاتصال بالسيرفر لتسجيل الدخول');
+        }
+    });
+}
