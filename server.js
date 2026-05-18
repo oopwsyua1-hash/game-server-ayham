@@ -15,9 +15,14 @@ const io = new Server(server, { cors: { origin: "*" } });
 const PORT = process.env.PORT || 3000;
 const JWT_SECRET = process.env.JWT_SECRET || 'ayham-secret-key-2024';
 
-// تفعيل الميدل وير بالترتيب الصحيح
-app.use(cors());
+// تفعيل الميدل وير بالترتيب الصحيح وحماية السيرفر
+app.use(cors({ origin: '*' }));
 app.use(express.json());
+
+// دالة أمان ملوكية لمنع السيرفر من التوقف المفاجئ (الكراش) عند حدوث أي خطأ غير متوقع
+process.on('uncaughtException', (err) => {
+    console.error('⚠️ حدث خطأ غير متوقع في السيرفر ولكن تم احتواؤه بنجاح:', err);
+});
 
 // تشغيل وتمرير مجلد public تلقائياً لتفادي خطأ الكاش داخل التطبيق
 app.use(express.static(path.join(__dirname, 'public')));
@@ -25,11 +30,11 @@ app.use(express.static(path.join(__dirname, 'public')));
 // MongoDB Connection
 const mongoURI = process.env.MONGODB_URI;
 if (!mongoURI) {
-  console.log('❌ MONGODB_URI مو موجود');
+  console.log('❌ MONGODB_URI مو موجود في متغيرات البيئة!');
   process.exit(1);
 }
 mongoose.connect(mongoURI)
-.then(() => console.log('✅ MongoDB Connected - GameBadge Exchange شغال'))
+.then(() => console.log('✅ MongoDB Connected - إمبراطورية السبع V3 شغال بكفاءة'))
 .catch(err => { console.log('❌ MongoDB Error:', err.message); process.exit(1); });
 
 const generateUniqueId = () => Math.floor(100000 + Math.random() * 900000);
@@ -48,19 +53,20 @@ const calculateVipLevel = (points) => {
   return 0;
 };
 
+// ميدل وير التحقق من التوكن (معدل ليتوافق مع الـ Schema)
 const authMiddleware = async (req, res, next) => {
   try {
     const token = req.headers.authorization?.split(' ')[1];
-    if (!token) return res.status(401).json({ error: 'مافي توكن' });
+    if (!token) return res.status(401).json({ error: 'مافي توكن، الرجاء تسجيل الدخول' });
     const decoded = jwt.verify(token, JWT_SECRET);
     req.userId = decoded.user_id;
     next();
   } catch (error) {
-    res.status(401).json({ error: 'توكن غلط' });
+    res.status(401).json({ error: 'توكن منتهي أو خاطئ' });
   }
 };
 
-// --- User Schema الكامل ---
+// --- User Schema المطور الشامل (تمت إضافة روابط الصور افتراضياً هنا لضمان عمل الواجهة) ---
 const userSchema = new mongoose.Schema({
   user_id: { type: Number, unique: true, required: true },
   username: { type: String, required: true },
@@ -71,14 +77,16 @@ const userSchema = new mongoose.Schema({
   birthDate: { type: String, required: true },
   age: { type: Number, required: true },
   gender: { type: String, required: true },
-  coins: { type: Number, default: 0 },
+  coins: { type: Number, default: 1000 }, // يبدأ بـ 1000 ذهبة ملوكية كترحيب
   diamonds: { type: Number, default: 0 },
   vip_level: { type: Number, default: 0 },
   vipType: { type: String, default: 'none' },
   isVIP: { type: Boolean, default: false },
   supportPoints: { type: Number, default: 0 },
-  agencyId: { type: String, default: null },
+  agencyId: { type: String, default: "إمبراطورية السبع العامة" },
   role: { type: String, default: 'USER' },
+  avatarUrl: { type: String, default: "" }, // رابط الصورة الشخصية بقاعدة البيانات
+  coverUrl: { type: String, default: "" },  // رابط صورة الغلاف بقاعدة البيانات
   createdAt: { type: Date, default: Date.now }
 });
 const User = mongoose.model('User', userSchema);
@@ -159,7 +167,7 @@ const GIFTS_LIST = [
 
 // --- Socket.io Logic ---
 io.on('connection', (socket) => {
-  console.log('مستخدم جديد اتصل:', socket.id);
+  console.log('مستخدم جديد اتصل بغرف الصوت:', socket.id);
   let currentUserId = null;
   let currentRoomId = null;
 
@@ -175,7 +183,7 @@ io.on('connection', (socket) => {
         room.users.push(currentUserId);
         await room.save();
       }
-      const usersData = await User.find({ user_id: { $in: room.users } }).select('user_id username vip_level');
+      const usersData = await User.find({ user_id: { $in: room.users } }).select('user_id username vip_level avatarUrl');
       io.to(room_id.toString()).emit('roomUpdate', {...room.toObject(), usersData });
     } catch (e) { console.log('Join Room Error:', e.message); }
   });
@@ -184,7 +192,7 @@ io.on('connection', (socket) => {
     const user = await User.findOne({ user_id: currentUserId });
     if (!user) return;
     io.to(room_id.toString()).emit('newMessage', {
-      user_id: user.user_id, username: user.username, text, vip_level: user.vip_level, level: `Lv.${user.vip_level}`
+      user_id: user.user_id, username: user.username, text, vip_level: user.vip_level, level: `Lv.${user.vip_level}`, avatarUrl: user.avatarUrl
     });
   });
 
@@ -214,7 +222,7 @@ io.on('connection', (socket) => {
         io.to(currentRoomId.toString()).emit('roomUpdate', room);
       }
     }
-    console.log('مستخدم غادر:', socket.id);
+    console.log('مستخدم غادر الغرفة الصوتية:', socket.id);
   });
 });
 
@@ -230,47 +238,96 @@ app.get('/agents', async (req, res) => {
   }
 });
 
+// --- 1. نقطة إنشاء الحساب (معدلة ومربوطة لحل خطأ السيرفر السابق) ---
 app.post('/api/register', async (req, res) => {
   try {
     const { username, lastName, email, password, country, birthDate, age, gender } = req.body;
-    const existingUser = await User.findOne({ email });
-    if (existingUser) return res.status(400).json({ error: 'الايميل مستخدم من قبل' });
+    
+    if (!username || !lastName || !email || !password || !country || !birthDate || !gender) {
+        return res.status(400).json({ error: 'الرجاء تعبئة كل الحقول المطلوبة للتسجيل' });
+    }
+
+    const existingUser = await User.findOne({ email: email.toLowerCase() });
+    if (existingUser) return res.status(400).json({ error: 'الايميل مستخدم من قبل، جرب بريد آخر' });
+    
     let user_id;
     do { user_id = generateUniqueId(); } while (await User.findOne({ user_id }));
+    
     const hashedPassword = await bcrypt.hash(password, 10);
-    const newUser = new User({ user_id, username, lastName, email, password: hashedPassword, country, birthDate, age, gender });
+    
+    const newUser = new User({ 
+        user_id, 
+        username, 
+        lastName, 
+        email: email.toLowerCase(), 
+        password: hashedPassword, 
+        country, 
+        birthDate, 
+        age: parseInt(age) || 20, 
+        gender 
+    });
+    
     await newUser.save();
-    const token = jwt.sign({ user_id: newUser.user_id }, JWT_SECRET);
-    res.json({ token, user: { user_id, username, lastName, email, country, age, gender, coins: 0, diamonds: 0, vip_level: 0, vipType: 'none', supportPoints: 0 } });
+    
+    const token = jwt.sign({ user_id: newUser.user_id }, JWT_SECRET, { expiresIn: '30d' });
+    res.json({ token, user: newUser });
   } catch (error) {
-    res.status(500).json({ error: 'خطأ بالسيرفر' });
+    console.error('Register Error Log:', error);
+    res.status(500).json({ error: 'خطأ بالسيرفر أثناء حفظ الحساب الجديد' });
   }
 });
 
+// --- 2. نقطة تسجيل الدخول الملوكي ---
 app.post('/api/login', async (req, res) => {
   try {
     const { email, password } = req.body;
-    const user = await User.findOne({ email });
-    if (!user ||!(await bcrypt.compare(password, user.password))) {
+    if (!email || !password) return res.status(400).json({ error: 'الرجاء كتابة البريد وكلمة المرور' });
+
+    const user = await User.findOne({ email: email.toLowerCase() });
+    if (!user || !(await bcrypt.compare(password, user.password))) {
       return res.status(400).json({ error: 'الايميل او كلمة السر غلط' });
     }
-    const token = jwt.sign({ user_id: user.user_id }, JWT_SECRET);
-    res.json({ token, user: { user_id: user.user_id, username: user.username, lastName: user.lastName, email: user.email, country: user.country, age: user.age, gender: user.gender, coins: user.coins, diamonds: user.diamonds, vip_level: user.vip_level, vipType: user.vipType, supportPoints: user.supportPoints } });
+    const token = jwt.sign({ user_id: user.user_id }, JWT_SECRET, { expiresIn: '30d' });
+    res.json({ token, user });
   } catch (error) {
-    res.status(500).json({ error: 'خطأ بالسيرفر' });
+    res.status(500).json({ error: 'خطأ بالسيرفر عند محاولة الدخول' });
   }
 });
 
+// --- 3. نقطة جلب البروفايل عبر التوكن (معدلة لترسل الحساب بالكامل مع روابط الصور) ---
 app.get('/api/profile', authMiddleware, async (req, res) => {
   try {
-    const user = await User.findOne({ user_id: req.userId });
-    if (!user) return res.status(404).json({ error: 'اليوزر غير موجود' });
-    res.json({ user_id: user.user_id, username: user.username, lastName: user.lastName, email: user.email, country: user.country, age: user.age, gender: user.gender, coins: user.coins, diamonds: user.diamonds, vip_level: user.vip_level, vipType: user.vipType, supportPoints: user.supportPoints });
+    const user = await User.findOne({ user_id: req.userId }).select('-password');
+    if (!user) return res.status(404).json({ error: 'اليوزر غير موجود بقاعدة البيانات' });
+    res.json(user);
   } catch (error) {
-    res.status(500).json({ error: 'خطأ بالسيرفر' });
+    res.status(500).json({ error: 'خطأ بالسيرفر أثناء جلب بيانات البروفايل' });
   }
 });
 
+// --- 4. ميزة جديدة ملوكية: نقطة تحديث الصور وحفظها في قاعدة البيانات (PUT) ---
+app.put('/api/profile/update', authMiddleware, async (req, res) => {
+    try {
+        const { avatarUrl, coverUrl } = req.body;
+        const updateFields = {};
+        
+        if (avatarUrl !== undefined) updateFields.avatarUrl = avatarUrl;
+        if (coverUrl !== undefined) updateFields.coverUrl = coverUrl;
+        
+        const updatedUser = await User.findOneAndUpdate(
+            { user_id: req.userId },
+            { $set: updateFields },
+            { new: true }
+        ).select('-password');
+        
+        if (!updatedUser) return res.status(404).json({ error: 'المستخدم غير موجود' });
+        res.json({ success: true, user: updatedUser });
+    } catch (error) {
+        res.status(500).json({ error: 'فشل حفظ الصور في السيرفر' });
+    }
+});
+
+// --- بقية الـ APIs الأساسية للغرف والهديا والشحن ---
 app.post('/api/send-gift', authMiddleware, async (req, res) => {
   try {
     const { receiver_id, giftId, room_id } = req.body;
@@ -282,6 +339,7 @@ app.post('/api/send-gift', authMiddleware, async (req, res) => {
     if (sender.user_id === receiver_id) return res.status(400).json({ error: 'ما فيك تهدي حالك' });
     if (sender.coins < gift.price) return res.status(400).json({ error: 'الرصيد لا يكفي' });
     if (gift.vipOnly && sender.vip_level === 0) return res.status(400).json({ error: 'هدية VIP فقط' });
+    
     sender.coins -= gift.price;
     let pointsToAdd = gift.price >= 1000? Math.floor(gift.price * 1.2) : gift.price;
     receiver.supportPoints += pointsToAdd;
@@ -369,15 +427,16 @@ app.get('/api/room-support/:room_id', async (req, res) => {
   try {
     const room = await Room.findOne({ room_id: req.params.room_id });
     if (!room) return res.status(404).json({ error: 'الغرفة غير موجودة' });
-    const topUsers = await User.find({ user_id: { $in: room.users } }).sort({ supportPoints: -1 }).limit(3).select('user_id username supportPoints vip_level');
+    const topUsers = await User.find({ user_id: { $in: room.users } }).sort({ supportPoints: -1 }).limit(3).select('user_id username supportPoints vip_level avatarUrl');
     res.json({ top_gifts_today: room.top_gifts_today, top_supporters: topUsers });
   } catch (error) {
     res.status(500).json({ error: 'خطأ بجلب الدعم' });
   }
 });
 
-// توجيه روابط الصفحات وعرض الـ index.html بشكل افتراضي وتلقائي عند فتح الرابط الرئيسي
+// توجيه روابط الصفحات وعرض الـ index.html بشكل افتراضي وتلقائي
 app.get('/', (req, res) => res.sendFile(path.join(__dirname, 'public', 'index.html')));
 app.get('/room', (req, res) => res.sendFile(path.join(__dirname, 'public', 'room.html')));
 
-server.listen(PORT, () => console.log(`🚀 GameBadge Exchange شغال على بورت ${PORT}`));
+// تشغيل السيرفر المدمج عبر HTTP لتفعيل الـ WebSockets (Socket.io)
+server.listen(PORT, () => console.log(`🚀 السيرفر الملوكي المدمج شغال على بورت ${PORT}`));
