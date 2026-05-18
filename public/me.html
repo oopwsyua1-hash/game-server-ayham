@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>السبع الحلبي - بروفايلي</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 <style>
 * { margin: 0; padding: 0; box-sizing: border-box; }
 body { font-family: 'Segoe UI', sans-serif; background: linear-gradient(135deg, #0a0a14 0%, #1a1a2e 100%); color: #fff; min-height: 100vh; padding: 20px; }
@@ -11,9 +12,15 @@ body { font-family: 'Segoe UI', sans-serif; background: linear-gradient(135deg, 
 .header { background: #141428; border-radius: 20px; padding: 20px; margin-bottom: 20px; border: 2px solid #ff00ff; box-shadow: 0 0 20px rgba(255,0,255,0.3); text-align: center; position: relative; }
 .owner-glow { animation: ownerPulse 2s ease infinite; }
 @keyframes ownerPulse { 0%, 100% { box-shadow: 0 0 20px #FFD700, 0 0 40px #ff00ff; } 50% { box-shadow: 0 0 40px #FFD700, 0 0 60px #ff00ff; } }
-.avatar { width: 100px; height: 100px; border-radius: 50%; background: linear-gradient(45deg, #ff00ff, #00ffff); margin: 0 auto 15px; display: flex; align-items: center; justify-content: center; font-size: 40px; border: 4px solid #FFD700; }
-.owner-avatar { background: linear-gradient(45deg, #FFD700, #ff00ff); animation: rotate 3s linear infinite; }
-@keyframes rotate { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+/* تعديل الحاوية لدعم الصورة الشخصية الحقيقية وزر القلم */
+.avatar-container { position: relative; width: 100px; height: 100px; margin: 0 auto 15px; }
+.avatar { width: 100%; height: 100%; border-radius: 50%; background: linear-gradient(45deg, #ff00ff, #00ffff); display: flex; align-items: center; justify-content: center; font-size: 40px; border: 4px solid #FFD700; object-fit: cover; }
+.owner-avatar { background: linear-gradient(45deg, #FFD700, #ff00ff); }
+
+/* زر القلم لفتح الاستوديو */
+.edit-badge { position: absolute; bottom: 0; left: 0; background: #00ffff; color: #000; width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; border: 2px solid #141428; cursor: pointer; z-index: 10; }
+
 .username { font-size: 24px; font-weight: bold; margin-bottom: 10px; color: #ff00ff; }
 .level { display: inline-block; background: linear-gradient(45deg, #FFD700, #ff00ff); color: #000; padding: 5px 15px; border-radius: 20px; font-size: 14px; font-weight: bold; margin: 5px; }
 .stats { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin: 20px 0; }
@@ -26,10 +33,16 @@ body { font-family: 'Segoe UI', sans-serif; background: linear-gradient(135deg, 
 </style>
 </head>
 <body>
+
+<input type="file" id="avatarFileInput" accept="image/*" style="display: none;">
+
 <div class="container">
   <div class="header" id="header">
-    <div class="avatar" id="avatar">👤</div>
-    <div class="username" id="username">...</div>
+    <div class="avatar-container">
+      <img class="avatar" id="avatar" src="https://via.placeholder.com/150" alt="👤">
+      <div class="edit-badge" id="editAvatarBtn"><i class="fas fa-pen"></i></div>
+    </div>
+    <div class="username" id="username">جاري التحميل...</div>
     <div class="level" id="level">...</div>
     <div class="level" id="vip">VIP 0</div>
   </div>
@@ -53,21 +66,74 @@ body { font-family: 'Segoe UI', sans-serif; background: linear-gradient(135deg, 
 const token = localStorage.getItem('token');
 if (!token) location.href = '/';
 
-fetch('/api/me', { headers: { 'Authorization': 'Bearer ' + token } })
-.then(r => r.json())
-.then(user => {
-    if (user.error) return location.href = '/';
-    document.getElementById('username').textContent = user.username;
-    document.getElementById('level').textContent = user.level;
-    document.getElementById('vip').textContent = 'VIP ' + user.vip;
-    document.getElementById('coins').textContent = user.coins;
-    if (user.level === '10000 TOP') {
-      document.getElementById('header').classList.add('owner-glow');
-      document.getElementById('avatar').classList.add('owner-avatar');
-      document.getElementById('avatar').textContent = '👑';
+// دالة جلب بيانات الحساب المحدثة
+function fetchUserData() {
+    fetch('/api/me', { headers: { 'Authorization': 'Bearer ' + token } })
+    .then(r => r.json())
+    .then(user => {
+        if (user.error) return location.href = '/';
+        document.getElementById('username').textContent = user.username;
+        document.getElementById('level').textContent = user.level;
+        document.getElementById('vip').textContent = 'VIP ' + user.vip;
+        document.getElementById('coins').textContent = user.coins;
+        
+        // عرض الصورة المباشرة المرفوعة من المعرض إذا وُجدت بسيرفرك
+        if (user.avatarUrl) {
+            document.getElementById('avatar').src = user.avatarUrl;
+        }
+
+        if (user.level === '10000 TOP') {
+            document.getElementById('header').classList.add('owner-glow');
+            document.getElementById('avatar').classList.add('owner-avatar');
+        }
+    })
+    .catch(() => location.href = '/');
+}
+
+// استدعاء جلب البيانات عند فتح الصفحة
+fetchUserData();
+
+// تفعيل الضغط على زر القلم لفتح الاستوديو مباشرة
+document.getElementById('editAvatarBtn').addEventListener('click', function() {
+    document.getElementById('avatarFileInput').click();
+});
+
+// معالجة اختيار الصورة وتحويلها ورفعها فوراً بشكل صامت
+document.getElementById('avatarFileInput').addEventListener('change', function(e) {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    if (file.size > 5 * 1024 * 1024) {
+        alert('حجم الصورة كبير، يرجى اختيار صورة أصغر من 5 ميجا');
+        return;
     }
-  })
-.catch(() => location.href = '/');
+
+    const reader = new FileReader();
+    reader.onloadend = function() {
+        const base64Image = reader.result; // كود الصورة الثنائي المباشر
+
+        // إرسال الصورة مباشرة ومباشرة إلى السيرفر لحفظها
+        fetch('/api/profile/update', {
+            method: 'PUT',
+            headers: { 
+                'Content-Type': 'application/json',
+                'Authorization': 'Bearer ' + token 
+            },
+            body: JSON.stringify({ avatarUrl: base64Image })
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.success) {
+                alert('تم تحديث صورتك الشخصية مباشرة بنجاح! 🎉');
+                fetchUserData(); // تحديث الصورة في الواجهة فوراً
+            } else {
+                alert('فشل حفظ الصورة: ' + data.error);
+            }
+        })
+        .catch(() => alert('حدث خطأ في الاتصال بالسيرفر أثناء الرفع'));
+    };
+    reader.readAsDataURL(file);
+});
 
 function createRoom() {
   const roomId = Math.floor(Math.random() * 90000) + 10000;
