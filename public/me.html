@@ -13,7 +13,6 @@ body { font-family: 'Segoe UI', sans-serif; background: linear-gradient(135deg, 
 .owner-glow { animation: ownerPulse 2s ease infinite; }
 @keyframes ownerPulse { 0%, 100% { box-shadow: 0 0 20px #FFD700, 0 0 40px #ff00ff; } 50% { box-shadow: 0 0 40px #FFD700, 0 0 60px #ff00ff; } }
 
-/* تعديل الحاوية لدعم الصورة الشخصية الحقيقية وزر القلم */
 .avatar-container { position: relative; width: 100px; height: 100px; margin: 0 auto 15px; }
 .avatar { width: 100%; height: 100%; border-radius: 50%; background: linear-gradient(45deg, #ff00ff, #00ffff); display: flex; align-items: center; justify-content: center; font-size: 40px; border: 4px solid #FFD700; object-fit: cover; }
 .owner-avatar { background: linear-gradient(45deg, #FFD700, #ff00ff); }
@@ -66,7 +65,12 @@ body { font-family: 'Segoe UI', sans-serif; background: linear-gradient(135deg, 
 const token = localStorage.getItem('token');
 if (!token) location.href = '/';
 
-// دالة جلب بيانات الحساب المحدثة
+// كسر كاش المتصفح أو التطبيق لضمان قراءة الأكواد الجديدة فوراً
+if (!sessionStorage.getItem('refreshed')) {
+    sessionStorage.setItem('refreshed', 'true');
+    window.location.reload(true);
+}
+
 function fetchUserData() {
     fetch('/api/me', { headers: { 'Authorization': 'Bearer ' + token } })
     .then(r => r.json())
@@ -77,7 +81,6 @@ function fetchUserData() {
         document.getElementById('vip').textContent = 'VIP ' + user.vip;
         document.getElementById('coins').textContent = user.coins;
         
-        // عرض الصورة المباشرة المرفوعة من المعرض إذا وُجدت بسيرفرك
         if (user.avatarUrl) {
             document.getElementById('avatar').src = user.avatarUrl;
         }
@@ -90,29 +93,36 @@ function fetchUserData() {
     .catch(() => location.href = '/');
 }
 
-// استدعاء جلب البيانات عند فتح الصفحة
 fetchUserData();
 
-// تفعيل الضغط على زر القلم لفتح الاستوديو مباشرة
-document.getElementById('editAvatarBtn').addEventListener('click', function() {
+// كود قتل النوافذ المنبثقة القديمة المبرمجة بالتطبيق وإجبار فتح المعرض
+function triggerFileSelect(e) {
+    if (e) { e.preventDefault(); e.stopPropagation(); }
+    
+    // إخفاء أي نافذة تحديث صورة مصممة قديماً تظهر بالتطبيق تلقائياً
+    const oldModals = document.querySelectorAll('[class*="modal"], [class*="popup"], [id*="modal"]');
+    oldModals.forEach(modal => modal.style.display = 'none');
+    
     document.getElementById('avatarFileInput').click();
-});
+}
 
-// معالجة اختيار الصورة وتحويلها ورفعها فوراً بشكل صامت
+document.getElementById('editAvatarBtn').addEventListener('click', triggerFileSelect);
+document.getElementById('avatar').addEventListener('click', triggerFileSelect);
+
+// معالجة اختيار الصورة ورفعها المشفرة للسيرفر مباشرة
 document.getElementById('avatarFileInput').addEventListener('change', function(e) {
     const file = e.target.files[0];
     if (!file) return;
 
-    if (file.size > 5 * 1024 * 1024) {
-        alert('حجم الصورة كبير، يرجى اختيار صورة أصغر من 5 ميجا');
+    if (file.size > 6 * 1024 * 1024) {
+        alert('حجم الصورة كبير، يرجى اختيار صورة أصغر');
         return;
     }
 
     const reader = new FileReader();
     reader.onloadend = function() {
-        const base64Image = reader.result; // كود الصورة الثنائي المباشر
+        const base64Image = reader.result;
 
-        // إرسال الصورة مباشرة ومباشرة إلى السيرفر لحفظها
         fetch('/api/profile/update', {
             method: 'PUT',
             headers: { 
@@ -124,13 +134,13 @@ document.getElementById('avatarFileInput').addEventListener('change', function(e
         .then(res => res.json())
         .then(data => {
             if (data.success) {
-                alert('تم تحديث صورتك الشخصية مباشرة بنجاح! 🎉');
-                fetchUserData(); // تحديث الصورة في الواجهة فوراً
+                alert('تم تحديث صورتك الشخصية مباشرة من المعرض بنجاح! 🎉');
+                fetchUserData();
             } else {
                 alert('فشل حفظ الصورة: ' + data.error);
             }
         })
-        .catch(() => alert('حدث خطأ في الاتصال بالسيرفر أثناء الرفع'));
+        .catch(() => alert('حدث خطأ أثناء الرفع'));
     };
     reader.readAsDataURL(file);
 });
