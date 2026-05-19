@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Hani Jar Clone</string>
+    
+    <!-- Auth -->
+    <string name="login_title">تسجيل الدخول</string>
+    <string name="register_title">إنشاء حساب</string>
+    <string name="email">البريد الإلكتروني</string>
+    <string name="password">كلمة المرور</string>
+    <string name="confirm_password">تأكيد كلمة المرور</string>
+    <string name="username">اسم المستخدم</string>
+    <string name="login_button">دخول</string>
+    <string name="register_button">إنشاء حساب</string>
+    <string name="dont_have_account">ليس لديك حساب؟</string>
+    <string name="already_have_account">لديك حساب بالفعل؟</string>
+    
+    <!-- Main -->
+    <string name="rooms">الغرف</string>
+    <string name="profile">الملف الشخصي</string>
+    <string name="create_room">إنشاء غرفة</string>
+    <string name="room_name">اسم الغرفة</string>
+    <string name="users">المستخدمون</string>
+    
+    <!-- Gifts -->
+    <string name="send_gift">إرسال هدية</string>
+    <string name="gift_sent">تم إرسال الهدية</string>
+    <string name="insufficient_coins">رصيد غير كافي</string>
+    
+    <!-- Errors -->
+    <string name="error_empty_field">جميع الحقول مطلوبة</string>
+    <string name="error_invalid_email">البريد الإلكتروني غير صحيح</string>
+    <string name="error_password_mismatch">كلمات المرور غير متطابقة</string>
+    <string name="error_connection">خطأ في الاتصال</string>
+    <string name="error_server">خطأ في السيرفر</string>
+</resources>
