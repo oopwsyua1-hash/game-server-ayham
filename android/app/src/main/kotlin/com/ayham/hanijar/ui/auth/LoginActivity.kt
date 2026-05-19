@@ -24,6 +24,8 @@ class LoginActivity : AppCompatActivity() {
         prefsManager = SharedPreferencesManager(this)
 
         setupUI()
+        // جرب بيانات الاختبار تلقائياً
+        setupTestData()
     }
 
     private fun setupUI() {
@@ -31,6 +33,13 @@ class LoginActivity : AppCompatActivity() {
         binding.registerLink.setOnClickListener {
             startActivity(Intent(this, RegisterActivity::class.java))
         }
+    }
+
+    private fun setupTestData() {
+        // ملء البيانات بشكل تلقائي للاختبار
+        binding.emailInput.setText("test@example.com")
+        binding.passwordInput.setText("test123")
+        // حذف هذا إذا تريد واجهة نظيفة
     }
 
     private fun login() {
@@ -43,6 +52,7 @@ class LoginActivity : AppCompatActivity() {
         }
 
         binding.progressBar.visibility = View.VISIBLE
+        binding.loginButton.isEnabled = false
 
         lifecycleScope.launch {
             try {
@@ -53,17 +63,19 @@ class LoginActivity : AppCompatActivity() {
                 prefsManager.saveUser(response.user)
                 prefsManager.setLoggedIn(true)
 
-                Toast.makeText(this@LoginActivity, "مرحباً بك", Toast.LENGTH_SHORT).show()
+                Toast.makeText(this@LoginActivity, "مرحباً بك ${response.user.username}", Toast.LENGTH_SHORT).show()
                 startActivity(Intent(this@LoginActivity, MainActivity::class.java))
                 finish()
             } catch (e: Exception) {
                 Toast.makeText(
                     this@LoginActivity,
                     "خطأ: ${e.message}",
-                    Toast.LENGTH_SHORT
+                    Toast.LENGTH_LONG
                 ).show()
+                e.printStackTrace()
             } finally {
                 binding.progressBar.visibility = View.GONE
+                binding.loginButton.isEnabled = true
             }
         }
     }

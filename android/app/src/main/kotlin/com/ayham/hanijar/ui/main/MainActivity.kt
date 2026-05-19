@@ -11,6 +11,7 @@ import com.ayham.hanijar.databinding.ActivityMainBinding
 import com.ayham.hanijar.data.api.RetrofitClient
 import com.ayham.hanijar.data.local.SharedPreferencesManager
 import com.ayham.hanijar.data.models.CreateRoomRequest
+import com.ayham.hanijar.ui.auth.LoginActivity
 import com.ayham.hanijar.ui.profile.ProfileActivity
 import com.ayham.hanijar.ui.room.RoomActivity
 import kotlinx.coroutines.launch
@@ -26,6 +27,13 @@ class MainActivity : AppCompatActivity() {
         setContentView(binding.root)
         prefsManager = SharedPreferencesManager(this)
 
+        // تحقق من تسجيل الدخول
+        if (!prefsManager.isLoggedIn()) {
+            startActivity(Intent(this, LoginActivity::class.java))
+            finish()
+            return
+        }
+
         setupUI()
         loadRooms()
     }
@@ -34,8 +42,11 @@ class MainActivity : AppCompatActivity() {
         roomAdapter = RoomAdapter { room ->
             val intent = Intent(this, RoomActivity::class.java)
             intent.putExtra("room_id", room.roomId)
+            intent.putExtra("owner_id", room.ownerId)
+            intent.putExtra("room_name", room.name)
             startActivity(intent)
         }
+        
         binding.roomsRecyclerView.layoutManager = LinearLayoutManager(this)
         binding.roomsRecyclerView.adapter = roomAdapter
 
@@ -50,9 +61,16 @@ class MainActivity : AppCompatActivity() {
         lifecycleScope.launch {
             try {
                 val rooms = RetrofitClient.apiService.getRooms()
+                if (rooms.isEmpty()) {
+                    Toast.makeText(this@MainActivity, "لا توجد غرف حالياً", Toast.LENGTH_SHORT).show()
+                }
                 roomAdapter.submitList(rooms)
             } catch (e: Exception) {
-                Toast.makeText(this@MainActivity, "خطأ: ${e.message}", Toast.LENGTH_SHORT).show()
+                Toast.makeText(
+                    this@MainActivity,
+                    "خطأ تحميل الغرف: ${e.message}",
+                    Toast.LENGTH_LONG
+                ).show()
             } finally {
                 binding.progressBar.visibility = View.GONE
             }
@@ -74,14 +92,23 @@ class MainActivity : AppCompatActivity() {
                     token,
                     CreateRoomRequest(roomName)
                 )
-                Toast.makeText(this@MainActivity, "تم إنشاء الغرفة", Toast.LENGTH_SHORT).show()
+                Toast.makeText(this@MainActivity, "✓ تم إنشاء الغرفة بنجاح!", Toast.LENGTH_SHORT).show()
                 binding.roomNameInput.text?.clear()
-                loadRooms()
+                loadRooms() // أعد تحميل قائمة الغرف
             } catch (e: Exception) {
-                Toast.makeText(this@MainActivity, "خطأ: ${e.message}", Toast.LENGTH_SHORT).show()
+                Toast.makeText(
+                    this@MainActivity,
+                    "خطأ: ${e.message}",
+                    Toast.LENGTH_LONG
+                ).show()
             } finally {
                 binding.progressBar.visibility = View.GONE
             }
         }
+    }
+
+    override fun onResume() {
+        super.onResume()
+        loadRooms() // أعد تحميل الغرف عند العودة
     }
 }
