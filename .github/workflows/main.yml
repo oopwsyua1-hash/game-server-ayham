@@ -20,23 +20,23 @@ jobs:
         distribution: 'temurin'
         cache: gradle
 
-    - name: Grant execute permission for gradlew
-      run: chmod +x android/gradlew
-      continue-on-error: true
-
-    - name: Build APK
+    - name: Find and Build Android Project
       run: |
-        if [ -d "android" ]; then
-          cd android
-          ./gradlew assembleDebug
-        else
-          ./gradlew assembleDebug
+        # البحث عن المجلد الذي يحتوي على ملفات بناء الأندرويد
+        GRADLE_DIR=$(find . -name "gradlew" -exec dirname {} \;)
+        
+        if [ -z "$GRADLE_DIR" ]; then
+          echo "❌ لم يتم العثور على مشروع أندرويد أو ملف gradlew في المستودع!"
+          exit 1
         fi
+        
+        echo "✅ تم العثور على مشروع الأندرويد في المسار: $GRADLE_DIR"
+        cd "$GRADLE_DIR"
+        chmod +x gradlew
+        ./gradlew assembleDebug
 
     - name: Upload APK Artifact
       uses: actions/upload-artifact@v4
       with:
         name: empire-sab3-app
-        path: |
-          android/app/build/outputs/apk/debug/app-debug.apk
-          app/build/outputs/apk/debug/app-debug.apk
+        path: "**/build/outputs/apk/debug/*.apk"
