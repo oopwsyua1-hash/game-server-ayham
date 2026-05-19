@@ -173,7 +173,7 @@
         .btn-main { width: 100%; padding: 12px; background: linear-gradient(135deg, #3498db, #2980b9); color: #fff; border: none; border-radius: 14px; font-size: 14px; font-weight: bold; cursor: pointer; }
         .btn-danger-logout { padding: 12px; background: rgba(231, 76, 60, 0.15); color: #e74c3c; border: 1px solid rgba(231, 76, 60, 0.3); border-radius: 14px; font-size: 14px; font-weight: bold; cursor: pointer; width: 40%; }
 
-        /* --- نافذة التنبيه الملوكية المخصصة (البديلة لـ Alert) --- */
+        /* --- نافذة التنبيه الملوكية المخصصة --- */
         .custom-alert-bg {
             display: none;
             position: fixed;
@@ -185,27 +185,19 @@
         }
         .custom-alert-box {
             background: #121b26;
-            border: 2px solid #e74c3c;
+            border: 2px solid #3498db;
             border-radius: 20px;
             padding: 25px;
             width: 85%;
             max-width: 340px;
             text-align: center;
-            box-shadow: 0 10px 30px rgba(231, 76, 60, 0.2);
+            box-shadow: 0 10px 30px rgba(52, 152, 219, 0.2);
             animation: fadeIn 0.3s ease;
         }
-        .custom-alert-box h3 { color: #e74c3c; margin: 0 0 10px 0; font-size: 18px; }
+        .custom-alert-box h3 { color: #3498db; margin: 0 0 10px 0; font-size: 18px; }
         .custom-alert-box p { color: #fff; margin: 0 0 20px 0; font-size: 14px; line-height: 1.5; }
-        .custom-alert-btn { background: #e74c3c; color: white; border: none; padding: 10px 30px; border-radius: 10px; font-weight: bold; cursor: pointer; width: 100%; }
+        .custom-alert-btn { background: #3498db; color: white; border: none; padding: 10px 30px; border-radius: 10px; font-weight: bold; cursor: pointer; width: 100%; }
         
-        /* نافذة إدخال الرابط */
-        .prompt-box { border-color: #3498db; box-shadow: 0 10px 30px rgba(52, 152, 219, 0.2); }
-        .prompt-box h3 { color: #3498db; }
-        .prompt-input { width: 100%; padding: 10px; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.2); border-radius: 10px; color: #fff; margin-bottom: 15px; box-sizing: border-box; text-align: left; }
-        .prompt-buttons { display: flex; gap: 10px; }
-        .btn-confirm { background: #3498db; color: white; border: none; padding: 10px; border-radius: 10px; flex: 1; font-weight: bold; cursor: pointer; }
-        .btn-cancel { background: #747d8c; color: white; border: none; padding: 10px; border-radius: 10px; flex: 1; font-weight: bold; cursor: pointer; }
-
         @keyframes fadeIn { from { opacity: 0; transform: scale(0.9); } to { opacity: 1; transform: scale(1); } }
     </style>
 </head>
@@ -226,7 +218,7 @@
             <div class="form-group"><label>الاسم الأول</label><input type="text" id="regUser" placeholder="الاسم الأول"></div>
             <div class="form-group"><label>الاسم الأخير (الكنية)</label><input type="text" id="regLast" placeholder="الكنية"></div>
             <div class="form-group"><label>البريد الإلكتروني</label><input type="email" id="regEmail" placeholder="example@gmail.com"></div>
-            <div class="form-group"><label>كلمة المرور</label><input type="password" id="regPassword" placeholder="••••••••"></div>
+            <div class="form-group"><label>كلمة المرور</label><input type="password" id="loginRegPassword" placeholder="••••••••"></div>
             <div class="form-group"><label>العمر</label><input type="number" id="regAge" placeholder="20"></div>
             <div class="form-group"><label>الجنس</label><select id="regGender"><option value="ذكر">ذكر</option><option value="أنثى">أنثى</option></select></div>
             <div class="form-group"><label>الدولة</label><input type="text" id="regCountry" placeholder="مثال: سوريا"></div>
@@ -238,12 +230,12 @@
     <div id="profilePage" class="premium-profile" style="display: none;">
         <div class="cover-container">
             <img id="userCover" src="https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=500" alt="Cover">
-            <button class="change-cover-btn" onclick="showPhotoPrompt('cover')"><i class="fa-solid fa-camera"></i> غلاف</button>
+            <button class="change-cover-btn" onclick="triggerFileInput('cover')"><i class="fa-solid fa-camera"></i> غلاف</button>
         </div>
         <div class="profile-header">
             <div class="avatar-container">
                 <img id="userAvatar" src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150" alt="Avatar">
-                <div class="change-avatar-btn" onclick="showPhotoPrompt('avatar')"><i class="fa-solid fa-pen"></i></div>
+                <div class="change-avatar-btn" onclick="triggerFileInput('avatar')"><i class="fa-solid fa-pen"></i></div>
             </div>
             <div class="warning-text">⚠️ يمنع وضع صور إباحية أو مخلة نهائياً</div>
             <div id="profileName" class="user-title">جاري التحميل...</div>
@@ -271,31 +263,20 @@
         </div>
     </div>
 
+    <input type="file" id="avatarFileInput" accept="image/*" style="display: none;" onchange="uploadImageDirectly('avatar')">
+    <input type="file" id="coverFileInput" accept="image/*" style="display: none;" onchange="uploadImageDirectly('cover')">
+
     <div id="customAlert" class="custom-alert-bg">
         <div class="custom-alert-box">
             <h3 id="alertTitle">تنبيه</h3>
-            <p id="alertMessage">خطأ بالسيرفر</p>
+            <p id="alertMessage">جاري المعالجة...</p>
             <button class="custom-alert-btn" onclick="hideCustomAlert()">حسناً</button>
-        </div>
-    </div>
-
-    <div id="customPrompt" class="custom-alert-bg">
-        <div class="custom-alert-box prompt-box">
-            <h3 id="promptTitle">تحديث الصورة</h3>
-            <p id="promptMessage">أدخل رابط الصورة المباشر:</p>
-            <input type="text" id="promptInput" class="prompt-input" placeholder="https://...">
-            <div class="prompt-buttons">
-                <button class="btn-confirm" id="promptConfirmBtn">حفظ</button>
-                <button class="btn-cancel" onclick="hideCustomPrompt()">إلغاء</button>
-            </div>
         </div>
     </div>
 
     <script>
         const SERVER_URL = 'https://game-server-ayham.onrender.com';
-        let currentPromptType = '';
 
-        // دوال التحكم بالتنبيهات المخصصة
         function showCustomAlert(title, message) {
             document.getElementById('alertTitle').innerText = title;
             document.getElementById('alertMessage').innerText = message;
@@ -303,18 +284,49 @@
         }
         function hideCustomAlert() { document.getElementById('customAlert').style.display = 'none'; }
 
-        function showPhotoPrompt(type) {
-            currentPromptType = type;
-            document.getElementById('promptInput').value = '';
-            document.getElementById('customPrompt').style.display = 'flex';
+        // فتح استوديو الملفات فوراً بناءً على النوع المختار
+        function triggerFileInput(type) {
+            if(type === 'avatar') document.getElementById('avatarFileInput').click();
+            else document.getElementById('coverFileInput').click();
         }
-        document.getElementById('promptConfirmBtn').onclick = function() {
-            const url = document.getElementById('promptInput').value;
-            hideCustomPrompt();
-            if(url) { processPhotoUpdate(currentPromptType, url); }
-        };
-        function hideCustomPrompt() { document.getElementById('customPrompt').style.display = 'none'; }
 
+        // تحويل الصورة المرفوعة لـ Base64 وإرسالها للسيرفر لحفظها
+        function uploadImageDirectly(type) {
+            const fileInput = type === 'avatar' ? document.getElementById('avatarFileInput') : document.getElementById('coverFileInput');
+            const file = fileInput.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.readAsDataURL(file);
+            reader.onload = async function () {
+                const base64Data = reader.result;
+                const token = localStorage.getItem('user_token');
+
+                if (type === 'avatar') document.getElementById('userAvatar').src = base64Data;
+                else document.getElementById('userCover').src = base64Data;
+
+                localStorage.setItem(`saved_${type}`, base64Data);
+
+                try {
+                    // إرسال الصورة للسيرفر لحفظها في البروفايل الشخصي
+                    const response = await fetch(`${SERVER_URL}/api/avatar`, {
+                        method: 'POST',
+                        headers: { 
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${token}`
+                        },
+                        body: JSON.stringify({ [type]: base64Data })
+                    });
+                    if(response.ok) {
+                        showCustomAlert("نجاح", "تم حفظ وتحديث الصورة الشخصية على السيرفر بنجاح! ✨");
+                    }
+                } catch(e) {
+                    console.log("خطأ في الاتصال أثناء رفع الصورة لحسابك");
+                }
+            };
+        }
+
+        // عند فتح الصفحة؛ التحقق من التوكن وجلب البروفايل فورا
         window.onload = async function() {
             const token = localStorage.getItem('user_token');
             if (token) {
@@ -324,21 +336,12 @@
                         headers: { 'Authorization': `Bearer ${token}` }
                     });
                     const data = await res.json();
-                    if(data && (data.user_id || data._id)) { displayUserProfile(data); }
+                    if(data && (data.user_id || data._id || data.username)) { 
+                        displayUserProfile(data.user || data); 
+                    }
                 } catch(e) {}
             }
         };
-
-        async function processPhotoUpdate(type, url) {
-            const blocked = ["porno", "sex", "xxx", "naked"];
-            if (blocked.some(k => url.toLowerCase().includes(k))) {
-                return showCustomAlert("محتوى محظور", "عذراً، هذا الرابط يحتوي على محتوى ممنوع في الإمبراطورية!");
-            }
-            if (type === 'cover') document.getElementById('userCover').src = url;
-            else document.getElementById('userAvatar').src = url;
-            localStorage.setItem(`saved_${type}`, url);
-            showCustomAlert("نجاح", "تم تحديث مظهر الصورة الشخصية بنجاح! ✨");
-        }
 
         function switchTab(type) {
             document.getElementById('loginForm').style.display = type === 'login' ? 'block' : 'none';
@@ -350,8 +353,8 @@
         function displayUserProfile(user) {
             document.getElementById('authSection').style.display = 'none';
             document.getElementById('profilePage').style.display = 'block';
-            document.getElementById('profileName').innerText = user.username + " " + (user.lastName || "");
-            document.getElementById('profileId').innerText = "ID: " + (user.user_id || "000000");
+            document.getElementById('profileName').innerText = (user.username || "أبو النمر") + " " + (user.lastName || "");
+            document.getElementById('profileId').innerText = "ID: " + (user.user_id || user.id || "811892");
             document.getElementById('profileCoins').innerText = user.coins || 1000;
             document.getElementById('profileDiamonds').innerText = user.diamonds || 0;
             document.getElementById('userSupportPoints').innerText = user.supportPoints || 0;
@@ -360,7 +363,10 @@
             document.getElementById('userRole').innerText = user.role === "USER" ? "عضو رسمي" : (user.role || "عضو رسمي");
 
             if (localStorage.getItem('saved_avatar')) document.getElementById('userAvatar').src = localStorage.getItem('saved_avatar');
+            else if (user.avatar) document.getElementById('userAvatar').src = user.avatar;
+
             if (localStorage.getItem('saved_cover')) document.getElementById('userCover').src = localStorage.getItem('saved_cover');
+            else if (user.cover) document.getElementById('userCover').src = user.cover;
         }
 
         async function handleLogin() {
@@ -374,23 +380,33 @@
                     body: JSON.stringify({ email, password })
                 });
                 const data = await res.json();
-                if(data.token) { localStorage.setItem('user_token', data.token); displayUserProfile(data.user); }
-                else { showCustomAlert('نظام الحماية', 'خطأ بالسيرفر: البريد أو كلمة المرور غير صحيحة'); }
-            } catch(e) { showCustomAlert('نظام الاتصال', 'خطأ بالسيرفر'); }
+                if(data.token) { 
+                    localStorage.setItem('user_token', data.token); 
+                    displayUserProfile(data.user || data); 
+                } else { 
+                    showCustomAlert('نظام الحماية', 'البريد أو كلمة المرور غير صحيحة'); 
+                }
+            } catch(e) { showCustomAlert('نظام الاتصال', 'تعذر الاتصال بالسيرفر حالياً'); }
         }
+
+        // دالة تحويل الأرقام العربية لهندية لمنع أخطاء السيرفر عند التسجيل
+        const parseDateInput = (str) => {
+            if(!str) return "2006-01-01";
+            return str.replace(/[٠-٩]/g, d => "٠١٢٣٤٥٦٧٨٩".indexOf(d)).replace(/\//g, '-');
+        };
 
         async function handleRegister() {
             const username = document.getElementById('regUser').value;
             const lastName = document.getElementById('regLast').value;
             const email = document.getElementById('regEmail').value;
-            const password = document.getElementById('regPassword').value;
+            const password = document.getElementById('loginRegPassword').value;
             const age = parseInt(document.getElementById('regAge').value) || 20;
             const gender = document.getElementById('regGender').value;
             const country = document.getElementById('regCountry').value;
-            const birthDate = document.getElementById('regBirthDate').value;
+            const birthDate = parseDateInput(document.getElementById('regBirthDate').value);
 
             if(!username || !lastName || !email || !password || !country) { 
-                return showCustomAlert('نظام التسجيل', 'الرجاء تعبئة كافة الحقول المطلوبة'); 
+                return showCustomAlert('نظام التسجيل', 'الرجاء تعبئة كافة الحقول المطلوبة بالكامل'); 
             }
             try {
                 const res = await fetch(`${SERVER_URL}/api/register`, {
@@ -399,9 +415,13 @@
                     body: JSON.stringify({ username, lastName, email, password, age, country, gender, birthDate })
                 });
                 const data = await res.json();
-                if(data.token) { localStorage.setItem('user_token', data.token); displayUserProfile(data.user); }
-                else { showCustomAlert('نظام الحماية', 'خطأ بالسيرفر'); }
-            } catch(e) { showCustomAlert('نظام الاتصال', 'خطأ بالسيرفر'); }
+                if(data.token) { 
+                    localStorage.setItem('user_token', data.token); 
+                    displayUserProfile(data.user || data); 
+                } else { 
+                    showCustomAlert('نظام الحماية', data.error || 'خطأ أثناء إنشاء الحساب بالسيرفر'); 
+                }
+            } catch(e) { showCustomAlert('نظام الاتصال', 'حدث خطأ في الشبكة، حاول مجدداً'); }
         }
 
         function logout() { localStorage.clear(); window.location.reload(); }
