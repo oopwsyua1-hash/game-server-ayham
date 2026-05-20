@@ -1,0 +1,48 @@
+# Environment variables
+.env
+.env.local
+.env.*.local
+
+# Dependencies
+node_modules/
+npm-debug.log
+yarn-debug.log
+yarn-error.log
+
+# Production build
+build/
+dist/
+.next/
+out/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# OS
+Thumbs.db
+.AppleDouble
+.LSOverride
+
+# Android
+android/.gradle
+android/local.properties
+android/**/**/build/
+android/**/*.iml
+
+# React
+admin/node_modules/
+admin/build/
+admin/.env
+admin/.env.local
+
+# Misc
+*.log
+*.swp
+.cache/
+.parcel-cache
+dist/
