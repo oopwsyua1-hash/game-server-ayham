@@ -20,38 +20,16 @@ jobs:
           distribution: 'zulu'
           java-version: '17'
 
-      - name: Find Gradle Directory Automatically
-        id: find-gradle
-        run: |
-          GRADLE_PATH=$(find . -name "build.gradle.kts" -o -name "build.gradle" | head -n 1)
-          if [ -z "$GRADLE_PATH" ]; then
-            echo "❌ Error: No Gradle project found anywhere in the repo!"
-            exit 1
-          fi
-          GRADLE_DIR=$(dirname "$GRADLE_PATH")
-          echo "PROJECT_DIR=$GRADLE_DIR" >> $GITHUB_ENV
-          echo "Found Gradle project in: $GRADLE_DIR"
-
-      - name: Grant Execute Permission for Gradle Wrapper
-        run: |
-          cd ${{ env.PROJECT_DIR }}
-          if [ -f "gradlew" ]; then
-            chmod +x gradlew
-          else
-            echo "Wrapper not found, creating one..."
-            gradle wrapper
-            chmod +x gradlew
-          fi
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v3
 
       - name: Build Android APK (Release)
         run: |
-          cd ${{ env.PROJECT_DIR }}
-          ./gradlew assembleRelease --no-daemon
+          cd android
+          gradle assembleDebug --no-daemon
 
       - name: Upload APK Artifact
         uses: actions/upload-artifact@v4
         with:
           name: empire-sab3-app
-          path: |
-            ${{ env.PROJECT_DIR }}/app/build/outputs/apk/release/*.apk
-            ${{ env.PROJECT_DIR }}/app/build/outputs/apk/debug/*.apk
+          path: android/app/build/outputs/apk/debug/*.apk
