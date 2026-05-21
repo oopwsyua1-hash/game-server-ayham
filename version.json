@@ -1,0 +1,9 @@
+{
+  "version": "1.0.0",
+  "name": "Game Server Ayham",
+  "description": "تطبيق محمول متقدم لإدارة خادم اللعبة",
+  "author": "Development Team",
+  "license": "MIT",
+  "buildNumber": 1,
+  "versionCode": 1
+}
