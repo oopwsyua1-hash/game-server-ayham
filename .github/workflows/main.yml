@@ -2,7 +2,8 @@ name: Build Android APK
 
 on:
   push:
-    branches: [ "main" ]
+    branches:
+      - main
   workflow_dispatch:
 
 jobs:
@@ -10,33 +11,47 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout Repository
-      uses: actions/checkout@v4
+      - name: Checkout Source Code
+        uses: actions/checkout@v4
 
-    - name: Set up JDK 17
-      uses: actions/setup-java@v4
-      with:
-        java-version: '17'
-        distribution: 'temurin'
-        cache: gradle
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'zulu'
+          java-version: '17'
 
-    - name: Find and Build Android Project
-      run: |
-        # البحث عن المجلد الذي يحتوي على ملفات بناء الأندرويد
-        GRADLE_DIR=$(find . -name "gradlew" -exec dirname {} \;)
-        
-        if [ -z "$GRADLE_DIR" ]; then
-          echo "❌ لم يتم العثور على مشروع أندرويد أو ملف gradlew في المستودع!"
-          exit 1
-        fi
-        
-        echo "✅ تم العثور على مشروع الأندرويد في المسار: $GRADLE_DIR"
-        cd "$GRADLE_DIR"
-        chmod +x gradlew
-        ./gradlew assembleDebug
+      - name: Find Gradle Directory Automatically
+        id: find-gradle
+        run: |
+          GRADLE_PATH=$(find . -name "build.gradle.kts" -o -name "build.gradle" | head -n 1)
+          if [ -z "$GRADLE_PATH" ]; then
+            echo "❌ Error: No Gradle project found anywhere in the repo!"
+            exit 1
+          fi
+          GRADLE_DIR=$(dirname "$GRADLE_PATH")
+          echo "PROJECT_DIR=$GRADLE_DIR" >> $GITHUB_ENV
+          echo "Found Gradle project in: $GRADLE_DIR"
 
-    - name: Upload APK Artifact
-      uses: actions/upload-artifact@v4
-      with:
-        name: empire-sab3-app
-        path: "**/build/outputs/apk/debug/*.apk"
+      - name: Grant Execute Permission for Gradle Wrapper
+        run: |
+          cd ${{ env.PROJECT_DIR }}
+          if [ -f "gradlew" ]; then
+            chmod +x gradlew
+          else
+            echo "Wrapper not found, creating one..."
+            gradle wrapper
+            chmod +x gradlew
+          fi
+
+      - name: Build Android APK (Release)
+        run: |
+          cd ${{ env.PROJECT_DIR }}
+          ./gradlew assembleRelease --no-daemon
+
+      - name: Upload APK Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: empire-sab3-app
+          path: |
+            ${{ env.PROJECT_DIR }}/app/build/outputs/apk/release/*.apk
+            ${{ env.PROJECT_DIR }}/app/build/outputs/apk/debug/*.apk
