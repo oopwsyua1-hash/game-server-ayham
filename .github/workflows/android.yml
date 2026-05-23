@@ -2,25 +2,23 @@ name: Build Android APK
 
 on:
   workflow_dispatch:
+  push:
+    branches: [ main ]
 
 jobs:
   build:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-      - name: Set up Node.js
+      - name: Set up Node 18
         uses: actions/setup-node@v4
         with:
           node-version: '18'
 
       - name: Install dependencies
         run: npm install
-
-      - name: Build web assets
-        run: npm run build || echo "No build script found"
 
       - name: Sync Capacitor
         run: npx cap sync android
@@ -31,7 +29,7 @@ jobs:
           java-version: '17'
           distribution: 'temurin'
 
-      - name: Build APK
+      - name: Build Debug APK
         run: cd android && chmod +x gradlew && ./gradlew assembleDebug
 
       - name: Upload APK
