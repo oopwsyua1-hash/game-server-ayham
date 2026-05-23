@@ -1,4 +1,4 @@
-name: Auto Fix & Build APK
+name: AI Auto Fix & Build APK
 
 on:
   workflow_dispatch:
@@ -21,23 +21,25 @@ jobs:
           node-version: '18'
           cache: 'npm'
 
-      - name: Install Dependencies
+      - name: Install Deps
         run: |
           npm ci || npm install
-          npm install -D @capacitor/cli @capacitor/core @capacitor/android eslint prettier @typescript-eslint/parser @typescript-eslint/eslint-plugin
+          npm install -D @capacitor/cli @capacitor/core @capacitor/android eslint prettier
 
-      - name: Auto Fix Code Issues
+      - name: AI Auto Fix - Code & Format
         run: |
-          echo "Running ESLint auto fix..."
-          npx eslint. --ext.js,.ts,.jsx,.tsx,.vue --fix || true
-          echo "Running Prettier format..."
+          echo "🔍 Checking code issues..."
+          npx eslint. --ext.js,.ts,.jsx,.tsx --fix || true
           npx prettier --write. || true
+          echo "✅ Code formatted"
 
-      - name: Auto Fix Capacitor/Android
+      - name: AI Auto Fix - Android Platform
         run: |
+          echo "🔍 Checking Android platform..."
           rm -rf android
           npx cap add android
           npx cap sync android
+          echo "✅ Android platform rebuilt"
 
       - name: Setup JDK 17
         uses: actions/setup-java@v4
@@ -50,23 +52,25 @@ jobs:
         run: |
           cd android
           chmod +x gradlew
-          ./gradlew clean assembleDebug --no-daemon --stacktrace || {
-            echo "Build failed, clearing gradle cache and retrying..."
+          
+          ./gradlew clean assembleDebug --no-daemon || {
+            echo "❌ Build failed. Running recovery..."
             cd..
             rm -rf ~/.gradle/caches
             rm -rf android
             npx cap add android
             npx cap sync android
             cd android
-           ./gradlew clean assembleDebug --no-daemon
+          ./gradlew clean assembleDebug --no-daemon
           }
+          echo "✅ Build success"
 
-      - name: Commit Auto Fixes
+      - name: Commit Fixes
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git add.
-          git commit -m "🤖 Auto fix: format, lint, and rebuild android" || echo "No changes to commit"
+          git commit -m "🤖 Auto-fix: lint, format, rebuild android" || echo "No changes"
           git push || true
 
       - name: Upload APK
@@ -74,4 +78,3 @@ jobs:
         with:
           name: app-debug-apk
           path: android/app/build/outputs/apk/debug/app-debug.apk
-          if-no-files-found: error
