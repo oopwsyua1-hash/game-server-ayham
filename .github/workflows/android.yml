@@ -21,11 +21,16 @@ jobs:
       - name: Install Capacitor CLI
         run: npm install -D @capacitor/cli @capacitor/core @capacitor/android
 
-      - name: Add Android Platform
-        run: npx cap add android
-
-      - name: Sync Capacitor
-        run: npx cap sync android
+      - name: Auto Fix Android Platform
+        run: |
+          echo "Checking Android platform..."
+          if [ -d "android" ]; then
+            echo "Android folder exists. Removing it to fix errors..."
+            rm -rf android
+          fi
+          echo "Adding Android platform fresh..."
+          npx cap add android
+          npx cap sync android
 
       - name: Set up JDK 17
         uses: actions/setup-java@v4
@@ -34,7 +39,10 @@ jobs:
           distribution: 'temurin'
 
       - name: Build Debug APK
-        run: cd android && chmod +x gradlew && ./gradlew assembleDebug
+        run: |
+          cd android
+          chmod +x gradlew
+          ./gradlew assembleDebug
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
