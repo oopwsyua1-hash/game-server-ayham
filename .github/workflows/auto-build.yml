@@ -1,0 +1,69 @@
+name: Auto Build APK
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Set up Node 18
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+
+      - name: Install Tools
+        run: |
+          npm install
+          npm install -D @capacitor/cli @capacitor/core @capacitor/android eslint prettier
+
+      - name: Auto Fix Code
+        run: |
+          npx eslint. --ext.js,.ts,.jsx,.tsx --fix || true
+          npx prettier --write. || true
+
+      - name: Auto Fix Android Platform
+        run: |
+          rm -rf android ~/.gradle/caches
+          npx cap add android
+          npx cap sync android
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+
+      - name: Build APK with Auto Retry
+        run: |
+          cd android
+          chmod +x gradlew
+          ./gradlew clean assembleDebug --no-daemon || {
+            echo "First build failed, re-syncing..."
+            cd..
+            npx cap sync android
+            cd android
+           ./gradlew clean assembleDebug --no-daemon
+          }
+
+      - name: Commit Fixes
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add.
+          git commit -m "🤖 Auto fix: format code and rebuild android" || echo "No changes"
+          git push || true
+
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: app-debug-apk
+          path: android/app/build/outputs/apk/debug/app-debug.apk
