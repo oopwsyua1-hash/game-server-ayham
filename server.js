@@ -13,7 +13,7 @@ const server = http.createServer(app);
 const io = new Server(server, { cors: { origin: "*" } });
 
 const PORT = process.env.PORT || 3000;
-const JWT_SECRET = process.env.JWT_SECRET || 'ayham-secret-key-2024';
+const JWT_SECRET = process.env.JWT_SECRET || ayham-secret-key-2024
 
 // تفعيل الميدل وير وتوسيع الطاقة الاستيعابية لاستقبال صور الـ Base64
 app.use(cors({ origin: '*' }));
